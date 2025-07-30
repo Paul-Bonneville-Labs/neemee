@@ -1,0 +1,8 @@
+{
+  "app": {
+    "name": "Neemee",
+    "displayName": "Neemee",
+    "description": "Personal knowledge management system for capturing and organizing highlighted text from websites into an intelligent, portable knowledge graph.",
+    "keywords": "knowledge management, highlights, bookmarklet, AI, personal data, markdown, entity extraction"
+  }
+}
