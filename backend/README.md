@@ -6,7 +6,7 @@
 
 ## Setup Instructions
 
-This directory will contain the complete arrgh-fastapi backend application adapted for Neemee.
+This directory contains the complete arrgh-fastapi backend application adapted for Neemee.
 
 ### Planned Components
 - FastAPI framework with structured routing
@@ -32,12 +32,38 @@ This directory will contain the complete arrgh-fastapi backend application adapt
 - Event: Meetings, conferences, product launches, news events
 - Product: Software, hardware, services, offerings
 
-### Next Steps
-1. Copy arrgh-fastapi source code to this directory
-2. Update configuration for Supabase integration
-3. Add bookmarklet-specific API endpoints
-4. Adapt entity extraction for highlight processing
-5. Configure GCP deployment settings
+### Development Commands
+
+See [CLAUDE.md](CLAUDE.md) for complete development workflow documentation.
+
+**Quick Setup:**
+```bash
+./scripts/dev-setup.sh      # Automated setup
+./scripts/dev-server.sh     # Start with hot reload
+./scripts/dev-test.sh       # Continuous testing
+```
+
+**Manual Setup:**
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate
+cp .env.example .env
+pip install -r requirements.txt -r requirements-dev.txt
+uvicorn src.main:app --reload --port 8000
+```
+
+**Testing:**
+```bash
+export ENVIRONMENT=local
+python -m pytest tests/ -v
+```
+
+**Neo4j Database:**
+```bash
+./scripts/start-neo4j.sh    # Start database
+./scripts/stop-neo4j.sh     # Stop database
+# Access: http://localhost:7474
+```
 
 ---
-*This directory is currently empty and ready for the arrgh-fastapi backend integration.*
+*This backend provides the AI processing pipeline foundation for Neemee's highlight management system.*

@@ -6,7 +6,7 @@
 
 ## Setup Instructions
 
-This directory will contain the complete arrgh-collect frontend application adapted for Neemee.
+This directory contains the complete arrgh-collect frontend application adapted for Neemee.
 
 ### Planned Components
 - Complete MDX Editor with toolbar and Front Matter support
@@ -21,11 +21,45 @@ This directory will contain the complete arrgh-collect frontend application adap
 - Adapt FileList.tsx to HighlightList.tsx
 - Update terminology from "files" to "highlights"
 
-### Next Steps
-1. Copy arrgh-collect source code to this directory
-2. Update dependencies and configuration
-3. Implement Supabase authentication integration
-4. Adapt UI components for highlight management
+### Development Commands
+
+**Quick Setup:**
+```bash
+npm install
+cp .env.example .env.local  # Configure with your keys
+npm run dev                 # Start with Turbopack
+```
+
+**Available Scripts:**
+```bash
+npm run dev     # Development server with Turbopack
+npm run build   # Production build
+npm run start   # Production server
+npm run lint    # ESLint
+```
+
+### Tech Stack
+- **Next.js 15** with App Router and TypeScript
+- **MDXEditor 3.39.1** for rich text editing with Front Matter
+- **Tailwind CSS v4** with dark mode support
+- **Node.js 20.x** runtime
+- **Supabase Auth** (replacing NextAuth from arrgh-collect)
+
+### Project Structure
+```
+src/
+├── app/              # Next.js App Router
+│   ├── api/         # API routes
+│   ├── dashboard/   # Main interface (adapt to highlights)
+│   └── layout.tsx
+├── components/       # React components
+│   ├── FileList.tsx # → HighlightList.tsx
+│   ├── MarkdownEditor.tsx
+│   └── ...
+└── lib/
+    ├── auth.ts      # → Supabase Auth
+    └── github.ts    # → Supabase client
+```
 
 ---
-*This directory is currently empty and ready for the arrgh-collect frontend integration.*
+*This frontend provides the user interface foundation for Neemee's highlight management system.*

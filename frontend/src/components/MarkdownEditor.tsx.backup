@@ -1,0 +1,335 @@
+'use client';
+
+import { useState, useCallback, useEffect } from 'react';
+import { 
+  MDXEditor, 
+  headingsPlugin, 
+  listsPlugin, 
+  linkPlugin, 
+  quotePlugin, 
+  markdownShortcutPlugin,
+  toolbarPlugin,
+  thematicBreakPlugin,
+  codeBlockPlugin,
+  tablePlugin,
+  imagePlugin,
+  linkDialogPlugin,
+  frontmatterPlugin,
+  sandpackPlugin,
+  codeMirrorPlugin,
+  diffSourcePlugin,
+  directivesPlugin,
+  GenericDirectiveEditor,
+  UndoRedo,
+  BoldItalicUnderlineToggles,
+  InsertCodeBlock,
+  InsertSandpack,
+  ListsToggle,
+  CreateLink,
+  InsertThematicBreak,
+  InsertTable,
+  InsertImage,
+  InsertFrontmatter,
+  ChangeCodeMirrorLanguage,
+  ShowSandpackInfo,
+  ConditionalContents,
+  DiffSourceToggleWrapper,
+  InsertAdmonition,
+  Separator
+} from '@mdxeditor/editor';
+import '@mdxeditor/editor/style.css';
+import { FrontmatterForm } from './FrontmatterForm';
+import { MarkdownEditorProps } from '@/types';
+
+export function MarkdownEditor({ file, onSave, onCancel, isLoading = false }: MarkdownEditorProps) {
+  const [content, setContent] = useState(file?.content || '');
+  const [frontmatter, setFrontmatter] = useState(file?.frontmatter || {
+    title: '',
+    author: '',
+    status: 'draft' as const,
+    tags: [],
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Sandpack configuration
+  const defaultSnippetContent = `
+export default function App() {
+  return (
+    <div className="App">
+      <h1>Hello CodeSandbox</h1>
+      <h2>Start editing to see some magic happen!</h2>
+    </div>
+  );
+}
+`.trim();
+
+  const sandpackConfig = {
+    defaultPreset: 'react',
+    presets: [
+      {
+        label: 'React',
+        name: 'react',
+        meta: 'live react',
+        sandpackTemplate: 'react' as const,
+        sandpackTheme: 'light' as const,
+        snippetFileName: '/App.js',
+        snippetLanguage: 'jsx',
+        initialSnippetContent: defaultSnippetContent
+      },
+      {
+        label: 'TypeScript React',
+        name: 'react-ts',
+        meta: 'live react-ts',
+        sandpackTemplate: 'react-ts' as const,
+        sandpackTheme: 'light' as const,
+        snippetFileName: '/App.tsx',
+        snippetLanguage: 'tsx',
+        initialSnippetContent: defaultSnippetContent
+      }
+    ]
+  };
+
+  // Admonition directives configuration
+  const admonitionDirectives = [
+    {
+      name: 'note',
+      testNode: (node: { name: string }) => node.name === 'note',
+      attributes: [],
+      hasChildren: true,
+      Editor: GenericDirectiveEditor
+    },
+    {
+      name: 'tip',
+      testNode: (node: { name: string }) => node.name === 'tip',
+      attributes: [],
+      hasChildren: true,
+      Editor: GenericDirectiveEditor
+    },
+    {
+      name: 'info',
+      testNode: (node: { name: string }) => node.name === 'info',
+      attributes: [],
+      hasChildren: true,
+      Editor: GenericDirectiveEditor
+    },
+    {
+      name: 'caution',
+      testNode: (node: { name: string }) => node.name === 'caution',
+      attributes: [],
+      hasChildren: true,
+      Editor: GenericDirectiveEditor
+    },
+    {
+      name: 'danger',
+      testNode: (node: { name: string }) => node.name === 'danger',
+      attributes: [],
+      hasChildren: true,
+      Editor: GenericDirectiveEditor
+    }
+  ];
+
+  // Debug: Log when file changes
+  console.log('MarkdownEditor - file prop:', file);
+  console.log('MarkdownEditor - content state:', content);
+  console.log('MarkdownEditor - frontmatter state:', frontmatter);
+
+  // Update content and frontmatter when file prop changes
+  useEffect(() => {
+    if (file) {
+      console.log('MarkdownEditor - Updating content from file:', file.content);
+      setContent(file.content || '');
+      setFrontmatter(file.frontmatter || {
+        title: '',
+        author: '',
+        status: 'draft' as const,
+        tags: [],
+      });
+    }
+  }, [file]);
+
+  const handleSave = useCallback(async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    try {
+      await onSave(content, frontmatter);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [content, frontmatter, onSave, isSaving]);
+
+  const handleCancel = useCallback(() => {
+    onCancel();
+  }, [onCancel]);
+
+  const isDisabled = isLoading || isSaving;
+
+  return (
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+      {/* Frontmatter Form */}
+      <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+        <FrontmatterForm 
+          frontmatter={frontmatter}
+          onChange={setFrontmatter}
+          isReadOnly={isDisabled}
+        />
+      </div>
+
+      {/* MDX Editor */}
+      <div className="flex-1 p-4 min-h-0">
+        <div className="h-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 bg-opacity-100 dark:bg-opacity-100">
+          <MDXEditor
+            key={file?.filename || 'new-file'} // Reset editor when switching files
+            markdown={content || '# Default Content\n\nThis is a test to see if the editor is working properly.'}
+            onChange={(newContent) => {
+              console.log('MDXEditor content changed:', newContent);
+              setContent(newContent);
+            }}
+            plugins={[
+              headingsPlugin(),
+              listsPlugin(),
+              linkPlugin(),
+              linkDialogPlugin(),
+              quotePlugin(),
+              thematicBreakPlugin(),
+              codeBlockPlugin({ defaultCodeBlockLanguage: 'js' }),
+              codeMirrorPlugin({ 
+                codeBlockLanguages: { 
+                  js: 'JavaScript', 
+                  jsx: 'JSX',
+                  ts: 'TypeScript', 
+                  tsx: 'TSX',
+                  css: 'CSS',
+                  html: 'HTML',
+                  json: 'JSON',
+                  md: 'Markdown',
+                  bash: 'Bash',
+                  python: 'Python',
+                  java: 'Java',
+                  go: 'Go',
+                  rust: 'Rust',
+                  php: 'PHP',
+                  sql: 'SQL'
+                } 
+              }),
+              sandpackPlugin({ sandpackConfig }),
+              tablePlugin(),
+              imagePlugin({
+                imageUploadHandler: () => {
+                  return Promise.resolve('https://picsum.photos/200/300');
+                },
+                imageAutocompleteSuggestions: [
+                  'https://picsum.photos/200/300',
+                  'https://picsum.photos/300/200',
+                  'https://picsum.photos/400/300'
+                ]
+              }),
+              frontmatterPlugin(),
+              directivesPlugin({ directiveDescriptors: admonitionDirectives }),
+              diffSourcePlugin({ 
+                viewMode: 'rich-text',
+                diffMarkdown: ''
+              }),
+              markdownShortcutPlugin(),
+              toolbarPlugin({
+                toolbarContents: () => (
+                  <DiffSourceToggleWrapper>
+                    <ConditionalContents
+                      options={[
+                        {
+                          when: (editor) => editor?.editorType === 'codeblock',
+                          contents: () => <ChangeCodeMirrorLanguage />
+                        },
+                        {
+                          when: (editor) => editor?.editorType === 'sandpack',
+                          contents: () => <ShowSandpackInfo />
+                        },
+                        {
+                          fallback: () => (
+                            <>
+                              <UndoRedo />
+                              <Separator />
+                              <BoldItalicUnderlineToggles />
+                              <Separator />
+                              <ListsToggle />
+                              <Separator />
+                              <CreateLink />
+                              <Separator />
+                              <InsertCodeBlock />
+                              <InsertSandpack />
+                              <Separator />
+                              <InsertTable />
+                              <InsertImage />
+                              <Separator />
+                              <InsertThematicBreak />
+                              <InsertFrontmatter />
+                              <InsertAdmonition />
+                            </>
+                          )
+                        }
+                      ]}
+                    />
+                  </DiffSourceToggleWrapper>
+                )
+              })
+            ]}
+            className="h-full"
+            contentEditableClassName="p-4 focus:outline-none min-h-full bg-gray-50 dark:bg-gray-800 bg-opacity-100 dark:bg-opacity-100"
+            readOnly={isDisabled}
+            placeholder={isDisabled ? 'Loading...' : 'Start writing your markdown content...'}
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            {file?.filename ? `Editing: ${file.filename}` : 'Creating new file'}
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleCancel}
+              disabled={isDisabled}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 
+                       bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 
+                       rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-colors duration-200"
+            >
+              Cancel
+            </button>
+            
+            <button 
+              onClick={handleSave}
+              disabled={isDisabled || !content.trim() || !frontmatter.title?.trim()}
+              className="px-4 py-2 text-sm font-medium text-white 
+                       bg-blue-600 hover:bg-blue-700 focus:bg-blue-700
+                       border border-transparent rounded-md 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-colors duration-200 flex items-center gap-2"
+            >
+              {isSaving && (
+                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+        
+        {/* Save requirements hint */}
+        {(!content.trim() || !frontmatter.title?.trim()) && (
+          <div className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+            Please add a title and content before saving
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "Neemee",
-    "displayName": "Neemee",
-    "description": "Personal knowledge management system for capturing and organizing highlighted text from websites into an intelligent, portable knowledge graph.",
-    "keywords": "knowledge management, highlights, bookmarklet, AI, personal data, markdown, entity extraction"
+    "name": "Arrgh Collect",
+    "displayName": "Text Management",
+    "description": "A GitHub-backed markdown file management system with OAuth authentication and pull request workflows. Organize, edit, and collaborate on your documentation.",
+    "keywords": "markdown, documentation, GitHub, OAuth, collaboration, text management, pull requests"
   }
 }
