@@ -11,7 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lint` - Run ESLint
 
 ### Cloud Run Deployment
-- `gcloud run deploy arrgh-collect --source . --region us-central1` - Deploy to Google Cloud Run
+- `./scripts/deploy-neemee.sh` - Deploy to Google Cloud Run with secrets
+- `gcloud run deploy neemee-frontend --source . --region us-central1` - Manual deployment
 - `gcloud services enable run.googleapis.com cloudbuild.googleapis.com` - Enable required APIs
 
 ## Project Architecture
@@ -95,11 +96,14 @@ The project uses Google Cloud Run with buildpacks for automatic containerization
 
 ### Deployment Process
 ```bash
+# Deploy with automated script (recommended)
+./scripts/deploy-neemee.sh
+
 # Deploy from source (buildpacks auto-detect Next.js)
-gcloud run deploy arrgh-collect --source . --region us-central1 --allow-unauthenticated
+gcloud run deploy neemee-frontend --source . --region us-central1 --allow-unauthenticated
 
 # Deploy with custom settings
-gcloud run deploy arrgh-collect \
+gcloud run deploy neemee-frontend \
   --source . \
   --region us-central1 \
   --memory 1Gi \
