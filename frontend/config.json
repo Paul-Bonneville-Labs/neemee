@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "Arrgh Collect",
-    "displayName": "Text Management",
-    "description": "A GitHub-backed markdown file management system with OAuth authentication and pull request workflows. Organize, edit, and collaborate on your documentation.",
-    "keywords": "markdown, documentation, GitHub, OAuth, collaboration, text management, pull requests"
+    "name": "Neemee",
+    "displayName": "Neemee",
+    "description": "Transform scattered insights into an intelligent, portable knowledge graph. Capture highlights from any website and let AI extract entities and relationships for smarter knowledge management.",
+    "keywords": "knowledge management, highlights, bookmarklet, AI, entity extraction, knowledge graph, personal notes, web capture"
   }
 }

@@ -1,14 +1,16 @@
 
-import os
 from fastapi import Security, HTTPException, status
 from fastapi.security import APIKeyHeader
+from .config import get_settings
 
-API_KEY = os.environ.get("API_KEY")
 API_KEY_NAME = "X-API-Key"
 
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 async def get_api_key(api_key_header: str = Security(api_key_header)):
+    settings = get_settings()
+    API_KEY = settings.api_key
+    
     if not API_KEY:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

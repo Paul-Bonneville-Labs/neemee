@@ -1,5 +1,5 @@
 """
-Configuration management for the Arrgh! Newsletter Processing System.
+Configuration management for the Neemee Backend System.
 
 This module provides type-safe configuration management using Pydantic Settings
 with support for environment variables and .env files.
@@ -16,11 +16,17 @@ from pathlib import Path
 class Settings(BaseSettings):
     """Application settings with type validation and environment variable support."""
     
+    # API Authentication
+    api_key: Optional[str] = Field(default=None, description="API key for backend authentication")
+    
     # LLM Configuration
     openai_api_key: Optional[str] = Field(default=None, description="OpenAI API key for LLM operations")
     llm_model: str = Field(default="gpt-4-turbo", description="LLM model to use")
     llm_temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM temperature")
     llm_max_tokens: int = Field(default=2000, gt=0, description="Maximum tokens for LLM response")
+    
+    # Content Extraction Configuration
+    firecrawl_api_key: Optional[str] = Field(default=None, description="Firecrawl API key for content extraction")
     
     # Neo4j Configuration
     neo4j_uri: str = Field(default="bolt://localhost:7687", description="Neo4j database URI")
@@ -80,9 +86,6 @@ class Settings(BaseSettings):
         description="Enable debug mode with verbose logging"
     )
     
-    # Development Settings
-    jupyter_port: int = Field(default=8888, gt=0, le=65535, description="Jupyter port")
-    jupyter_token: Optional[str] = Field(default=None, description="Jupyter authentication token")
     
     # Google Cloud Configuration (for production)
     google_cloud_project: Optional[str] = Field(
@@ -110,7 +113,7 @@ class Settings(BaseSettings):
         description="CORS allowed origins"
     )
     
-    @field_validator('openai_api_key', 'neo4j_password', 'secret_key')
+    @field_validator('api_key', 'openai_api_key', 'firecrawl_api_key', 'neo4j_password', 'secret_key')
     def clean_secrets(cls, v):
         """Strip whitespace from secrets to prevent issues."""
         if v:

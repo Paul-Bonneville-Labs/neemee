@@ -1,4 +1,4 @@
-# Core Runtime Dependencies for Arrgh! Newsletter Processing System
+# Core Runtime Dependencies for Neemee Backend System
 # Install with: pip install -r requirements.txt
 
 # Web Framework - Updated to latest stable versions with Python 3.13.5 support
@@ -32,6 +32,9 @@ typing-extensions==4.12.2
 # Monitoring and Logging
 structlog==23.2.0
 python-json-logger==2.0.7
+
+# Web Content Extraction
+firecrawl-py==2.16.3
 
 # Cloud Dependencies (for production)
 google-cloud-secret-manager==2.16.4

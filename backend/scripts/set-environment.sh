@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Environment Configuration Script for Arrgh! FastAPI
+# Environment Configuration Script for Neemee Backend
 # Sets the ENVIRONMENT variable and provides feedback about configuration
 
 set -e

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getSession, hasPermission } from '@/lib/auth';
 import { githubClient } from '@/lib/github';
 import { ApiResponse, FrontmatterData } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
     if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -16,7 +15,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check write permissions
-    if (!session.user.permissions?.write) {
+    const hasWritePermission = await hasPermission('write');
+    if (!hasWritePermission) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }

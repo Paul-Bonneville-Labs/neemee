@@ -5,7 +5,7 @@
 ```bash
 # Clone and set up everything automatically
 git clone <repository-url>
-cd arrgh-fastapi
+cd neemee-backend
 ./scripts/setup-local.sh
 ```
 
@@ -21,7 +21,6 @@ The setup script will:
 ### **Dependencies** (install what you need):
 ```
 requirements.txt              # Core runtime (API, processing)
-requirements-notebook.txt     # Data analysis (pandas, jupyter)
 requirements-dev.txt          # Testing (pytest, httpx)
 ```
 
@@ -44,7 +43,6 @@ cp .env.example .env.local
 
 # 2. Dependencies
 pip install -r requirements.txt                    # Core
-pip install -r requirements-notebook.txt           # + Notebooks
 pip install -r requirements-dev.txt               # + Testing
 
 # 3. Database
@@ -53,7 +51,6 @@ pip install -r requirements-dev.txt               # + Testing
 # 4. Run
 export ENVIRONMENT=local
 uvicorn src.main:app --reload --port 8000         # API
-jupyter lab notebooks/                            # Notebook
 ```
 
 ## 🗄️ Database Access
@@ -74,7 +71,6 @@ export ENVIRONMENT=local                          # Set environment
 
 # Development
 uvicorn src.main:app --reload --port 8000        # API server
-jupyter lab notebooks/                           # Notebook
 python -m pytest tests/ -v                       # Tests
 ```
 

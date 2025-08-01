@@ -1,19 +1,19 @@
 #!/bin/bash
 
-# Stop and remove any running container named 'arrgh-fastapi'
-if [ $(docker ps -q -f name=arrgh-fastapi) ]; then
-  echo "Stopping running 'arrgh-fastapi' container..."
-  docker stop arrgh-fastapi
-  docker rm arrgh-fastapi
+# Stop and remove any running container named 'neemee-backend'
+if [ $(docker ps -q -f name=neemee-backend) ]; then
+  echo "Stopping running 'neemee-backend' container..."
+  docker stop neemee-backend
+  docker rm neemee-backend
 fi
 
 # Build the Docker image
-echo "Building Docker image 'arrgh-fastapi'..."
-docker build -t arrgh-fastapi .
+echo "Building Docker image 'neemee-backend'..."
+docker build -t neemee-backend .
 
 # Run the Docker container
-echo "Running Docker container 'arrgh-fastapi' on port 8080..."
-docker run -d --name arrgh-fastapi -p 8080:8080 arrgh-fastapi
+echo "Running Docker container 'neemee-backend' on port 8080..."
+docker run -d --name neemee-backend -p 8080:8080 neemee-backend
 
 # Wait for the app to start
 echo "Waiting for the app to start..."

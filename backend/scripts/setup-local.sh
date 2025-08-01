@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Local Development Setup Script for Arrgh! FastAPI
+# Local Development Setup Script for Neemee Backend
 # This script helps new developers get started quickly
 
 set -e
@@ -8,7 +8,7 @@ set -e
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-echo "🚀 Setting up Arrgh! Newsletter Processing System for local development..."
+echo "🚀 Setting up Neemee Backend System for local development..."
 
 # Check if .env.local exists
 if [ ! -f ".env.local" ]; then
@@ -47,14 +47,6 @@ source .venv/bin/activate
 echo "Installing core dependencies..."
 pip install -r requirements.txt
 
-# Ask about optional dependencies
-echo ""
-read -p "📊 Install notebook dependencies for data analysis? (y/n): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    pip install -r requirements-notebook.txt
-    echo "✅ Notebook dependencies installed"
-fi
 
 echo ""
 read -p "🧪 Install development/testing dependencies? (y/n): " -n 1 -r
@@ -93,6 +85,5 @@ echo "1. Edit .env.local with your real OpenAI API key"
 echo "2. Start Neo4j: ./scripts/start-neo4j.sh"
 echo "3. Activate environment: source .venv/bin/activate && export ENVIRONMENT=local"
 echo "4. Run API: uvicorn src.main:app --reload --port 8000"
-echo "5. Run notebook: jupyter lab notebooks/"
 echo ""
 echo "📚 See CLAUDE.md for detailed documentation"

@@ -136,17 +136,17 @@ echo "🐳 4. Docker Build Test"
 echo "======================="
 
 # Test 6: Docker build
-run_test_with_output "Docker image builds successfully" 'docker build -t arrgh-fastapi-test .'
+run_test_with_output "Docker image builds successfully" 'docker build -t neemee-backend-test .'
 
 # Test 7: Docker container starts
 run_test_with_output "Docker container starts" '
 if command -v timeout > /dev/null; then
-    timeout 30s docker run --rm -d -p 8081:8080 --name arrgh-test arrgh-fastapi-test && sleep 5 && docker stop arrgh-test
+    timeout 30s docker run --rm -d -p 8081:8080 --name neemee-test neemee-backend-test && sleep 5 && docker stop neemee-test
 elif command -v gtimeout > /dev/null; then
-    gtimeout 30s docker run --rm -d -p 8081:8080 --name arrgh-test arrgh-fastapi-test && sleep 5 && docker stop arrgh-test
+    gtimeout 30s docker run --rm -d -p 8081:8080 --name neemee-test neemee-backend-test && sleep 5 && docker stop neemee-test
 else
     # macOS fallback without timeout
-    docker run --rm -d -p 8081:8080 --name arrgh-test arrgh-fastapi-test && sleep 10 && docker stop arrgh-test
+    docker run --rm -d -p 8081:8080 --name neemee-test neemee-backend-test && sleep 10 && docker stop neemee-test
 fi'
 
 echo ""
@@ -154,8 +154,8 @@ echo "🌐 5. Production Connectivity Tests (if deployed)"
 echo "================================================="
 
 # Check if service is deployed
-if gcloud run services describe arrgh-fastapi --region=us-central1 --project=paulbonneville-com > /dev/null 2>&1; then
-    SERVICE_URL="https://arrgh-fastapi-860937201650.us-central1.run.app"
+if gcloud run services describe neemee-backend --region=us-central1 --project=paulbonneville-com > /dev/null 2>&1; then
+    SERVICE_URL="https://neemee-backend-860937201650.us-central1.run.app"
     
     # Test health endpoint
     run_test_with_output "Production health check" "curl -sf '$SERVICE_URL/health'"

@@ -6,7 +6,7 @@
 
 ## Setup Instructions
 
-This directory contains the complete arrgh-fastapi backend application adapted for Neemee.
+This directory contains the complete Neemee backend application for personal knowledge management.
 
 ### Planned Components
 - FastAPI framework with structured routing

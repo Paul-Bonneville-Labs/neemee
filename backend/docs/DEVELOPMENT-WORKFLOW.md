@@ -1,6 +1,6 @@
 # FastAPI-First Development Workflow
 
-This document describes the modern development workflow for the arrgh-fastapi project, which has been redesigned to eliminate code duplication and streamline development.
+This document describes the modern development workflow for the neemee-backend project, which has been redesigned to eliminate code duplication and streamline development.
 
 ## Overview
 
@@ -23,7 +23,7 @@ This document describes the modern development workflow for the arrgh-fastapi pr
 ```bash
 # Clone and setup the project
 git clone <repository-url>
-cd arrgh-fastapi
+cd neemee-backend
 
 # Run the automated setup script
 ./scripts/dev-setup.sh
@@ -71,12 +71,6 @@ ptw --runner "python -m pytest tests/ -v" src/ tests/
 3. **Write Tests**: Add/update tests in `tests/` directory
 4. **Continuous Testing**: Tests re-run automatically on file changes
 
-### Interactive Testing (Notebook)
-
-1. **Open Notebook**: `jupyter lab notebooks/newsletter_development.ipynb`
-2. **Import Updates**: Restart kernel to get latest FastAPI changes
-3. **Test Interactively**: Use real data to test production modules
-4. **Analyze Results**: Visualize entity extraction and graph data
 
 ## File Structure
 
@@ -115,13 +109,11 @@ scripts/                         # Development automation
 1. **Edit FastAPI Module**: Modify code in `src/processors/entity_extractor.py`
 2. **Server Reloads**: uvicorn automatically reloads with changes
 3. **Tests Re-run**: pytest-watch automatically runs relevant tests
-4. **Test in Notebook**: Restart kernel and test with real data
 
 ### Adding New Features
 
 1. **Write Tests First**: Add tests in `tests/` directory
 2. **Implement in FastAPI**: Add functionality to appropriate `src/` module
-3. **Validate with Notebook**: Test interactively with real data
 4. **Update Documentation**: Update CLAUDE.md if needed
 
 ### Debugging Issues
@@ -139,11 +131,6 @@ scripts/                         # Development automation
 - **Integration**: End-to-end pipeline testing
 - **Continuous**: Tests run automatically on file changes
 
-### Interactive Testing (Notebook)
-- **Real Data**: Test with actual newsletter content
-- **Graph Analysis**: Query and visualize Neo4j results
-- **Prompt Engineering**: Experiment with OpenAI prompts
-- **Performance**: Analyze processing times and quality metrics
 
 ## Deployment
 
@@ -220,16 +207,13 @@ open http://localhost:7474
 ./scripts/deploy-production.sh
 
 # Check production logs
-gcloud logs tail --follow --service arrgh-fastapi
+gcloud logs tail --follow --service neemee-backend
 ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-**"Module not found" errors in notebook**
-- Restart Jupyter kernel to reload updated modules
-- Check that FastAPI modules can be imported in terminal
 
 **Tests failing after changes**
 - Review test output for specific failure details

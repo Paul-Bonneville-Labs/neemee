@@ -5,7 +5,7 @@
 
 set -e
 
-echo "🚀 Deploying Newsletter Processing API to Google Cloud Run..."
+echo "🚀 Deploying Neemee Backend API to Google Cloud Run..."
 
 # Run pre-deployment tests first
 echo "🧪 Running pre-deployment tests..."
@@ -19,7 +19,7 @@ echo "✅ Pre-deployment tests passed. Proceeding with deployment..."
 # Set project and region
 PROJECT_ID="paulbonneville-com"
 REGION="us-central1"
-SERVICE_NAME="arrgh-fastapi"
+SERVICE_NAME="neemee-backend"
 
 # Ensure we're using the correct project
 gcloud config set project $PROJECT_ID
@@ -57,20 +57,19 @@ gcloud run deploy $SERVICE_NAME \
   --set-env-vars ENABLE_ASYNC_PROCESSING=true \
   --set-env-vars ENABLE_ENTITY_CACHING=true \
   --set-env-vars ENABLE_DEBUG_MODE=false \
-  --set-env-vars CORS_ORIGINS="[\"https://arrgh.paulbonneville.com\"]" \
-  --set-secrets OPENAI_API_KEY=newsletter-openai-api-key:latest \
-  --set-secrets NEO4J_PASSWORD=newsletter-neo4j-password:latest \
-  --set-secrets NEO4J_URI=newsletter-neo4j-uri:latest \
-  --set-secrets SECRET_KEY=newsletter-secret-key:latest \
-  --set-secrets API_KEY=arrgh-fastapi-key:latest \
+  --set-env-vars CORS_ORIGINS="https://neemee.paulbonneville.com" \
+  --set-secrets OPENAI_API_KEY=neemee-openai-api-key:latest \
+  --set-secrets NEO4J_PASSWORD=neemee-neo4j-password:latest \
+  --set-secrets NEO4J_URI=neemee-neo4j-uri:latest \
+  --set-secrets SECRET_KEY=neemee-secret-key:latest \
+  --set-secrets API_KEY=neemee-backend-key:latest \
+  --set-secrets FIRECRAWL_API_KEY=neemee-firecrawl-key:latest \
   --memory 512Mi \
   --cpu 1 \
   --concurrency 80 \
   --min-instances 0 \
   --max-instances 10 \
   --timeout 900 \
-  --vpc-connector neo4j-connector \
-  --vpc-egress private-ranges-only \
   --allow-unauthenticated
 
 echo "✅ Deployment complete!"

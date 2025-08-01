@@ -7,13 +7,14 @@ set -e
 PROJECT_ID="paulbonneville-com"
 gcloud config set project $PROJECT_ID
 
-echo "🔍 Verifying newsletter processing secrets in Google Cloud..."
+echo "🔍 Verifying Neemee backend secrets in Google Cloud..."
 
 SECRETS=(
-    "newsletter-openai-api-key"
-    "newsletter-neo4j-uri" 
-    "newsletter-neo4j-password"
-    "newsletter-secret-key"
+    "neemee-openai-api-key"
+    "neemee-neo4j-uri" 
+    "neemee-neo4j-password"
+    "neemee-secret-key"
+    "neemee-backend-key"
 )
 
 for secret in "${SECRETS[@]}"; do
@@ -30,8 +31,8 @@ echo ""
 echo "🔗 Testing Neo4j connection with production credentials..."
 
 # Extract credentials
-NEO4J_URI=$(gcloud secrets versions access latest --secret="newsletter-neo4j-uri")
-NEO4J_PASSWORD=$(gcloud secrets versions access latest --secret="newsletter-neo4j-password")
+NEO4J_URI=$(gcloud secrets versions access latest --secret="neemee-neo4j-uri")
+NEO4J_PASSWORD=$(gcloud secrets versions access latest --secret="neemee-neo4j-password")
 
 echo "  Neo4j URI: $NEO4J_URI"
 echo "  Neo4j User: neo4j"

@@ -2,9 +2,56 @@
 
 Neemee is a personal knowledge management system that captures and organizes highlighted text from websites, transforming scattered insights into an intelligent, portable knowledge graph.
 
-## Project Structure
+## Repository Structure
 
-This monorepo contains independently deployable applications:
+```
+neemee/
+├── README.md
+├── CLAUDE.md
+├── backend/                     # FastAPI + Python API server
+│   ├── CLAUDE.md
+│   ├── README.md
+│   ├── Dockerfile
+│   ├── cloudbuild.yaml
+│   ├── requirements.txt
+│   ├── requirements-dev.txt
+│   ├── scripts/                 # Development and deployment scripts
+│   │   ├── deploy-production.sh
+│   │   ├── dev-setup.sh
+│   │   ├── dev-server.sh
+│   │   ├── dev-test.sh
+│   │   └── pre-deployment-tests.sh
+│   ├── src/                     # Application source code
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   ├── security.py
+│   │   ├── models/
+│   │   ├── processors/
+│   │   ├── routers/
+│   │   └── graph/
+│   └── tests/                   # Unit and integration tests
+├── frontend/                    # Next.js 15 + React 19 web app
+│   ├── CLAUDE.md
+│   ├── README.md
+│   ├── package.json
+│   ├── cloudbuild.yaml
+│   ├── scripts/                 # Frontend deployment scripts
+│   └── src/                     # Next.js application
+│       ├── app/
+│       ├── components/
+│       └── lib/
+├── deployment/                  # GCP deployment configuration
+│   ├── README.md
+│   ├── cloudbuild-frontend.yaml
+│   ├── deploy-backend.sh
+│   └── deploy-frontend.sh
+├── docs/                        # Project documentation
+│   ├── PRD/
+│   ├── SUPABASE_CONFIGURATION.md
+│   └── SUPABASE_MAGIC_LINK_SETUP.md
+└── types/                       # Shared TypeScript types
+    └── supabase.ts
+```
 
 ### **Frontend** (`/frontend/`)
 - **Technology**: Next.js 15 + React 19 + TypeScript
@@ -13,19 +60,19 @@ This monorepo contains independently deployable applications:
 - **Source**: Based on arrgh-collect components
 
 ### **Backend** (`/backend/`)
-- **Technology**: FastAPI + Python
-- **Purpose**: API server, bookmarklet endpoints, AI processing pipeline
-- **Deployment**: Google Cloud Run  
-- **Source**: Based on arrgh-fastapi with proven AI/knowledge graph features
+- **Technology**: FastAPI + Python with AI processing pipeline
+- **Purpose**: API server, bookmarklet endpoints, entity extraction
+- **Deployment**: Google Cloud Run with secrets management
+- **Source**: Based on arrgh-fastapi with knowledge graph capabilities
 
 ### **Deployment** (`/deployment/`)
 - **Purpose**: GCP configuration, Docker files, deployment scripts
 - **Strategy**: Unified Google Cloud Platform deployment for both apps
 
 ### **Documentation** (`/docs/`)
-- **PRD**: Product Requirements Document
-- **Functional Spec**: Detailed use cases and technical specifications
-- **Architecture**: System design and integration details
+- **PRD**: Product Requirements Document and functional specifications
+- **Setup Guides**: Supabase configuration and integration details
+- **Architecture**: System design and technical documentation
 
 ## Core Features
 
@@ -66,12 +113,31 @@ This approach provides 80% of required functionality and reduces development tim
 2. **Setup Backend**: Navigate to `/backend/` and follow setup instructions  
 3. **Configure Deployment**: Use scripts in `/deployment/` for GCP setup
 
+## Custom Commands
+
+The following custom commands are available via Claude Code for development workflow management:
+
+- `/anthropic-status` - Check the current status of Anthropic's services using their RSS feed
+- `/gcp-cost-analysis` - Analyze Google Cloud Platform costs across all projects and provide actionable insights
+- `/gcp-optimize` - Analyze and automatically apply cost optimizations to Cloud Run services
+- `/gh-branch-status` - Check git branch status, uncommitted changes, and associated PRs
+- `/gh-new-work` - Clean up current work and start a new branch for new tasks
+- `/gh-pr-merge` - Merge the current PR, delete local branch, and return to main
+- `/gh-pr-review` - Check PR status, list comments, and create plan to address feedback
+- `/gh-ship-it` - Commit uncommitted changes and create PR if needed
+- `/gh-worktree` - Create a new git worktree in a sibling directory
+- `/gh-worktrees` - Git worktree manager - shows status and provides management options
+- `/ingest-web` - Fetch and summarize web resources into markdown files
+- `/update-docs` - Update README.md and CLAUDE.md with current repository content and functionality
+
 ## Phase 1 Development (Current)
 
 Focus: Integration & Core Adaptation (2-3 weeks)
-- Integrate arrgh-collect frontend with arrgh-fastapi backend
-- Implement bookmarklet functionality
-- Setup Supabase authentication and database
-- Adapt existing components for highlight management
+- ✅ Integrate arrgh-collect frontend with arrgh-fastapi backend
+- ✅ Implement bookmarklet functionality
+- ✅ Setup Supabase authentication and database
+- ✅ Adapt existing components for highlight management
+- ✅ Deploy backend with AI processing pipeline to Google Cloud Run
+- ✅ Configure secrets management and production environment
 
 See `/docs/` for detailed development phases and timelines.

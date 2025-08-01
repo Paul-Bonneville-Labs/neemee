@@ -1,12 +1,12 @@
 # Environment Setup Guide
 
-This guide explains how to configure different environments for the Arrgh! Newsletter Processing System.
+This guide explains how to configure different environments for the Neemee Backend System.
 
 ## 🏗️ Environment Types
 
 ### Local Development (`.env.local`)
 - **Neo4j**: Local Docker container (`bolt://localhost:7687`)
-- **OpenAI**: Shared API key from arrgh-n8n project
+- **OpenAI**: Shared API key from neemee-n8n project
 - **Logging**: Debug level with verbose output
 - **Features**: All debugging features enabled
 
@@ -79,15 +79,9 @@ export ENVIRONMENT=production
 python -c "from src.config import get_settings, print_configuration_summary; print_configuration_summary(get_settings())"
 
 # Deploy
-gcloud run deploy arrgh-fastapi --image gcr.io/paulbonneville-com/arrgh-fastapi
+gcloud run deploy neemee-backend --image gcr.io/paulbonneville-com/neemee-backend
 ```
 
-### Run Jupyter Notebook
-```bash
-export ENVIRONMENT=local
-source .venv/bin/activate
-jupyter lab notebooks/
-```
 
 ## 🔐 Security Considerations
 

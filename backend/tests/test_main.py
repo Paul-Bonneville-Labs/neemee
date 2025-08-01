@@ -29,7 +29,7 @@ def test_read_root():
     assert "endpoints" in data
     assert "environment" in data
     assert "version" in data
-    assert data["message"] == "Arrgh! Newsletter Processing API"
+    assert data["message"] == "Neemee Backend API"
     assert "/newsletter/process" in data["endpoints"]
 
 def test_health_check():

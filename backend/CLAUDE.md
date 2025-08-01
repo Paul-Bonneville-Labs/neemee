@@ -50,25 +50,13 @@ cp .env.example .env
 # Edit .env with your real OpenAI API key
 
 # 3. Install all dependencies
-pip install -r requirements.txt -r requirements-dev.txt -r requirements-notebook.txt
+pip install -r requirements.txt -r requirements-dev.txt
 
 # 4. Start development server with hot reload
 uvicorn src.main:app --reload --port 8000
 
 # 5. Start continuous testing (separate terminal)
 ptw --runner "python -m pytest tests/ -v" src/ tests/
-```
-
-**Notebook Development:**
-The notebook now imports actual FastAPI modules instead of duplicating code:
-```bash
-# Open notebook for interactive testing and analysis
-jupyter lab notebooks/newsletter_development.ipynb
-
-# The notebook imports from src/ modules:
-# - from processors.entity_extractor import EntityExtractor
-# - from models.newsletter import Entity, Newsletter
-# - from graph.neo4j_client import Neo4jClient
 ```
 
 **📚 For detailed development workflow documentation, see: [docs/DEVELOPMENT-WORKFLOW.md](docs/DEVELOPMENT-WORKFLOW.md)**
@@ -79,11 +67,11 @@ jupyter lab notebooks/newsletter_development.ipynb
 ./scripts/dev-local.sh
 
 # Or manually:
-docker build -t arrgh-fastapi .
-docker run -p 8080:8080 arrgh-fastapi
+docker build -t neemee-backend .
+docker run -p 8080:8080 neemee-backend
 ```
 
-### Neo4j Database (for notebook development)
+### Neo4j Database
 ```bash
 # Start Neo4j database for development
 ./scripts/start-neo4j.sh
@@ -103,14 +91,11 @@ The project uses a modular dependency structure:
 # Core runtime dependencies (required)
 pip install -r requirements.txt
 
-# Notebook development (optional)
-pip install -r requirements-notebook.txt
-
 # Testing and development (optional)
 pip install -r requirements-dev.txt
 
 # Install everything for full development
-pip install -r requirements.txt -r requirements-notebook.txt -r requirements-dev.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 ### Testing
@@ -141,7 +126,7 @@ python -m pytest tests/test_simple.py::TestHTMLProcessor -v
 ./scripts/deploy-production.sh
 
 # View deployment logs
-gcloud logs tail --follow --service arrgh-fastapi --region us-central1
+gcloud logs tail --follow --service neemee-backend --region us-central1
 ```
 
 **Pre-Deployment Testing (automatically run by deploy script):**
@@ -160,8 +145,8 @@ gcloud logs tail --follow --service arrgh-fastapi --region us-central1
 
 **Manual Deployment (if needed):**
 ```bash
-gcloud run deploy arrgh-fastapi \
-  --image gcr.io/paulbonneville-com/arrgh-fastapi \
+gcloud run deploy neemee-backend \
+  --image gcr.io/paulbonneville-com/neemee-backend \
   --platform managed \
   --region us-central1 \
   --set-secrets OPENAI_API_KEY=newsletter-openai-api-key:latest \
@@ -196,10 +181,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 
 ### Google Cloud Configuration
 - **Project**: paulbonneville-com
-- **Service**: arrgh-fastapi
+- **Service**: neemee-backend
 - **Region**: us-central1
 - **Service Account**: 860937201650-compute@developer.gserviceaccount.com (default)
-- **Service URL**: https://arrgh-fastapi-860937201650.us-central1.run.app
+- **Service URL**: https://neemee-backend-860937201650.us-central1.run.app
 
 ## Email Processing with n8n
 
@@ -208,7 +193,7 @@ This FastAPI application processes emails received through an n8n workflow. The 
 
 **Integration Details:**
 - **n8n Instance**: n8n.paulbonneville.com  
-- **Workflow**: "Arrgh Email Processor" (ID: cplr7F8xgOQ0lwpa)
+- **Workflow**: "Neemee Highlight Processor" (ID: cplr7F8xgOQ0lwpa)
 - **API Endpoint**: `/newsletter/process` - receives email content for entity extraction
 - **Authentication**: API key-based authentication for n8n workflow calls
 
@@ -219,4 +204,4 @@ This FastAPI application processes emails received through an n8n workflow. The 
 - Tests should be run before committing changes
 - The Docker container exposes port 8080 as required by Google Cloud Run
 - Continuous deployment is enabled - changes to main branch automatically deploy
-- **Email Processing**: All emails sent to test@arrgh.paulbonneville.com are automatically processed and forwarded
+- **Highlight Processing**: Web highlights are processed through the capture API endpoints

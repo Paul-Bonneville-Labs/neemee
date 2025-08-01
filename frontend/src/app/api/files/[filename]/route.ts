@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getSession, hasPermission } from '@/lib/auth';
 import { githubClient } from '@/lib/github';
 import { ApiResponse, FrontmatterData } from '@/types';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ filename: string }> }) {
   try {
-    // Check authentication - pass request and response for App Router
-    const session = await getServerSession(authOptions);
+    // Check authentication
+    const session = await getSession();
     console.log('Session in GET /api/files/[filename]:', session ? 'exists' : 'null');
     console.log('Request cookies:', request.cookies.toString());
     
@@ -20,7 +19,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Check read permissions
-    if (!session.user.permissions?.read) {
+    const hasReadPermission = await hasPermission('read');
+    if (!hasReadPermission) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ filename: string }> }) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
     if (!session || !session.user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -82,7 +82,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Check write permissions
-    if (!session.user.permissions?.write) {
+    const hasWritePermission = await hasPermission('write');
+    if (!hasWritePermission) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }

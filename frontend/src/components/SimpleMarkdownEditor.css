@@ -91,3 +91,79 @@
   margin: 0.25rem 0 !important;
   display: list-item !important;
 }
+
+/* Markdown Viewer specific styles */
+.mdx-viewer {
+  border: none !important;
+}
+
+.mdx-viewer [data-lexical-editor] {
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.mdx-viewer-content {
+  border: none !important;
+  outline: none !important;
+  min-height: auto !important;
+  font-family: inherit !important;
+}
+
+/* Dark mode support for viewer */
+.dark .mdx-viewer [data-lexical-editor] code {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .mdx-viewer [data-lexical-editor] blockquote {
+  border-left-color: #4b5563 !important;
+  background-color: #1f2937 !important;
+  color: #d1d5db !important;
+}
+
+/* Table styling for viewer */
+.mdx-viewer [data-lexical-editor] table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 1rem 0 !important;
+}
+
+.mdx-viewer [data-lexical-editor] th,
+.mdx-viewer [data-lexical-editor] td {
+  border: 1px solid #e5e7eb !important;
+  padding: 0.5rem !important;
+  text-align: left !important;
+}
+
+.mdx-viewer [data-lexical-editor] th {
+  background-color: #f9fafb !important;
+  font-weight: 600 !important;
+}
+
+.dark .mdx-viewer [data-lexical-editor] th,
+.dark .mdx-viewer [data-lexical-editor] td {
+  border-color: #4b5563 !important;
+}
+
+.dark .mdx-viewer [data-lexical-editor] th {
+  background-color: #374151 !important;
+}
+
+/* Link styling for viewer */
+.mdx-viewer [data-lexical-editor] a {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+}
+
+.dark .mdx-viewer [data-lexical-editor] a {
+  color: #60a5fa !important;
+}
+
+/* Image styling for viewer */
+.mdx-viewer [data-lexical-editor] img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 0.5rem !important;
+  margin: 1rem 0 !important;
+}

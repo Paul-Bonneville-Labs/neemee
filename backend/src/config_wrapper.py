@@ -13,6 +13,9 @@ class Config:
         self.LLM_TEMPERATURE = settings.llm_temperature
         self.LLM_MAX_TOKENS = settings.llm_max_tokens
         
+        # Content Extraction Configuration
+        self.FIRECRAWL_API_KEY = settings.firecrawl_api_key
+        
         # Neo4j Configuration
         self.NEO4J_URI = settings.neo4j_uri
         self.NEO4J_USER = settings.neo4j_user

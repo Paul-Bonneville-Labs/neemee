@@ -10,10 +10,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 
-### Cloud Run Deployment
-- `./scripts/deploy-neemee.sh` - Deploy to Google Cloud Run with secrets
-- `gcloud run deploy neemee-frontend --source . --region us-central1` - Manual deployment
-- `gcloud services enable run.googleapis.com cloudbuild.googleapis.com` - Enable required APIs
+### Cloud Run Deployment with Automatic Secrets Management
+- `./scripts/deploy.sh` - Deploy to Google Cloud Run (automatically handles secrets setup/verification)
+- `./scripts/verify-secrets.sh` - Verify all secrets are properly configured (optional)
+- `gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com` - Enable required APIs
 
 ## Project Architecture
 
@@ -84,7 +84,19 @@ This repository does not currently define any custom Claude Code commands. All d
 
 ## Cloud Run Deployment
 
-The project uses Google Cloud Run with buildpacks for automatic containerization. No Dockerfile required - buildpacks auto-detect Next.js and configure appropriately.
+The project uses Google Cloud Run with buildpacks for automatic containerization and Google Cloud Secrets Manager for secure environment variable management. No Dockerfile required - buildpacks auto-detect Next.js and configure appropriately.
+
+### Secrets Management
+
+The frontend uses Google Cloud Secrets Manager to securely store sensitive environment variables:
+
+- **`neemee-github-token`** ← GitHub Personal Access Token
+- **`neemee-supabase-url`** ← Supabase Project URL  
+- **`neemee-supabase-anon-key`** ← Supabase Anonymous Key
+- **`neemee-github-repo-owner`** ← GitHub Repository Owner
+- **`neemee-github-repo-name`** ← GitHub Repository Name
+
+For local development, continue using the `.env` file. In production, these secrets are automatically mounted as environment variables by Cloud Run.
 
 ### Prerequisites
 ```bash
@@ -96,20 +108,30 @@ The project uses Google Cloud Run with buildpacks for automatic containerization
 
 ### Deployment Process
 ```bash
-# Deploy with automated script (recommended)
-./scripts/deploy-neemee.sh
+# Single command deployment (automatically handles secrets)
+./scripts/deploy.sh
 
-# Deploy from source (buildpacks auto-detect Next.js)
-gcloud run deploy neemee-frontend --source . --region us-central1 --allow-unauthenticated
+# The deploy script automatically:
+# 1. Creates/updates secrets from your .env file
+# 2. Verifies all secrets are accessible
+# 3. Deploys to Cloud Run with secrets mounted
 
-# Deploy with custom settings
+# Optional: Verify secrets separately
+./scripts/verify-secrets.sh
+
+# Alternative: Manual deployment with secrets
 gcloud run deploy neemee-frontend \
   --source . \
   --region us-central1 \
   --memory 1Gi \
   --cpu 1 \
   --max-instances 100 \
-  --allow-unauthenticated
+  --allow-unauthenticated \
+  --set-secrets GITHUB_TOKEN=neemee-github-token:latest \
+  --set-secrets NEXT_PUBLIC_SUPABASE_URL=neemee-supabase-url:latest \
+  --set-secrets NEXT_PUBLIC_SUPABASE_ANON_KEY=neemee-supabase-anon-key:latest \
+  --set-secrets GITHUB_REPO_OWNER=neemee-github-repo-owner:latest \
+  --set-secrets GITHUB_REPO_NAME=neemee-github-repo-name:latest
 ```
 
 ## Development Notes

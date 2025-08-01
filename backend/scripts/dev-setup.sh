@@ -23,8 +23,6 @@ pip install -r requirements.txt
 echo "  - Development dependencies..."
 pip install -r requirements-dev.txt
 
-echo "  - Notebook dependencies..."
-pip install -r requirements-notebook.txt
 
 # Set up environment configuration
 if [ ! -f ".env" ]; then
@@ -43,7 +41,6 @@ echo "💡 Quick start options:"
 echo "  1. Start development server:  ./scripts/dev-server.sh"
 echo "  2. Start continuous testing:   ./scripts/dev-test.sh"
 echo "  3. Start both in tmux:         ./scripts/dev-tmux.sh"
-echo "  4. Open notebook:              jupyter lab notebooks/"
 echo ""
 echo "📚 Useful commands:"
 echo "  - Run tests once:              python -m pytest tests/ -v"

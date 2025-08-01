@@ -101,3 +101,167 @@ export interface FrontmatterFormProps {
   onChange: (frontmatter: FrontmatterData) => void;
   isReadOnly?: boolean;
 }
+
+// Highlight management types
+export interface Highlight {
+  id: string;
+  user_id: string;
+  highlighted_text: string;
+  page_url: string;
+  page_title?: string;
+  markdown_content?: string;
+  content_status?: 'pending' | 'extracted' | 'failed';
+  metadata?: {
+    captured_via?: string;
+    original_page_title?: string;
+    [key: string]: any;
+  };
+  created_at: string;
+}
+
+export interface HighlightCreateRequest {
+  highlighted_text: string;
+  page_url: string;
+  page_title?: string;
+  opengraph_data?: Record<string, string>;
+  api_key: string;
+}
+
+export interface HighlightUpdateRequest {
+  highlighted_text: string;
+  page_title?: string;
+  page_url?: string;
+}
+
+export interface HighlightFormData {
+  highlighted_text: string;
+  page_title: string;
+  page_url: string;
+}
+
+export interface HighlightValidationErrors {
+  highlighted_text?: string;
+  page_title?: string;
+  page_url?: string;
+}
+
+export type HighlightEditTab = 'details' | 'content';
+
+export interface HighlightEditProps {
+  highlight: Highlight;
+  onSave: (updates: HighlightUpdateRequest) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
+}
+
+export interface HighlightListResponse {
+  highlights: Highlight[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+}
+
+export interface HighlightCaptureResponse {
+  success: boolean;
+  message: string;
+  highlightId?: string;
+}
+
+export interface UserApiKey {
+  id: string;
+  api_key: string;
+  api_key_created_at: string;
+  created_at: string;
+}
+
+export interface BookmarkletResponse {
+  success: boolean;
+  bookmarklet: string;
+  instructions: string;
+}
+
+export interface HighlightListProps {
+  highlights: Highlight[];
+  selectedHighlight?: string;
+  onHighlightSelect: (highlightId: string) => void;
+  onDeleteHighlight: (highlightId: string) => void;
+  onViewBookmarklet: () => void;
+  onRefresh?: () => void;
+  isLoading?: boolean;
+}
+
+// Bookmarklet Dashboard Types
+export interface ApiKeyManagerProps {
+  apiKey: UserApiKey | null;
+  onUpdate: (apiKey: UserApiKey) => void;
+  className?: string;
+}
+
+export interface BookmarkletInstallerProps {
+  bookmarklet: BookmarkletResponse | null;
+  isReady: boolean;
+  className?: string;
+}
+
+export interface BookmarkletInstructionsProps {
+  hasApiKey: boolean;
+  hasBookmarklet: boolean;
+  className?: string;
+}
+
+export interface HighlightStatsProps {
+  highlights: HighlightListResponse | null;
+  onRefresh?: () => void;
+  className?: string;
+}
+
+export interface BookmarkletDashboardProps {
+  className?: string;
+}
+
+// Statistics and Analytics Types
+export interface DomainStat {
+  domain: string;
+  count: number;
+  percentage: number;
+  recentCount: number;
+}
+
+export interface ActivityStat {
+  date: string;
+  count: number;
+}
+
+export interface HighlightStats {
+  total: number;
+  thisWeek: number;
+  thisMonth: number;
+  domains: DomainStat[];
+  activity: ActivityStat[];
+  recent: Highlight[];
+}
+
+// Browser Detection Types
+export interface BrowserInfo {
+  name: string;
+  icon: React.ComponentType<any>;
+  color: string;
+}
+
+// Installation Step Types
+export interface InstallationStep {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  required: boolean;
+}
+
+// FAQ Types
+export interface FAQItem {
+  question: string;
+  answer: string;
+  category: 'setup' | 'usage' | 'troubleshooting';
+}

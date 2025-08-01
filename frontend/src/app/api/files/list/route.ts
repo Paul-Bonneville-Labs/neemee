@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getSession, hasPermission } from '@/lib/auth';
 import { githubClient } from '@/lib/github';
 import { ApiResponse } from '@/types';
 
 export async function GET() {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
     console.log('Session in GET /api/files/list:', session ? 'exists' : 'null');
     
     if (!session || !session.user) {
@@ -18,7 +17,8 @@ export async function GET() {
     }
 
     // Check read permissions
-    if (!session.user.permissions?.read) {
+    const hasReadPermission = await hasPermission('read');
+    if (!hasReadPermission) {
       return NextResponse.json(
         { success: false, error: 'Insufficient permissions' },
         { status: 403 }

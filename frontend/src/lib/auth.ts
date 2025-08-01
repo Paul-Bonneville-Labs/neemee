@@ -1,81 +1,94 @@
-import { NextAuthOptions } from 'next-auth';
-import GitHubProvider from 'next-auth/providers/github';
-import { githubClient } from './github';
+import { createClient } from './supabase/server';
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: 'read:user user:email repo',
-        },
-      },
-    }),
-  ],
-  callbacks: {
-    async signIn({ account, profile }) {
-      // Check if user has access to the configured repository
-      if (account?.provider === 'github' && profile?.login) {
-        try {
-          await githubClient.getUserPermissions(profile.login as string);
-          return true;
-        } catch (error) {
-          console.error('Repository access check failed:', error);
-          return false;
-        }
+export interface UserPermissions {
+  read: boolean;
+  write: boolean;
+  admin: boolean;
+  delete: boolean;
+}
+
+export interface AuthUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  username?: string;
+  role?: string;
+  permissions?: UserPermissions;
+}
+
+export interface AuthSession {
+  user: AuthUser;
+  expires?: string;
+}
+
+/**
+ * Get current user session from Supabase
+ */
+export async function getSession(): Promise<AuthSession | null> {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error || !user) {
+      return null;
+    }
+
+    // Map Supabase user to our AuthUser format
+    const authUser: AuthUser = {
+      id: user.id,
+      name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+      email: user.email || null,
+      image: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+      username: user.user_metadata?.user_name || user.user_metadata?.preferred_username || null,
+      role: 'reader', // Default role, can be enhanced later
+      permissions: {
+        read: true,
+        write: true, // Enable write permissions for highlight management
+        admin: false,
+        delete: true // Enable delete permissions for highlight management
       }
-      return false;
-    },
-    async session({ session, token }) {
-      // Add GitHub username and role to session
-      if (token.login && session.user) {
-        session.user.username = token.login as string;
-        session.user.role = token.role as string;
-        session.user.permissions = token.permissions as {
-          read: boolean;
-          write: boolean;
-          admin: boolean;
-          delete: boolean;
-        };
-      }
-      return session;
-    },
-    async jwt({ token, account, profile }) {
-      // Store GitHub info in JWT token
-      if (account && profile) {
-        token.login = profile.login;
-        
-        // Get user permissions for role mapping
-        try {
-          const permissions = await githubClient.getUserPermissions(profile.login as string);
-          token.role = mapGitHubPermissionToRole(permissions.permission);
-          token.permissions = mapGitHubPermissionToPermissions(permissions.permission);
-        } catch (error) {
-          console.error('Failed to get user permissions:', error);
-          token.role = 'reader';
-          token.permissions = { read: true, write: false, admin: false, delete: false };
-        }
-      }
-      return token;
-    },
-  },
-  pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error',
-    signOut: '/',
-  },
-  session: {
-    strategy: 'jwt',
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-};
+    };
+
+    return {
+      user: authUser,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+    };
+  } catch (error) {
+    console.error('Error getting session:', error);
+    return null;
+  }
+}
+
+/**
+ * Get current user from Supabase
+ */
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  const session = await getSession();
+  return session?.user || null;
+}
+
+/**
+ * Check if user is authenticated
+ */
+export async function isAuthenticated(): Promise<boolean> {
+  const session = await getSession();
+  return !!session;
+}
+
+/**
+ * Check if user has specific permission
+ */
+export async function hasPermission(permission: keyof UserPermissions): Promise<boolean> {
+  const session = await getSession();
+  return session?.user?.permissions?.[permission] || false;
+}
 
 /**
  * Map GitHub repository permission to application role
+ * This can be used later when we integrate GitHub permissions with Supabase profiles
  */
-function mapGitHubPermissionToRole(permission: string): string {
+export function mapGitHubPermissionToRole(permission: string): string {
   switch (permission) {
     case 'admin':
       return 'owner';
@@ -93,8 +106,9 @@ function mapGitHubPermissionToRole(permission: string): string {
 
 /**
  * Map GitHub repository permission to application permissions
+ * This can be used later when we integrate GitHub permissions with Supabase profiles
  */
-function mapGitHubPermissionToPermissions(permission: string) {
+export function mapGitHubPermissionToPermissions(permission: string): UserPermissions {
   switch (permission) {
     case 'admin':
       return { read: true, write: true, admin: true, delete: true };
@@ -107,44 +121,5 @@ function mapGitHubPermissionToPermissions(permission: string) {
     case 'pull':
     default:
       return { read: true, write: false, admin: false, delete: false };
-  }
-}
-
-/**
- * Type augmentation for NextAuth session
- */
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      username?: string;
-      role?: string;
-      permissions?: {
-        read: boolean;
-        write: boolean;
-        admin: boolean;
-        delete: boolean;
-      };
-    };
-  }
-
-  interface Profile {
-    login?: string;
-  }
-}
-
-declare module 'next-auth/jwt' {
-  interface JWT {
-    login?: string;
-    role?: string;
-    permissions?: {
-      read: boolean;
-      write: boolean;
-      admin: boolean;
-      delete: boolean;
-    };
   }
 }

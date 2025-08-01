@@ -6,7 +6,7 @@ import structlog
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from .routers import newsletter
+from .routers import newsletter, highlights
 
 # Configure structured logging
 logging.basicConfig(
@@ -39,18 +39,20 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown
     logger.info("Shutting down FastAPI app")
-    # Cleanup newsletter processor
+    # Cleanup processors
     newsletter.shutdown_processor()
+    highlights.shutdown_extractor()
 
 app = FastAPI(
-    title="Arrgh! Newsletter Processing API",
-    description="Process newsletters to extract entities and build knowledge graph",
+    title="Neemee Backend API",
+    description="Capture and process web highlights to build personal knowledge graphs",
     version=VERSION,
     lifespan=lifespan
 )
 
 # Include routers
 app.include_router(newsletter.router)
+app.include_router(highlights.router)
 
 @app.get("/")
 def read_root():
@@ -70,8 +72,8 @@ def read_root():
         })
     
     return {
-        "message": "Arrgh! Newsletter Processing API",
-        "description": "Extract entities from newsletters and build knowledge graphs",
+        "message": "Neemee Backend API",
+        "description": "Capture web highlights and build personal knowledge graphs",
         "endpoints": endpoints,
         "environment": ENVIRONMENT,
         "version": VERSION
