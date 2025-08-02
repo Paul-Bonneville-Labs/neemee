@@ -30,12 +30,12 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
 
   // Load data on mount
   useEffect(() => {
-    if (user && !isAnonymous) {
+    if (user) {
       loadDashboardData();
     } else {
       setIsLoading(false);
     }
-  }, [user, isAnonymous]);
+  }, [user]);
 
   const loadDashboardData = async () => {
     try {
@@ -92,7 +92,7 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
   };
 
   // Anonymous user state
-  if (isAnonymous) {
+  if (!user) {
     return (
       <div className={`bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
         <div className="text-center">
