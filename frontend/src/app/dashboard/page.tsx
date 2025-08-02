@@ -9,7 +9,7 @@ import { MarkdownViewer } from '@/components/MarkdownViewer';
 import { ToastContainer, useToasts } from '@/components/Toast';
 import { DeleteConfirmationModal } from '@/components/DeleteConfirmationModal';
 import { Highlight, HighlightListResponse, ApiResponse, HighlightUpdateRequest } from '@/types';
-import { LogOut, RefreshCw, Bookmark, FileText, Edit3, Database, BookOpen } from 'lucide-react';
+import { LogOut, RefreshCw, Bookmark, FileText, Edit3, BookOpen, User } from 'lucide-react';
 import { BookmarkletDashboard } from '@/components/BookmarkletDashboard';
 import { useContentExtraction } from '@/hooks';
 import { formatDetailedDate } from '@/lib/dateUtils';
@@ -18,7 +18,7 @@ import appConfig from '../../../config.json';
 function DashboardContent() {
   const { user, signOut: supabaseSignOut } = useAuth();
   const { toasts, dismissToast } = useToasts();
-  const { extractContent, isExtracting, extractionError } = useContentExtraction();
+  const { extractContent, isExtracting, extractionError, clearError } = useContentExtraction();
   const [mounted, setMounted] = useState(false);
   
   // State management
@@ -30,8 +30,16 @@ function DashboardContent() {
   const [sidebarWidth, setSidebarWidth] = useState(320); // Default 320px (w-80)
   const [isResizing, setIsResizing] = useState(false);
   const [activeTab, setActiveTab] = useState<'files' | 'bookmarklet'>('files');
-  const [isEditing, setIsEditing] = useState(false);
-  const [viewTab, setViewTab] = useState<'details' | 'content'>('details');
+  
+  // Form state for inline editing
+  const [formData, setFormData] = useState({
+    highlighted_text: '',
+    original_quote: '',
+    page_title: '',
+    page_url: '',
+    markdown_content: ''
+  });
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   // Delete confirmation modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -85,33 +93,69 @@ function DashboardContent() {
 
 
   const handleHighlightSelect = useCallback((highlightId: string) => {
+    console.log('DASHBOARD DEBUG - handleHighlightSelect called for:', highlightId);
+    
     // Clear current highlight first to show loading state
     setCurrentHighlight(null);
     setSelectedHighlight(highlightId);
     
+    // Clear any previous extraction errors when switching highlights
+    clearError();
+    
     // Inline the loadHighlight logic to avoid dependency issues
     const loadHighlight = async () => {
       try {
-        const response = await fetch(`/api/highlights/${encodeURIComponent(highlightId)}`, {
+        console.log('DASHBOARD DEBUG - Fetching highlight from API...');
+        const url = `/api/highlights/${encodeURIComponent(highlightId)}`;
+        console.log('DASHBOARD DEBUG - Request URL:', url);
+        
+        const response = await fetch(url, {
           credentials: 'include',
         });
         
+        console.log('DASHBOARD DEBUG - Response status:', response.status, response.statusText);
+        console.log('DASHBOARD DEBUG - Response ok:', response.ok);
+        
+        if (!response.ok) {
+          console.error('DASHBOARD DEBUG - Response not ok:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url
+          });
+        }
+        
         const result: ApiResponse<Highlight> = await response.json();
+        console.log('DASHBOARD DEBUG - API response:', { success: result.success, hasData: !!result.data, error: result.error });
         
         if (result.success && result.data) {
+          console.log('DASHBOARD DEBUG - Setting current highlight with content length:', result.data.markdown_content?.length || 0);
           setCurrentHighlight(result.data);
+          
+          // Initialize form data
+          setFormData({
+            highlighted_text: result.data.highlighted_text || '',
+            original_quote: result.data.original_quote || '',
+            page_title: result.data.page_title || '',
+            page_url: result.data.page_url || '',
+            markdown_content: result.data.markdown_content || ''
+          });
+          setHasUnsavedChanges(false);
         } else {
           console.error('API error:', result.error);
           setCurrentHighlight(null);
         }
       } catch (err) {
-        console.error('Error loading highlight:', err);
+        console.error('DASHBOARD DEBUG - Fetch error details:', {
+          message: err instanceof Error ? err.message : 'Unknown error',
+          name: err instanceof Error ? err.name : 'Unknown',
+          stack: err instanceof Error ? err.stack : 'No stack'
+        });
         setCurrentHighlight(null);
       }
     };
     
     loadHighlight();
-  }, []);
+  }, [clearError]);
 
   // Load highlights on mount - but only once
   useEffect(() => {
@@ -199,12 +243,8 @@ function DashboardContent() {
   const handleCancelView = () => {
     setCurrentHighlight(null);
     setSelectedHighlight(null);
-    setIsEditing(false);
   };
 
-  const handleEditHighlight = () => {
-    setIsEditing(true);
-  };
 
   const handleSaveHighlight = async (updates: HighlightUpdateRequest) => {
     if (!currentHighlight) return;
@@ -229,9 +269,6 @@ function DashboardContent() {
         setHighlights(prev => 
           prev.map(h => h.id === result.data!.id ? result.data! : h)
         );
-        
-        // Exit edit mode
-        setIsEditing(false);
       } else {
         throw new Error(result.error || 'Failed to update highlight');
       }
@@ -241,20 +278,104 @@ function DashboardContent() {
     }
   };
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
+  // Handle form field changes
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Check if form has changes compared to current highlight
+    if (currentHighlight) {
+      const originalData = {
+        highlighted_text: currentHighlight.highlighted_text || '',
+        original_quote: currentHighlight.original_quote || '',
+        page_title: currentHighlight.page_title || '',
+        page_url: currentHighlight.page_url || '',
+        markdown_content: currentHighlight.markdown_content || ''
+      };
+      
+      const newData = { ...formData, [field]: value };
+      const hasChanges = Object.keys(newData).some(key => 
+        newData[key as keyof typeof newData] !== originalData[key as keyof typeof originalData]
+      );
+      
+      setHasUnsavedChanges(hasChanges);
+    }
+  };
+
+  const handleSaveForm = async () => {
+    if (!currentHighlight || !hasUnsavedChanges) return;
+    
+    // Basic validation
+    if (!formData.highlighted_text.trim()) {
+      alert('Highlighted text is required');
+      return;
+    }
+    
+    if (!formData.page_url.trim()) {
+      alert('Page URL is required');
+      return;
+    }
+    
+    // Validate URL format
+    try {
+      new URL(formData.page_url);
+    } catch {
+      alert('Please enter a valid URL');
+      return;
+    }
+    
+    try {
+      await handleSaveHighlight({
+        highlighted_text: formData.highlighted_text.trim(),
+        page_title: formData.page_title.trim(),
+        page_url: formData.page_url.trim()
+      });
+      
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      console.error('Error saving form:', error);
+      alert('Failed to save changes. Please try again.');
+    }
   };
 
   const handleExtractContent = async () => {
     if (!currentHighlight) return;
     
+    console.log('DASHBOARD DEBUG - Starting extraction for highlight:', currentHighlight.id);
     const success = await extractContent(currentHighlight.id);
-    if (success) {
-      // Refresh the current highlight to get the updated content
-      setHasLoaded(false);
-      handleHighlightSelect(currentHighlight.id);
+    console.log('DASHBOARD DEBUG - Extraction completed, success:', success);
+    
+    // Always refresh the current highlight to get the updated content
+    // (either successful extraction or error message saved as content)
+    // Note: Don't call handleHighlightSelect because it clears the error
+    console.log('DASHBOARD DEBUG - Refreshing highlight data...');
+    try {
+      const response = await fetch(`/api/highlights/${encodeURIComponent(currentHighlight.id)}`, {
+        credentials: 'include',
+      });
+      
+      const result: ApiResponse<Highlight> = await response.json();
+      console.log('DASHBOARD DEBUG - API response for refresh:', { success: result.success, hasData: !!result.data });
+      
+      if (result.success && result.data) {
+        console.log('DASHBOARD DEBUG - Setting refreshed highlight with content length:', result.data.markdown_content?.length || 0);
+        setCurrentHighlight(result.data);
+        
+        // Update form data with refreshed content
+        setFormData({
+          highlighted_text: result.data.highlighted_text || '',
+          original_quote: result.data.original_quote || '',
+          page_title: result.data.page_title || '',
+          page_url: result.data.page_url || '',
+          markdown_content: result.data.markdown_content || ''
+        });
+        setHasUnsavedChanges(false);
+      }
+    } catch (err) {
+      console.error('Error refreshing highlight:', err);
     }
   };
+
+
 
   // Sidebar resize handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -336,17 +457,47 @@ function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="px-6 py-3">
+          <div className="flex items-center justify-between">
+            {/* Left side - App name and navigation */}
+            <div className="flex items-center gap-8">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 {appConfig.app.displayName}
               </h1>
               
-              
+              {/* Navigation Links */}
+              <nav className="flex items-center gap-6">
+                <button
+                  onClick={() => setActiveTab('files')}
+                  className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+                    activeTab === 'files'
+                      ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <FileText className="h-4 w-4" />
+                  Highlights
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('bookmarklet')}
+                  className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+                    activeTab === 'bookmarklet'
+                      ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Bookmark className="h-4 w-4" />
+                  Bookmarklet
+                </button>
+              </nav>
+            </div>
+
+            {/* Right side - Refresh button, user info, and sign out */}
+            <div className="flex items-center gap-4">
               {/* Refresh Button - Only show on Files tab */}
               {activeTab === 'files' && (
                 <button
@@ -358,9 +509,24 @@ function DashboardContent() {
                   <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                 </button>
               )}
-            </div>
-            
-            <div className="flex items-center gap-4">
+
+              {/* User Avatar */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="text-sm">
+                    <p className="font-medium text-gray-900 dark:text-white truncate">
+                      {user?.name || user?.username || 'Test User'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                      {user?.role || 'developer'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <button
                 onClick={async () => {
                   await supabaseSignOut();
@@ -374,39 +540,12 @@ function DashboardContent() {
               </button>
             </div>
           </div>
-          
-          {/* Tab Navigation */}
-          <div className="flex space-x-1">
-            <button
-              onClick={() => setActiveTab('files')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                activeTab === 'files'
-                  ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              Highlights
-            </button>
-            
-            <button
-              onClick={() => setActiveTab('bookmarklet')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                activeTab === 'bookmarklet'
-                  ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              <Bookmark className="h-4 w-4" />
-              Bookmarklet
-            </button>
-          </div>
         </div>
       </header>
 
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden h-[calc(100vh-200px)]">
+      <div className="flex-1 flex min-h-0">
         {activeTab === 'files' ? (
           <>
             {/* Sidebar - Hidden on mobile when editing */}
@@ -424,10 +563,6 @@ function DashboardContent() {
                 onRefresh={handleRefreshHighlights}
                 isLoading={isLoading}
                 sidebarWidth={sidebarWidth}
-                userInfo={{
-                  name: user?.name || user?.username || 'Test User',
-                  role: user?.role || 'developer'
-                }}
               />
               
               {/* Resize Handle */}
@@ -441,7 +576,7 @@ function DashboardContent() {
             </div>
 
             {/* Main Highlight View Area */}
-            <div className="flex-1 flex flex-col relative min-h-0 h-[calc(100vh-200px)]">
+            <div className="flex-1 flex flex-col relative min-h-0">
               {selectedHighlight && !currentHighlight ? (
                 /* Loading state when highlight is selected but not yet loaded */
                 <div className="flex-1 flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-8">
@@ -451,19 +586,11 @@ function DashboardContent() {
                   </div>
                 </div>
               ) : currentHighlight ? (
-                isEditing ? (
-                  <HighlightEditor
-                    highlight={currentHighlight}
-                    onSave={handleSaveHighlight}
-                    onCancel={handleCancelEdit}
-                    isLoading={isLoading}
-                  />
-                ) : (
                   <div className="flex flex-col h-full">
-                    {/* Header with tabs and actions */}
+                    {/* Header with action buttons */}
                     <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                       <div className="px-6 py-4">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between">
                           {/* Mobile Back Button */}
                           <div className="lg:hidden">
                             <button
@@ -477,162 +604,165 @@ function DashboardContent() {
                             </button>
                           </div>
                           
-                          {/* Desktop title */}
-                          <div className="hidden lg:block">
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                              View Highlight
-                            </h2>
-                          </div>
+                          {/* Desktop spacer */}
+                          <div className="hidden lg:block"></div>
                           
-                          {/* Edit button */}
-                          <button
-                            onClick={handleEditHighlight}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-                          >
-                            <Edit3 className="h-4 w-4" />
-                            Edit
-                          </button>
-                        </div>
-
-                        {/* Tab Navigation */}
-                        <div className="flex space-x-1">
-                          <button
-                            onClick={() => setViewTab('details')}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                              viewTab === 'details'
-                                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
-                            }`}
-                          >
-                            <FileText className="h-4 w-4" />
-                            Details
-                          </button>
-                          <button
-                            onClick={() => setViewTab('content')}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                              viewTab === 'content'
-                                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
-                            }`}
-                          >
-                            <BookOpen className="h-4 w-4" />
-                            Page Content
-                          </button>
+                          {/* Action Button Group */}
+                          <div className="flex items-center gap-3">
+                            <a 
+                              href={currentHighlight.page_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
+                            >
+                              Visit Original
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                            <button
+                              onClick={() => handleDeleteHighlight(currentHighlight.id)}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+                            >
+                              Delete
+                            </button>
+                            <button
+                              onClick={handleSaveForm}
+                              disabled={!hasUnsavedChanges}
+                              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                              {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
                     
                     <div className="flex-1 overflow-y-auto">
-                      {viewTab === 'details' ? (
-                        <div className="p-6 bg-white dark:bg-gray-900">
-                          {/* Highlight Details */}
-                          <div className="max-w-4xl mx-auto">
-                            <div className="space-y-6">
-                              {/* Page Info */}
-                              <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                  {currentHighlight.page_title || 'Untitled Page'}
-                                </h1>
-                                <a 
-                                  href={currentHighlight.page_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
-                                >
-                                  {currentHighlight.page_url}
-                                </a>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                  Highlighted on {formatDetailedDate(currentHighlight.created_at)}
-                                </p>
-                              </div>
-                              
-                              {/* Highlighted Text */}
+                      <div className="p-6 bg-white dark:bg-gray-900">
+                        <div className="w-full">
+                          <div className="space-y-6">
+                            {/* Page Information Section */}
+                            <div className="space-y-4">
                               <div>
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Highlighted Text</h2>
-                                <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 rounded-r-lg">
-                                  <p className="text-gray-800 dark:text-gray-200 leading-relaxed text-lg">
-                                    {currentHighlight.highlighted_text}
-                                  </p>
-                                </div>
+                                <label htmlFor="page-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  Page Title
+                                </label>
+                                <input
+                                  id="page-title"
+                                  type="text"
+                                  value={formData.page_title}
+                                  onChange={(e) => handleFormChange('page_title', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                  placeholder="Enter page title..."
+                                />
                               </div>
                               
-                              {/* Actions */}
-                              <div className="flex items-center gap-4 pt-4">
-                                <a 
-                                  href={currentHighlight.page_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                                >
-                                  Visit Original Page
-                                  <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
-                                </a>
+                              <div>
+                                <label htmlFor="page-url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  Page URL
+                                </label>
+                                <input
+                                  id="page-url"
+                                  type="url"
+                                  value={formData.page_url}
+                                  onChange={(e) => handleFormChange('page_url', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                  placeholder="https://example.com"
+                                />
+                              </div>
+                              
+                              <div>
+                                <label htmlFor="created-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  Created On
+                                </label>
+                                <input
+                                  id="created-date"
+                                  type="text"
+                                  value={formatDetailedDate(currentHighlight.created_at)}
+                                  disabled
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                />
+                              </div>
+                              
+                              {/* Original Quote Section - Read Only */}
+                              <div>
+                                <label htmlFor="original-quote" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  Original Quote
+                                </label>
+                                <textarea
+                                  id="original-quote"
+                                  value={formData.original_quote || '(No original quote available for this highlight)'}
+                                  disabled
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed resize-none"
+                                />
+                              </div>
+                            </div>
+                            
+                            {/* Highlighted Text Section */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Highlighted Text
+                              </label>
+                              <div className="bg-yellow-25 rounded-md border border-gray-300" style={{backgroundColor: '#fefdf8'}}>
+                                <MarkdownViewer
+                                  key={`highlighted-${currentHighlight.id}`}
+                                  content={formData.highlighted_text}
+                                  editable={true}
+                                  onChange={(markdown) => handleFormChange('highlighted_text', markdown)}
+                                  className="border-0 bg-transparent"
+                                />
+                              </div>
+                            </div>
+
+
+                            {/* Full Page Content Section */}
+                            <div>
+                              <div className="flex items-center justify-between mb-4">
+                                <label className="text-xl font-semibold text-gray-900 dark:text-white">Full Content</label>
                                 <button
-                                  onClick={() => handleDeleteHighlight(currentHighlight.id)}
-                                  className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                  onClick={handleExtractContent}
+                                  disabled={isExtracting}
+                                  className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
-                                  Delete Highlight
+                                  {isExtracting ? (
+                                    <div className="flex items-center justify-center">
+                                      <svg className="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                      </svg>
+                                      Extracting...
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <BookOpen className="h-4 w-4 mr-2" />
+                                      Extract Text
+                                    </>
+                                  )}
                                 </button>
                               </div>
+                              
+                              {extractionError && (
+                                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                                  <p className="text-sm text-red-600 dark:text-red-400">{extractionError}</p>
+                                </div>
+                              )}
+                              
+                              <MarkdownViewer
+                                key={`content-${currentHighlight.id}`}
+                                content={formData.markdown_content}
+                                isLoading={isExtracting}
+                                editable={true}
+                                onChange={(markdown) => handleFormChange('markdown_content', markdown)}
+                              />
                             </div>
                           </div>
                         </div>
-                      ) : (
-                        <div className="p-6 bg-gray-50 dark:bg-gray-800">
-                          {/* Page Content */}
-                          <div className="max-w-4xl mx-auto">
-                            {/* Content Extraction Status */}
-                            {(!currentHighlight.markdown_content || currentHighlight.markdown_content.trim() === '') && currentHighlight.metadata?.content_status !== 'pending' && currentHighlight.metadata?.content_status !== 'extracted' && (
-                              <div className="mb-6 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                                <div className="text-center">
-                                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                    Page Content Not Available
-                                  </h3>
-                                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                    Extract the full page content to view it alongside your highlight.
-                                  </p>
-                                  {extractionError && (
-                                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                                      <p className="text-sm text-red-600 dark:text-red-400">{extractionError}</p>
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={handleExtractContent}
-                                    disabled={isExtracting}
-                                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                  >
-                                    {isExtracting ? (
-                                      <>
-                                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Extracting Content...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <BookOpen className="h-4 w-4 mr-2" />
-                                        Extract Page Content
-                                      </>
-                                    )}
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                            
-                            <MarkdownViewer
-                              content={currentHighlight.markdown_content || ''}
-                              metadata={currentHighlight.metadata}
-                              isLoading={isExtracting || ((!currentHighlight.markdown_content || currentHighlight.markdown_content.trim() === '') && currentHighlight.metadata?.content_status === 'pending')}
-                            />
-                          </div>  
-                        </div>
-                      )}
+                      </div>
                     </div>
                   </div>
-                )
               ) : (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-8">
                   <div className="text-center max-w-md">

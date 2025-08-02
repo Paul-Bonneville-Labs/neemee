@@ -2,7 +2,15 @@
 import time
 import structlog
 from typing import Optional, Dict, Any
-from firecrawl import FirecrawlApp
+try:
+    from firecrawl import FirecrawlApp
+except ImportError:
+    # Handle the case where firecrawl package structure is different
+    try:
+        from firecrawl.firecrawl import FirecrawlApp
+    except ImportError:
+        # Fallback import or placeholder
+        FirecrawlApp = None
 from ..models.highlight import (
     HighlightProcessingRequest, 
     HighlightProcessingResponse,
@@ -25,6 +33,10 @@ class ContentExtractor:
     def initialize(self) -> bool:
         """Initialize the Firecrawl client."""
         try:
+            if FirecrawlApp is None:
+                logger.error("FirecrawlApp not available - package import failed")
+                return False
+                
             if not self.config.FIRECRAWL_API_KEY:
                 logger.error("FIRECRAWL_API_KEY not configured")
                 return False
@@ -115,12 +127,6 @@ class ContentExtractor:
                              max_length=self.extraction_config.max_content_length)
                 markdown_content = markdown_content[:self.extraction_config.max_content_length]
             
-            # Create content preview (first 500 characters)
-            content_preview = self._create_preview(markdown_content)
-            
-            # Build extraction metadata
-            extraction_metadata = self._build_metadata(scrape_result, markdown_content)
-            
             processing_time_ms = int((time.time() - start_time) * 1000)
             
             logger.info("Content extraction completed successfully",
@@ -132,69 +138,80 @@ class ContentExtractor:
                 status="success",
                 highlight_id=request.highlight_id,
                 markdown_content=markdown_content,
-                content_preview=content_preview,
-                extraction_metadata=extraction_metadata,
                 processing_time_ms=processing_time_ms
             )
             
         except Exception as e:
             processing_time_ms = int((time.time() - start_time) * 1000)
-            logger.error("Content extraction failed", 
+            
+            # Enhanced exception logging for debugging
+            logger.error("Content extraction failed - DETAILED DEBUG", 
                         error=str(e),
+                        error_type=type(e).__name__,
+                        error_args=str(e.args) if hasattr(e, 'args') else 'no args',
                         highlight_id=request.highlight_id,
                         processing_time_ms=processing_time_ms)
+            
+            # Print to console for immediate debugging
+            print(f"FIRECRAWL EXCEPTION DEBUG:")
+            print(f"  Type: {type(e).__name__}")
+            print(f"  Message: {str(e)}")
+            print(f"  Args: {e.args if hasattr(e, 'args') else 'no args'}")
+            print(f"  Highlight ID: {request.highlight_id}")
+            
+            # Enhanced debugging for HTTPError
+            if hasattr(e, 'response'):
+                print(f"  HTTP Status: {e.response.status_code if hasattr(e.response, 'status_code') else 'unknown'}")
+                print(f"  HTTP Response: {e.response.text if hasattr(e.response, 'text') else 'no response text'}")
+            if hasattr(e, 'request'):
+                print(f"  HTTP URL: {e.request.url if hasattr(e.request, 'url') else 'unknown'}")
+            
+            # Check if this is a requests.HTTPError
+            if 'requests' in str(type(e)) and hasattr(e, 'response'):
+                try:
+                    print(f"  Response JSON: {e.response.json()}")
+                except:
+                    print(f"  Response Text: {e.response.text}")
+            
+            # Additional debugging for any object attributes
+            print(f"  Available attributes: {[attr for attr in dir(e) if not attr.startswith('_')][:10]}")
+            
+            # Extract detailed error information from HTTPError
+            error_details = []
+            firecrawl_status = None
+            firecrawl_error = None
+            
+            if hasattr(e, 'response') and hasattr(e.response, 'status_code'):
+                firecrawl_status = e.response.status_code
+                
+                # Try to get the actual error message from Firecrawl
+                if hasattr(e.response, 'text'):
+                    try:
+                        import json
+                        response_data = json.loads(e.response.text)
+                        if 'error' in response_data:
+                            firecrawl_error = response_data['error']
+                        else:
+                            firecrawl_error = e.response.text
+                    except:
+                        firecrawl_error = e.response.text
+                
+                # Format as "HTTP 403 - Error message"
+                if firecrawl_status and firecrawl_error:
+                    error_details.append(f"HTTP {firecrawl_status} - {firecrawl_error}")
+                else:
+                    error_details.append(f"HTTP {firecrawl_status}" if firecrawl_status else f"{type(e).__name__}: {str(e)}")
+            else:
+                error_details.append(f"{type(e).__name__}: {str(e)}")
             
             return HighlightProcessingResponse(
                 status="error",
                 highlight_id=request.highlight_id,
-                errors=[f"Content extraction failed: {str(e)}"],
+                errors=error_details,
                 processing_time_ms=processing_time_ms
             )
     
-    def _create_preview(self, markdown_content: str) -> str:
-        """Create a preview of the content (first 500 characters)."""
-        if len(markdown_content) <= 500:
-            return markdown_content
-        
-        # Try to break at a word boundary
-        preview = markdown_content[:500]
-        last_space = preview.rfind(' ')
-        if last_space > 400:  # Only break at word if it's not too short
-            preview = preview[:last_space]
-        
-        return preview + "..."
     
-    def _build_metadata(self, scrape_result, markdown_content: str) -> Dict[str, Any]:
-        """Build extraction metadata from scrape result and content."""
-        metadata = {
-            "word_count": len(markdown_content.split()),
-            "character_count": len(markdown_content),
-            "extraction_source": "firecrawl"
-        }
-        
-        # Add reading time estimate (assuming 200 words per minute)
-        words = metadata["word_count"]
-        reading_time_minutes = max(1, round(words / 200))
-        metadata["reading_time_minutes"] = reading_time_minutes
-        
-        # Add any additional metadata from Firecrawl response
-        firecrawl_metadata = None
-        if isinstance(scrape_result, dict) and 'metadata' in scrape_result:
-            firecrawl_metadata = scrape_result['metadata']
-        elif hasattr(scrape_result, 'metadata'):
-            firecrawl_metadata = scrape_result.metadata
-        elif hasattr(scrape_result, 'data') and hasattr(scrape_result.data, 'metadata'):
-            firecrawl_metadata = scrape_result.data.metadata
-        elif hasattr(scrape_result, 'data') and isinstance(scrape_result.data, dict) and 'metadata' in scrape_result.data:
-            firecrawl_metadata = scrape_result.data['metadata']
-        
-        if firecrawl_metadata and isinstance(firecrawl_metadata, dict):
-            # Include relevant metadata from Firecrawl
-            for key in ['title', 'description', 'language', 'sourceURL']:
-                if key in firecrawl_metadata:
-                    metadata[f"page_{key.lower()}"] = firecrawl_metadata[key]
-        
-        return metadata
     
     def shutdown(self):
         """Shutdown the content extractor and cleanup resources."""

@@ -155,19 +155,29 @@ echo "================================================="
 
 # Check if service is deployed
 if gcloud run services describe neemee-backend --region=us-central1 --project=paulbonneville-com > /dev/null 2>&1; then
-    SERVICE_URL="https://neemee-backend-860937201650.us-central1.run.app"
+    SERVICE_URL="https://api.paulbonneville.com"
     
     # Test health endpoint
     run_test_with_output "Production health check" "curl -sf '$SERVICE_URL/health'"
     
-    # Test OpenAI connectivity endpoint
-    run_test_with_output "Production OpenAI connectivity" 'curl -sf "'$SERVICE_URL'/test-openai" | python3 -c "
+    # Test OpenAI connectivity endpoint (skip in production - endpoint is dev-only)
+    if [[ "$ENVIRONMENT" == "production" ]]; then
+        run_test_with_output "Production service endpoints" 'curl -sf "'$SERVICE_URL'/" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+assert data[\"environment\"] == \"production\"
+assert \"endpoints\" in data
+print(\"✓ Production service responding correctly\")
+"'
+    else
+        run_test_with_output "Development OpenAI connectivity" 'curl -sf "'$SERVICE_URL'/test-openai" | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
 assert data[\"summary\"][\"all_tests_passed\"] == True
 assert data[\"summary\"][\"critical_failures\"] == 0
-print(\"✓ All production OpenAI tests passed\")
+print(\"✓ All development OpenAI tests passed\")
 "'
+    fi
 else
     echo "  ${YELLOW}SKIP${NC} - Service not deployed yet"
 fi

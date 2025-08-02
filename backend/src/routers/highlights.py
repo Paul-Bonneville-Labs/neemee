@@ -1,8 +1,11 @@
 """Highlight processing API endpoints."""
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Optional
 import structlog
-from ..models.highlight import HighlightProcessingRequest, HighlightProcessingResponse
+from ..models.highlight import (
+    HighlightProcessingRequest, 
+    HighlightProcessingResponse
+)
 from ..processors.content_extractor import ContentExtractor
 from ..config_wrapper import Config
 from ..security import get_api_key
@@ -28,6 +31,7 @@ def ensure_initialized():
     if not initialized:
         config = Config()
         extractor = ContentExtractor(config)
+        
         if extractor.initialize():
             initialized = True
             logger.info("Content extractor initialized")
@@ -69,6 +73,7 @@ async def extract_content(request: HighlightProcessingRequest):
         })
 
 
+
 @router.get("/health")
 async def health_check():
     """Check health of highlight processing service."""
@@ -96,6 +101,7 @@ def shutdown_extractor():
     """Shutdown extractor connections."""
     global initialized
     if initialized:
-        extractor.shutdown()
+        if extractor:
+            extractor.shutdown()
         initialized = False
         logger.info("Content extractor shutdown")

@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
         id,
         user_id,
         highlighted_text,
+        original_quote,
         url,
         title,
         metadata,
@@ -84,6 +85,7 @@ export async function GET(request: NextRequest) {
       id: highlight.id,
       user_id: highlight.user_id,
       highlighted_text: highlight.highlighted_text,
+      original_quote: highlight.original_quote,
       page_url: highlight.url, // Map database 'url' to interface 'page_url'
       page_title: highlight.title, // Map database 'title' to interface 'page_title'
       metadata: highlight.metadata, // Include full metadata with opengraph_data

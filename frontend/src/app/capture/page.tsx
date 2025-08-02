@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Check, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 
 export default function CapturePage() {
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'timeout'>('loading');
   const [message, setMessage] = useState('Processing highlight...');
   const [highlightData, setHighlightData] = useState<{
     text: string;
@@ -12,6 +12,7 @@ export default function CapturePage() {
     title: string;
   } | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [processingStage, setProcessingStage] = useState<'saving' | 'complete'>('saving');
 
   useEffect(() => {
     const captureHighlight = async () => {
@@ -43,34 +44,64 @@ export default function CapturePage() {
           title: title || 'Untitled Page'
         });
 
-        // Save the highlight via API
-        const response = await fetch('/api/highlights/capture', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': apiKey,
-          },
-          body: JSON.stringify({
-            highlighted_text: text,
-            page_url: url,
-            page_title: title,
-            api_key: apiKey,
-          }),
-        });
+        // Update progress
+        setProcessingStage('saving');
+        setMessage('Saving highlight...');
 
-        const result = await response.json();
+        // Create timeout controller for the entire operation
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+          setStatus('timeout');
+          setMessage('Processing took longer than expected. Check your dashboard for results.');
+        }, 30000); // 30 second timeout
 
-        if (result.success) {
-          setStatus('success');
-          setMessage('Highlight saved successfully!');
-          // Store the highlight ID for direct navigation
-          if (result.highlightId) {
-            setHighlightId(result.highlightId);
+        try {
+          // Save the highlight via API with timeout
+          const response = await fetch('/api/highlights/capture', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-Key': apiKey,
+            },
+            body: JSON.stringify({
+              highlighted_text: text,
+              page_url: url,
+              page_title: title,
+              api_key: apiKey,
+            }),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          const result = await response.json();
+
+          if (result.success) {
+            setStatus('success');
+            setProcessingStage('complete');
+            setMessage(result.message || 'Highlight saved successfully!');
+            
+            // Store the highlight ID for direct navigation
+            if (result.highlightId) {
+              setHighlightId(result.highlightId);
+            }
+          } else {
+            setStatus('error');
+            setMessage(result.message || 'Failed to save highlight');
           }
-        } else {
-          setStatus('error');
-          setMessage(result.message || 'Failed to save highlight');
+        } catch (error) {
+          clearTimeout(timeoutId);
+          
+          if (error instanceof Error && error.name === 'AbortError') {
+            // Timeout occurred
+            setStatus('timeout');
+            setMessage('Processing took longer than expected. Check your dashboard for results.');
+          } else {
+            throw error; // Re-throw other errors
+          }
         }
+
       } catch (error) {
         console.error('Error saving highlight:', error);
         setStatus('error');
@@ -87,6 +118,8 @@ export default function CapturePage() {
         return <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />;
       case 'success':
         return <Check className="h-8 w-8 text-green-600" />;
+      case 'timeout':
+        return <AlertCircle className="h-8 w-8 text-yellow-600" />;
       case 'error':
         return <AlertCircle className="h-8 w-8 text-red-600" />;
     }
@@ -98,6 +131,8 @@ export default function CapturePage() {
         return 'text-blue-600';
       case 'success':
         return 'text-green-600';
+      case 'timeout':
+        return 'text-yellow-600';
       case 'error':
         return 'text-red-600';
     }
@@ -161,22 +196,13 @@ export default function CapturePage() {
                   </a>
                 </div>
                 
-                {/* Content Processing Info */}
-                <div>
-                  <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    Page Content
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Full page content will be processed and available in your dashboard shortly
-                  </p>
-                </div>
               </div>
             </div>
           </div>
         )}
 
         <div className="mt-6 flex gap-3">
-          {status === 'success' && (
+          {(status === 'success' || status === 'timeout') && (
             <button
               onClick={() => window.close()}
               className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -197,7 +223,11 @@ export default function CapturePage() {
             }}
             className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
-            {highlightId ? 'View Highlight' : 'View Dashboard'}
+            {status === 'timeout' 
+              ? 'Check Dashboard' 
+              : highlightId 
+              ? 'View Highlight' 
+              : 'View Dashboard'}
           </button>
         </div>
       </div>

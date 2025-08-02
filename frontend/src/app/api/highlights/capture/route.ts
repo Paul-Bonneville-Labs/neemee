@@ -88,23 +88,22 @@ export async function POST(request: NextRequest) {
       ? page_title.substring(0, 500) 
       : null;
 
-    // Save highlight to database
+    // Format highlighted text as markdown quote with URL
+    const formattedContent = `> ${highlighted_text.trim()}\n\n${page_url.trim()}`;
+
+    // Save highlight to database with queued status
     const supabase = await createClient();
     const { data: highlight, error } = await supabase
       .from('highlights')
       .insert({
         user_id: userId,
-        highlighted_text: highlighted_text.trim(),
+        highlighted_text: formattedContent,
+        original_quote: highlighted_text.trim(), // Store the original unmodified text
         title: sanitizedTitle || 'Untitled Page',
-        content: highlighted_text.trim(), // Required field
-        markdown_content: '', // Empty string - will be set by Firecrawl extraction later
+        content: formattedContent, // Required field
+        markdown_content: '', // Empty string - will be set by async extraction
         url: page_url.trim(),
-        domain: new URL(page_url).hostname,
-        metadata: {
-          captured_via: 'bookmarklet',
-          original_page_title: sanitizedTitle,
-          content_status: 'not_extracted' // Indicate content not yet extracted
-        }
+        domain: new URL(page_url).hostname
       })
       .select('id')
       .single();
@@ -121,9 +120,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    console.log('Highlight saved successfully:', highlight.id);
+
     const response: HighlightCaptureResponse = {
       success: true,
-      message: 'Highlight captured successfully',
+      message: 'Highlight saved successfully!',
       highlightId: highlight.id,
     };
 

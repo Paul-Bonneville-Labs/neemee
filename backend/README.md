@@ -1,36 +1,43 @@
-# Backend Application
+# Neemee Backend API
 
-**Technology Stack**: FastAPI + Python  
-**Purpose**: API server, bookmarklet endpoints, AI processing pipeline  
-**Deployment**: Google Cloud Run
+**Technology Stack**: FastAPI + Python 3.13  
+**Purpose**: Personal knowledge management API with AI-powered entity extraction  
+**Deployment**: Google Cloud Run with custom domain  
+**Production URL**: https://api.paulbonneville.com
 
-## Setup Instructions
+## Overview
 
-This directory contains the complete Neemee backend application for personal knowledge management.
+Production-ready FastAPI application that processes web content and newsletters, extracting entities and relationships to build personal knowledge graphs. Features intelligent content processing with OpenAI integration and Neo4j graph database storage.
 
-### Planned Components
-- FastAPI framework with structured routing
-- OpenAI integration for entity extraction
-- Neo4j knowledge graph implementation
-- HTML processing and Markdown conversion
-- Bookmarklet capture endpoints
-- User authentication and API key management
-- Asynchronous processing with Redis task queues
+### Core Features ✅ Implemented
+- **FastAPI Framework**: Structured routing with comprehensive API documentation
+- **OpenAI Integration**: GPT-4 Turbo for intelligent entity extraction
+- **Neo4j Knowledge Graph**: Stores entities and relationships with query capabilities
+- **Content Processing**: HTML to Markdown conversion with intelligent cleaning
+- **Firecrawl Integration**: Advanced web content extraction and processing
+- **Newsletter Processing**: Email content analysis and entity extraction
+- **Production Deployment**: Containerized deployment on Google Cloud Run
+- **Custom Domain**: Public API available at `api.paulbonneville.com`
+- **Environment Management**: Separate local/production configurations with Google Cloud Secrets
 
-### Integration Notes
-- Adapt newsletter processing for web highlight input
-- Add bookmarklet capture endpoints to existing router structure
-- Add user/API key management using existing patterns
-- Maintain existing OpenAI entity extraction pipeline
-- Add Supabase configuration to existing settings
+### Entity Types Supported
+- **Person**: Individual people mentioned or referenced
+- **Organization**: Companies, institutions, government bodies  
+- **Topic**: Subjects, themes, concepts, technologies
+- **URL**: Website domains and specific pages
+- **Event**: Meetings, conferences, product launches, news events
+- **Product**: Software, hardware, services, offerings
 
-### Entity Types (Already Implemented)
-- Person: Individual people mentioned or referenced
-- Organization: Companies, institutions, government bodies
-- Topic: Subjects, themes, concepts, technologies
-- URL: Website domains and specific pages
-- Event: Meetings, conferences, product launches, news events
-- Product: Software, hardware, services, offerings
+### API Endpoints
+
+**Production API**: https://api.paulbonneville.com
+
+- `GET /` - API information and available endpoints
+- `GET /health` - Service health check
+- `POST /newsletter/process` - Process newsletter content for entity extraction
+- `GET /newsletter/stats` - Knowledge graph statistics
+- `GET /newsletter/health` - Newsletter processing health check
+- `GET /docs` - Interactive API documentation (Swagger UI)
 
 ### Development Commands
 
@@ -58,6 +65,12 @@ export ENVIRONMENT=local
 python -m pytest tests/ -v
 ```
 
+**Production Deployment:**
+```bash
+./scripts/deploy-production.sh    # Deploy to Google Cloud Run
+./scripts/verify-secrets.sh       # Verify secrets configuration
+```
+
 **Neo4j Database:**
 ```bash
 ./scripts/start-neo4j.sh    # Start database
@@ -65,5 +78,23 @@ python -m pytest tests/ -v
 # Access: http://localhost:7474
 ```
 
+## Production Environment
+
+- **Service URL**: https://api.paulbonneville.com
+- **Platform**: Google Cloud Run (us-central1)
+- **Authentication**: Public API (no authentication required)
+- **Monitoring**: Google Cloud Logging and monitoring enabled
+- **Secrets**: Managed via Google Cloud Secret Manager
+- **Domain**: Custom domain mapping with SSL certificate
+
+## Integration
+
+### n8n Workflow Integration
+The API integrates with n8n for automated email processing:
+- **n8n Instance**: n8n.paulbonneville.com
+- **Workflow**: "Neemee Highlight Processor"
+- **Endpoint**: `POST /newsletter/process`
+- **Purpose**: Automated newsletter and email content processing
+
 ---
-*This backend provides the AI processing pipeline foundation for Neemee's highlight management system.*
+*Production-ready personal knowledge management API with AI-powered content processing and entity extraction.*

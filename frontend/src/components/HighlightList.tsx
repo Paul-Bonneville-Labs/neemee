@@ -6,7 +6,6 @@ import {
   EyeIcon, 
   TrashIcon, 
   SearchIcon, 
-  UserIcon, 
   GlobeIcon,
   CalendarIcon,
   FilterIcon,
@@ -26,9 +25,8 @@ export function HighlightList({
   onViewBookmarklet, 
   onRefresh,
   isLoading = false,
-  sidebarWidth,
-  userInfo 
-}: HighlightListProps & { sidebarWidth?: number; userInfo?: { name?: string; role?: string } }) {
+  sidebarWidth
+}: HighlightListProps & { sidebarWidth?: number }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
@@ -36,8 +34,10 @@ export function HighlightList({
 
   // Filter highlights based on search and date
   const filteredHighlights = highlights.filter(highlight => {
+    // Use original_quote for search if available, otherwise fall back to highlighted_text
+    const textToSearch = highlight.original_quote || highlight.highlighted_text;
     const matchesSearch = 
-      highlight.highlighted_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      textToSearch.toLowerCase().includes(searchTerm.toLowerCase()) ||
       highlight.page_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       highlight.page_url.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -75,25 +75,6 @@ export function HighlightList({
     }
   });
 
-  // Group highlights by domain
-  const groupedHighlights = sortedHighlights.reduce((groups, highlight) => {
-    try {
-      const domain = new URL(highlight.page_url).hostname;
-      if (!groups[domain]) {
-        groups[domain] = [];
-      }
-      groups[domain].push(highlight);
-      return groups;
-    } catch {
-      // Fallback for invalid URLs
-      const fallbackDomain = 'Unknown Domain';
-      if (!groups[fallbackDomain]) {
-        groups[fallbackDomain] = [];
-      }
-      groups[fallbackDomain].push(highlight);
-      return groups;
-    }
-  }, {} as Record<string, typeof highlights>);
 
   // Use imported utility functions for date formatting
 
@@ -113,25 +94,54 @@ export function HighlightList({
     return text.substring(0, maxLength).trim() + '...';
   };
 
-  // Sort domains: put domains with recent highlights first
-  const sortedDomains = Object.keys(groupedHighlights).sort((a, b) => {
-    const aHasRecent = groupedHighlights[a].some(h => isRecentDate(h.created_at));
-    const bHasRecent = groupedHighlights[b].some(h => isRecentDate(h.created_at));
-    
-    if (aHasRecent && !bHasRecent) return -1;
-    if (!aHasRecent && bHasRecent) return 1;
-    return a.localeCompare(b);
-  });
+  // Get domain name from URL
+  const getDomainName = (url: string) => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return 'Unknown Domain';
+    }
+  };
+
+  // Get abbreviated full date/time format
+  const getAbbreviatedDateTime = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: '2-digit',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return '';
+    }
+  };
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-gray-900 overflow-hidden">
-      {/* Header */}
-      <div className="flex-shrink-0 p-4">
-        <div className="flex items-center justify-between mb-3">
+    <div className="h-full flex flex-col bg-white dark:bg-gray-900 min-h-0">
+      {/* Highlight Items Header */}
+      <div className="flex-shrink-0 px-4 pt-4 pb-2">
+        <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Highlights
           </h2>
+          
+          {/* Right side: Filter button, Reload button, and Count badge */}
           <div className="flex items-center gap-2">
+            {/* Filter Toggle */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-1 p-1 text-xs text-gray-600 dark:text-gray-400 
+                       hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              title="Toggle filters"
+            >
+              <FilterIcon className="h-3 w-3" />
+            </button>
+            
+            {/* Reload Button */}
             {onRefresh && (
               <button
                 onClick={onRefresh}
@@ -143,30 +153,21 @@ export function HighlightList({
                 <RefreshCwIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
             )}
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            
+            {/* Highlight Count Badge */}
+            <div
+              className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 
+                       text-xs font-medium rounded-full border border-gray-200 dark:border-gray-600"
+              title={`${filteredHighlights.length} highlight${filteredHighlights.length === 1 ? '' : 's'} ${searchTerm ? 'matching search' : 'total'}`}
+            >
               {filteredHighlights.length}
-            </span>
+            </div>
           </div>
         </div>
-        
-        {/* View Bookmarklet Button */}
-        <button
-          onClick={onViewBookmarklet}
-          disabled={isLoading}
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium 
-                   text-white bg-blue-600 hover:bg-blue-700 focus:bg-blue-700
-                   border border-transparent rounded-md 
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                   disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-colors duration-200"
-        >
-          <BookmarkIcon className="h-4 w-4" />
-          View Bookmarklet
-        </button>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex-shrink-0 p-4 space-y-3">
+      <div className="flex-shrink-0 px-4 pb-4 space-y-3">
         {/* Search */}
         <div className="relative">
           <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -183,17 +184,9 @@ export function HighlightList({
           />
         </div>
 
-        {/* Filter Toggle */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 
-                     hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-          >
-            <FilterIcon className="h-3 w-3" />
-            Filters
-          </button>
-          {(dateFilter !== 'all' || sortBy !== 'recent') && (
+        {/* Clear Filters Button */}
+        {(dateFilter !== 'all' || sortBy !== 'recent') && (
+          <div className="flex justify-end">
             <button
               onClick={() => {
                 setDateFilter('all');
@@ -201,10 +194,10 @@ export function HighlightList({
               }}
               className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
             >
-              Clear
+              Clear Filters
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Filter Options */}
         {showFilters && (
@@ -245,7 +238,7 @@ export function HighlightList({
       </div>
 
       {/* Highlight List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overscroll-contain">
         {isLoading ? (
           <div className="p-4 text-center">
             <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
@@ -271,150 +264,123 @@ export function HighlightList({
             )}
           </div>
         ) : (
-          <div className="p-2 overflow-hidden">
-            {sortedDomains.map((domain) => (
-              <div key={domain} className="mb-4">
-                {/* Domain Header */}
-                <div className="flex items-center gap-2 px-2 py-1 mb-2 min-w-0">
-                  {getDomainFavicon(groupedHighlights[domain][0].page_url) ? (
-                    <img
-                      src={getDomainFavicon(groupedHighlights[domain][0].page_url)!}
-                      alt=""
-                      className="h-4 w-4 flex-shrink-0"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                        const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'block';
-                      }}
-                    />
-                  ) : null}
-                  <GlobeIcon className="h-4 w-4 text-gray-400 flex-shrink-0" style={{display: getDomainFavicon(groupedHighlights[domain][0].page_url) ? 'none' : 'block'}} />
-                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400 truncate min-w-0">
-                    {domain}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-500 flex-shrink-0">
-                    ({groupedHighlights[domain].length})
-                  </span>
-                  {groupedHighlights[domain].some(h => isRecentDate(h.created_at)) && (
-                    <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" title="Has recent highlights" />
-                  )}
-                </div>
-                
-                {/* Highlights in this domain */}
-                <div className="ml-4 space-y-1">
-                  {groupedHighlights[domain].map((highlight) => (
-                    <div
-                      key={highlight.id}
-                      className={`group relative rounded-md border transition-colors duration-200 ${
+          <div className="p-2">
+            <div className="space-y-2">
+              {sortedHighlights.map((highlight) => (
+                <div
+                  key={highlight.id}
+                  className={`group relative rounded-md border transition-colors duration-200 ${
+                    selectedHighlight === highlight.id
+                      ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700'
+                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <button
+                    onClick={() => onHighlightSelect(highlight.id)}
+                    className="w-full text-left p-3"
+                    title={highlight.original_quote || highlight.highlighted_text}
+                  >
+                    <div className="space-y-2">
+                      {/* Page title - moved above quote */}
+                      {highlight.page_title && (
+                        <p className={`text-xs font-medium truncate ${
+                          selectedHighlight === highlight.id
+                            ? 'text-blue-700 dark:text-blue-300'
+                            : 'text-gray-700 dark:text-gray-300'
+                        }`}>
+                          {highlight.page_title}
+                        </p>
+                      )}
+                      
+                      {/* Highlight preview with quotes */}
+                      <p className={`text-sm font-bold italic leading-relaxed ${
                         selectedHighlight === highlight.id
-                          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700'
-                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      <button
-                        onClick={() => onHighlightSelect(highlight.id)}
-                        className="w-full text-left p-3"
-                        title={highlight.highlighted_text}
-                      >
-                        <div className="space-y-2">
-                          {/* Highlight preview */}
-                          <p className={`text-sm font-medium leading-relaxed ${
-                            selectedHighlight === highlight.id
-                              ? 'text-blue-900 dark:text-blue-100'
-                              : 'text-gray-900 dark:text-gray-100'
-                          }`}>
-                            {truncateText(highlight.highlighted_text)}
-                          </p>
-                          
-                          {/* Page title and URL */}
-                          <div className="space-y-1">
-                            {highlight.page_title && (
-                              <p className={`text-xs font-medium truncate ${
-                                selectedHighlight === highlight.id
-                                  ? 'text-blue-700 dark:text-blue-300'
-                                  : 'text-gray-700 dark:text-gray-300'
-                              }`}>
-                                {highlight.page_title}
-                              </p>
-                            )}
-                            <p className={`text-xs truncate ${
-                              selectedHighlight === highlight.id
-                                ? 'text-blue-600 dark:text-blue-400'
-                                : 'text-gray-500 dark:text-gray-400'
-                            }`}>
-                              {highlight.page_url}
-                            </p>
-                            
-                            {/* Date and time row */}
-                            <div className="flex items-center justify-between">
-                              <div className={`flex items-center gap-1 text-xs ${
+                          ? 'text-blue-900 dark:text-blue-100'
+                          : 'text-gray-900 dark:text-gray-100'
+                      }`}>
+                        "{truncateText(highlight.original_quote || highlight.highlighted_text)}"
+                      </p>
+                      
+                      {/* Domain info */}
+                      <div className="space-y-1">
+                        
+                        {/* Domain and date on same line */}
+                        <div className="flex items-center justify-between min-w-0">
+                          {/* Domain name with favicon */}
+                          <div className="flex items-center gap-2 min-w-0 flex-shrink">
+                            {getDomainFavicon(highlight.page_url) ? (
+                              <img
+                                src={getDomainFavicon(highlight.page_url)!}
+                                alt=""
+                                className="h-3 w-3 flex-shrink-0"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                  const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'block';
+                                }}
+                              />
+                            ) : null}
+                            <GlobeIcon className="h-3 w-3 text-gray-400 flex-shrink-0" style={{display: getDomainFavicon(highlight.page_url) ? 'none' : 'block'}} />
+                            <span 
+                              className={`text-xs font-bold truncate ${
                                 selectedHighlight === highlight.id
                                   ? 'text-blue-600 dark:text-blue-400'
-                                  : 'text-gray-500 dark:text-gray-400'
-                              }`}>
-                                <CalendarIcon className="h-3 w-3" />
-                                <span>{formatDateTime(highlight.created_at, { includeTime: true, relativeDates: true })}</span>
-                              </div>
-                              {isRecentDate(highlight.created_at) && (
-                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" title="Recent" />
-                              )}
-                            </div>
+                                  : 'text-gray-600 dark:text-gray-400'
+                              }`}
+                              title={highlight.page_url}
+                            >
+                              {getDomainName(highlight.page_url)}
+                            </span>
                           </div>
-                        </div>
-                      </button>
-
-                      {/* Action buttons */}
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onHighlightSelect(highlight.id);
-                            }}
-                            className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 
-                                     bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-200 dark:border-gray-600
-                                     transition-colors duration-200"
-                            title="View highlight"
-                          >
-                            <EyeIcon className="h-3 w-3" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteHighlight(highlight.id);
-                            }}
-                            className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 
-                                     bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-200 dark:border-gray-600
-                                     transition-colors duration-200"
-                            title="Delete highlight"
-                          >
-                            <TrashIcon className="h-3 w-3" />
-                          </button>
+                          
+                          {/* Date */}
+                          <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${
+                            selectedHighlight === highlight.id
+                              ? 'text-blue-600 dark:text-blue-400'
+                              : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                            <CalendarIcon className="h-3 w-3 flex-shrink-0" />
+                            <span>{formatDateTime(highlight.created_at, { includeTime: true, relativeDates: true })}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  </button>
+
+                  {/* Action buttons */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onHighlightSelect(highlight.id);
+                        }}
+                        className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 
+                                 bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-200 dark:border-gray-600
+                                 transition-colors duration-200"
+                        title="View highlight"
+                      >
+                        <EyeIcon className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteHighlight(highlight.id);
+                        }}
+                        className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 
+                                 bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-200 dark:border-gray-600
+                                 transition-colors duration-200"
+                        title="Delete highlight"
+                      >
+                        <TrashIcon className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
-      </div>
-
-      {/* Footer */}
-      <div 
-        className="fixed bottom-0 left-0 p-4 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-10"
-        style={{ width: sidebarWidth || 320 }}
-      >
-        <div className="flex items-center justify-start gap-2 text-xs">
-          <UserIcon className="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-          <span className="font-medium text-gray-700 dark:text-gray-300 truncate">
-            {userInfo?.name || 'Loading...'}
-          </span>
-          <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full font-medium flex-shrink-0">
-            {userInfo?.role || 'Loading...'}
-          </span>
-        </div>
       </div>
     </div>
   );
