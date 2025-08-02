@@ -186,59 +186,6 @@ export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: B
           </div>
         </div>
 
-        {/* Alternative Installation Methods */}
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-            Alternative Installation
-          </h4>
-          
-          <div className="space-y-3">
-            {/* Copy Code Method */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  Copy & Paste Method
-                </span>
-                <button
-                  onClick={() => copyToClipboard(bookmarklet.bookmarklet)}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 flex items-center gap-1"
-                >
-                  {copySuccess ? (
-                    <>
-                      <Check className="h-3 w-3" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3 w-3" />
-                      Copy Code
-                    </>
-                  )}
-                </button>
-              </div>
-              <ol className="text-xs text-gray-600 dark:text-gray-400 space-y-1 list-decimal list-inside">
-                <li>Copy the bookmarklet code above</li>
-                <li>Create a new bookmark in your browser</li>
-                <li>Set the name to "Post to Neemee"</li>
-                <li>Paste the code as the URL/location</li>
-                <li>Save the bookmark</li>
-              </ol>
-            </div>
-
-            {/* Mobile Installation */}
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Bookmark className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                  Mobile Users
-                </span>
-              </div>
-              <p className="text-xs text-amber-800 dark:text-amber-200">
-                Bookmarklets work best on desktop browsers. For mobile highlighting, consider using our browser extension when available.
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Installation Verification */}
         <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -257,14 +204,6 @@ export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: B
               <li>Look for a success notification</li>
             </ol>
 
-            {/* Test Button */}
-            <button
-              onClick={testBookmarklet}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
-            >
-              <Check className="h-4 w-4" />
-              <span className="font-medium">Mark as Installed</span>
-            </button>
 
             {/* Test Result */}
             {showTestResult && (

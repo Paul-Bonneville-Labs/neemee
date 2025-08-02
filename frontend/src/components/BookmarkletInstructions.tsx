@@ -240,56 +240,6 @@ export function BookmarkletInstructions({
         </div>
       </div>
 
-      {/* Quick Usage Guide */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          How to Use Your Bookmarklet
-        </h3>
-        
-        <div className="space-y-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <MousePointer className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-1">
-                1. Select Text
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Highlight any text on a webpage that you want to save
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <Bookmark className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-1">
-                2. Click Bookmarklet
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Click your "Neemee Highlight" bookmark to capture the selection
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-1">
-                3. See Confirmation
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                A notification will confirm your highlight was saved successfully
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* FAQ Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">

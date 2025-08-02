@@ -93,11 +93,13 @@ function DashboardContent() {
 
 
   const handleHighlightSelect = useCallback((highlightId: string) => {
-    console.log('DASHBOARD DEBUG - handleHighlightSelect called for:', highlightId);
     
     // Clear current highlight first to show loading state
     setCurrentHighlight(null);
     setSelectedHighlight(highlightId);
+    
+    // Reset unsaved changes when switching highlights
+    setHasUnsavedChanges(false);
     
     // Clear any previous extraction errors when switching highlights
     clearError();
@@ -105,51 +107,39 @@ function DashboardContent() {
     // Inline the loadHighlight logic to avoid dependency issues
     const loadHighlight = async () => {
       try {
-        console.log('DASHBOARD DEBUG - Fetching highlight from API...');
         const url = `/api/highlights/${encodeURIComponent(highlightId)}`;
-        console.log('DASHBOARD DEBUG - Request URL:', url);
         
         const response = await fetch(url, {
           credentials: 'include',
         });
         
-        console.log('DASHBOARD DEBUG - Response status:', response.status, response.statusText);
-        console.log('DASHBOARD DEBUG - Response ok:', response.ok);
         
         if (!response.ok) {
-          console.error('DASHBOARD DEBUG - Response not ok:', {
-            status: response.status,
-            statusText: response.statusText,
-            url: response.url
-          });
         }
         
         const result: ApiResponse<Highlight> = await response.json();
-        console.log('DASHBOARD DEBUG - API response:', { success: result.success, hasData: !!result.data, error: result.error });
         
         if (result.success && result.data) {
-          console.log('DASHBOARD DEBUG - Setting current highlight with content length:', result.data.markdown_content?.length || 0);
           setCurrentHighlight(result.data);
           
           // Initialize form data
-          setFormData({
+          const initialFormData = {
             highlighted_text: result.data.highlighted_text || '',
             original_quote: result.data.original_quote || '',
             page_title: result.data.page_title || '',
             page_url: result.data.page_url || '',
             markdown_content: result.data.markdown_content || ''
-          });
-          setHasUnsavedChanges(false);
+          };
+          setFormData(initialFormData);
+          // Use setTimeout to ensure this runs after any potential onChange events from MDXEditor
+          setTimeout(() => {
+            setHasUnsavedChanges(false);
+          }, 0);
         } else {
           console.error('API error:', result.error);
           setCurrentHighlight(null);
         }
       } catch (err) {
-        console.error('DASHBOARD DEBUG - Fetch error details:', {
-          message: err instanceof Error ? err.message : 'Unknown error',
-          name: err instanceof Error ? err.name : 'Unknown',
-          stack: err instanceof Error ? err.stack : 'No stack'
-        });
         setCurrentHighlight(null);
       }
     };
@@ -340,24 +330,19 @@ function DashboardContent() {
   const handleExtractContent = async () => {
     if (!currentHighlight) return;
     
-    console.log('DASHBOARD DEBUG - Starting extraction for highlight:', currentHighlight.id);
     const success = await extractContent(currentHighlight.id);
-    console.log('DASHBOARD DEBUG - Extraction completed, success:', success);
     
     // Always refresh the current highlight to get the updated content
     // (either successful extraction or error message saved as content)
     // Note: Don't call handleHighlightSelect because it clears the error
-    console.log('DASHBOARD DEBUG - Refreshing highlight data...');
     try {
       const response = await fetch(`/api/highlights/${encodeURIComponent(currentHighlight.id)}`, {
         credentials: 'include',
       });
       
       const result: ApiResponse<Highlight> = await response.json();
-      console.log('DASHBOARD DEBUG - API response for refresh:', { success: result.success, hasData: !!result.data });
       
       if (result.success && result.data) {
-        console.log('DASHBOARD DEBUG - Setting refreshed highlight with content length:', result.data.markdown_content?.length || 0);
         setCurrentHighlight(result.data);
         
         // Update form data with refreshed content
@@ -368,7 +353,10 @@ function DashboardContent() {
           page_url: result.data.page_url || '',
           markdown_content: result.data.markdown_content || ''
         });
-        setHasUnsavedChanges(false);
+        // Use setTimeout to ensure this runs after any potential onChange events from MDXEditor
+        setTimeout(() => {
+          setHasUnsavedChanges(false);
+        }, 0);
       }
     } catch (err) {
       console.error('Error refreshing highlight:', err);
@@ -459,42 +447,42 @@ function DashboardContent() {
   return (
     <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <header>
         <div className="px-6 py-3">
           <div className="flex items-center justify-between">
-            {/* Left side - App name and navigation */}
-            <div className="flex items-center gap-8">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            {/* Left side - App name */}
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {appConfig.app.displayName}
               </h1>
-              
-              {/* Navigation Links */}
-              <nav className="flex items-center gap-6">
-                <button
-                  onClick={() => setActiveTab('files')}
-                  className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                    activeTab === 'files'
-                      ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <FileText className="h-4 w-4" />
-                  Highlights
-                </button>
-                
-                <button
-                  onClick={() => setActiveTab('bookmarklet')}
-                  className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                    activeTab === 'bookmarklet'
-                      ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Bookmark className="h-4 w-4" />
-                  Bookmarklet
-                </button>
-              </nav>
             </div>
+            
+            {/* Center - Navigation Links */}
+            <nav className="flex items-center gap-6">
+              <button
+                onClick={() => setActiveTab('files')}
+                className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+                  activeTab === 'files'
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <FileText className="h-4 w-4" />
+                Highlights
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('bookmarklet')}
+                className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+                  activeTab === 'bookmarklet'
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                <Bookmark className="h-4 w-4" />
+                Bookmarklet
+              </button>
+            </nav>
 
             {/* Right side - Refresh button, user info, and sign out */}
             <div className="flex items-center gap-4">
@@ -586,55 +574,45 @@ function DashboardContent() {
                   </div>
                 </div>
               ) : currentHighlight ? (
-                  <div className="flex flex-col h-full">
-                    {/* Header with action buttons */}
-                    <div className="flex-shrink-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                      <div className="px-6 py-4">
-                        <div className="flex items-center justify-between">
-                          {/* Mobile Back Button */}
-                          <div className="lg:hidden">
-                            <button
-                              onClick={handleCancelView}
-                              className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                              </svg>
-                              Back to Highlights
-                            </button>
-                          </div>
-                          
-                          {/* Desktop spacer */}
-                          <div className="hidden lg:block"></div>
-                          
-                          {/* Action Button Group */}
-                          <div className="flex items-center gap-3">
-                            <a 
-                              href={currentHighlight.page_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
-                            >
-                              Visit Original
-                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                              </svg>
-                            </a>
-                            <button
-                              onClick={() => handleDeleteHighlight(currentHighlight.id)}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
-                            >
-                              Delete
-                            </button>
-                            <button
-                              onClick={handleSaveForm}
-                              disabled={!hasUnsavedChanges}
-                              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <Edit3 className="h-4 w-4" />
-                              {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
-                            </button>
-                          </div>
+                  <div className="flex flex-col h-full relative">
+                    {/* Mobile Back Button */}
+                    <div className="lg:hidden px-6 py-4">
+                      <button
+                        onClick={handleCancelView}
+                        className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Back to Highlights
+                      </button>
+                    </div>
+
+                    {/* Floating Action Buttons */}
+                    <div className="absolute top-4 right-6 z-10">
+                      <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg p-2">
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href={currentHighlight.page_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-4 py-2 bg-green-600/60 text-white text-sm font-medium rounded-lg hover:bg-green-600/80 transition-colors"
+                          >
+                            Visit Source
+                          </a>
+                          <button
+                            onClick={() => handleDeleteHighlight(currentHighlight.id)}
+                            className="inline-flex items-center px-4 py-2 bg-red-600/60 text-white text-sm font-medium rounded-lg hover:bg-red-600/80 transition-colors"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            onClick={handleSaveForm}
+                            disabled={!hasUnsavedChanges}
+                            className="flex items-center px-4 py-2 bg-blue-600/60 text-white text-sm font-medium rounded-lg hover:bg-blue-600/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -654,7 +632,7 @@ function DashboardContent() {
                                   type="text"
                                   value={formData.page_title}
                                   onChange={(e) => handleFormChange('page_title', e.target.value)}
-                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                  className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                   placeholder="Enter page title..."
                                 />
                               </div>
@@ -668,7 +646,7 @@ function DashboardContent() {
                                   type="url"
                                   value={formData.page_url}
                                   onChange={(e) => handleFormChange('page_url', e.target.value)}
-                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                  className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                   placeholder="https://example.com"
                                 />
                               </div>
@@ -682,7 +660,7 @@ function DashboardContent() {
                                   type="text"
                                   value={formatDetailedDate(currentHighlight.created_at)}
                                   disabled
-                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                  className="w-full px-3 py-2 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                                 />
                               </div>
                               
@@ -696,7 +674,7 @@ function DashboardContent() {
                                   value={formData.original_quote || '(No original quote available for this highlight)'}
                                   disabled
                                   rows={3}
-                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed resize-none"
+                                  className="w-full px-3 py-2 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed resize-none"
                                 />
                               </div>
                             </div>
@@ -706,7 +684,7 @@ function DashboardContent() {
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Highlighted Text
                               </label>
-                              <div className="bg-yellow-25 rounded-md border border-gray-300" style={{backgroundColor: '#fefdf8'}}>
+                              <div className="bg-yellow-25 rounded-md" style={{backgroundColor: '#fefdf8'}}>
                                 <MarkdownViewer
                                   key={`highlighted-${currentHighlight.id}`}
                                   content={formData.highlighted_text}
@@ -727,20 +705,7 @@ function DashboardContent() {
                                   disabled={isExtracting}
                                   className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                 >
-                                  {isExtracting ? (
-                                    <div className="flex items-center justify-center">
-                                      <svg className="animate-spin mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                      </svg>
-                                      Extracting...
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <BookOpen className="h-4 w-4 mr-2" />
-                                      Extract Text
-                                    </>
-                                  )}
+                                  {isExtracting ? 'Extracting...' : 'Extract Text'}
                                 </button>
                               </div>
                               

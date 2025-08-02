@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const mapSupabaseUserToAuthUser = (supabaseUser: User): AuthUser => {
     return {
       id: supabaseUser.id,
-      name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || null,
+      name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email || null,
       email: supabaseUser.email || null,
       image: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture || null,
       username: supabaseUser.user_metadata?.user_name || supabaseUser.user_metadata?.preferred_username || null,

@@ -24,11 +24,9 @@ export async function POST(
 ) {
   try {
     const highlightId = params.id;
-    console.log('Content extraction request for highlight:', highlightId);
     
     // Authenticate user
     const authContext = await getAuthContext(request);
-    console.log('Auth context:', authContext ? { userId: authContext.userId } : 'null');
     if (!authContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -36,7 +34,6 @@ export async function POST(
 
     // Get the highlight from database to verify ownership and get details
     const supabase = await createClient();
-    console.log('Looking up highlight with id:', highlightId, 'for user:', userId);
     
     const { data: highlight, error: fetchError } = await supabase
       .from('highlights')
@@ -45,10 +42,6 @@ export async function POST(
       .eq('user_id', userId)
       .single();
 
-    console.log('Database query result:', { 
-      highlight: highlight ? { id: highlight.id, url: highlight.url, title: highlight.title } : null, 
-      error: fetchError 
-    });
 
     if (fetchError || !highlight) {
       console.error('Highlight lookup failed:', { fetchError, highlightId, userId });
@@ -214,7 +207,6 @@ export async function POST(
     }
 
     const extractionResult: ContentExtractionResponse = await backendResponse.json();
-    console.log('Backend extraction result:', extractionResult);
 
     // If extraction was successful, update the highlight with the markdown content
     if (extractionResult.status === 'success' && extractionResult.markdown_content) {
@@ -251,7 +243,6 @@ export async function POST(
       }
     }
 
-    console.log('Returning final result:', extractionResult);
     return NextResponse.json(extractionResult);
 
   } catch (error) {
