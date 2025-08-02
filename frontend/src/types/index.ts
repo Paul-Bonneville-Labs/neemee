@@ -107,42 +107,38 @@ export interface Highlight {
   id: string;
   user_id: string;
   highlighted_text: string;
+  original_quote?: string; // The original unmodified text as captured
   page_url: string;
   page_title?: string;
   markdown_content?: string;
-  content_status?: 'pending' | 'extracted' | 'failed';
-  metadata?: {
-    captured_via?: string;
-    original_page_title?: string;
-    [key: string]: any;
-  };
   created_at: string;
+  updated_at?: string;
 }
 
 export interface HighlightCreateRequest {
   highlighted_text: string;
-  page_url: string;
-  page_title?: string;
+  url: string;
+  title?: string;
   opengraph_data?: Record<string, string>;
   api_key: string;
 }
 
 export interface HighlightUpdateRequest {
   highlighted_text: string;
-  page_title?: string;
-  page_url?: string;
+  title?: string;
+  url?: string;
 }
 
 export interface HighlightFormData {
   highlighted_text: string;
-  page_title: string;
-  page_url: string;
+  title: string;
+  url: string;
 }
 
 export interface HighlightValidationErrors {
   highlighted_text?: string;
-  page_title?: string;
-  page_url?: string;
+  title?: string;
+  url?: string;
 }
 
 export type HighlightEditTab = 'details' | 'content';

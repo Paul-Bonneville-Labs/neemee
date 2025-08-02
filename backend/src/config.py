@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     
     # Content Extraction Configuration
     firecrawl_api_key: Optional[str] = Field(default=None, description="Firecrawl API key for content extraction")
+    content_extraction_timeout: int = Field(default=60, gt=0, description="Content extraction timeout in seconds")
+    max_extraction_attempts: int = Field(default=3, gt=0, description="Maximum number of extraction retry attempts")
+    extraction_retry_delay: int = Field(default=300, gt=0, description="Delay between extraction retries in seconds")
     
     # Neo4j Configuration
     neo4j_uri: str = Field(default="bolt://localhost:7687", description="Neo4j database URI")
@@ -73,10 +76,6 @@ class Settings(BaseSettings):
     metrics_port: int = Field(default=9090, gt=0, le=65535, description="Metrics port")
     
     # Feature Flags
-    enable_async_processing: bool = Field(
-        default=False, 
-        description="Enable asynchronous processing"
-    )
     enable_entity_caching: bool = Field(
         default=True, 
         description="Enable entity resolution caching"

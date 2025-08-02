@@ -12,33 +12,93 @@ import {
   codeBlockPlugin,
   codeMirrorPlugin,
   tablePlugin,
-  imagePlugin
+  imagePlugin,
+  toolbarPlugin,
+  markdownShortcutPlugin,
+  linkDialogPlugin,
+  diffSourcePlugin,
+  frontmatterPlugin,
+  UndoRedo,
+  BoldItalicUnderlineToggles,
+  BlockTypeSelect,
+  ListsToggle,
+  CreateLink,
+  InsertTable,
+  InsertThematicBreak,
+  InsertCodeBlock,
+  InsertImage,
+  CodeToggle,
+  StrikeThroughSupSubToggles,
+  DiffSourceToggleWrapper,
+  ButtonWithTooltip,
+  Separator
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
 import './SimpleMarkdownEditor.css';
-import { Loader2, FileText, Clock, BarChart3 } from 'lucide-react';
+import { Loader2, FileText, Copy } from 'lucide-react';
 
 interface MarkdownViewerProps {
   content: string;
-  metadata?: {
-    word_count?: number;
-    reading_time_minutes?: number;
-    character_count?: number;
-    extraction_source?: string;
-    page_title?: string;
-    page_description?: string;
-    [key: string]: any;
-  };
   isLoading?: boolean;
   className?: string;
+  editable?: boolean;
+  onChange?: (markdown: string) => void;
 }
 
-function MDXViewerComponent({ content, metadata, isLoading = false, className = '' }: MarkdownViewerProps) {
+function MDXViewerComponent({ content, isLoading = false, className = '', editable = false, onChange }: MarkdownViewerProps) {
   const [mounted, setMounted] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [originalContent, setOriginalContent] = useState(content);
 
   useEffect(() => {
     setMounted(true);
+    
+    // Check for dark mode on mount
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark') || 
+                     window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(isDark);
+    };
+    
+    checkDarkMode();
+    
+    // Listen for dark mode changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const observer = new MutationObserver(checkDarkMode);
+    
+    mediaQuery.addEventListener('change', checkDarkMode);
+    observer.observe(document.documentElement, { 
+      attributes: true, 
+      attributeFilter: ['class'] 
+    });
+    
+    return () => {
+      mediaQuery.removeEventListener('change', checkDarkMode);
+      observer.disconnect();
+    };
   }, []);
+
+  // Update original content only when switching to a completely different highlight (via key prop change)
+  useEffect(() => {
+    setOriginalContent(content);
+  }, []); // Empty dependency array - only runs on mount
+
+  // Copy markdown content to clipboard
+  const handleCopyMarkdown = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      // Optional: Show a brief success indicator
+    } catch (err) {
+      console.error('Failed to copy content:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = content;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    }
+  };
 
   if (!mounted) {
     return (
@@ -52,11 +112,11 @@ function MDXViewerComponent({ content, metadata, isLoading = false, className = 
 
   if (isLoading) {
     return (
-      <div className={`min-h-[400px] bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 ${className}`}>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 text-blue-600 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">Loading content...</p>
+      <div className={`min-h-[400px] rounded-lg border border-gray-200 ${className}`} style={{backgroundColor: '#fefdf8'}}>
+        <div className="flex items-center justify-center h-full p-8">
+          <div className="flex flex-col items-center justify-center text-center">
+            <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-4" />
+            <p className="text-gray-600">Extracting content...</p>
           </div>
         </div>
       </div>
@@ -65,17 +125,17 @@ function MDXViewerComponent({ content, metadata, isLoading = false, className = 
 
   if (!content || content.trim().length === 0) {
     return (
-      <div className={`min-h-[400px] bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 ${className}`}>
-        <div className="flex items-center justify-center h-full">
+      <div className={`bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 ${className}`}>
+        <div className="flex items-center justify-center py-12 px-6">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="h-8 w-8 text-gray-400" />
+            <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+              <FileText className="h-6 w-6 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="text-base font-medium text-gray-900 dark:text-white mb-2">
               No Content Available
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              The full page content is being processed and will be available shortly.
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Click the "Extract Text" button above to get the full content from this page's URL.
             </p>
           </div>
         </div>
@@ -84,47 +144,24 @@ function MDXViewerComponent({ content, metadata, isLoading = false, className = 
   }
 
   return (
-    <div className={`bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}>
-      {/* Content Metadata Header */}
-      {metadata && (
-        <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-6">
-              {metadata.word_count && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <BarChart3 className="h-4 w-4" />
-                  <span>{metadata.word_count.toLocaleString()} words</span>
-                </div>
-              )}
-              {metadata.reading_time_minutes && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Clock className="h-4 w-4" />
-                  <span>{metadata.reading_time_minutes} min read</span>
-                </div>
-              )}
-            </div>
-            {metadata.extraction_source && (
-              <div className="text-xs text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                Extracted via {metadata.extraction_source}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
+    <div className={`rounded-lg border border-gray-200 overflow-hidden ${className}`} style={{backgroundColor: '#fefdf8'}}>
       {/* Markdown Content */}
       <div className="p-6">
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <MDXEditor
             markdown={content}
-            readOnly={true}
+            readOnly={!editable}
             contentEditableClassName="mdx-viewer-content"
+            onChange={onChange}
             plugins={[
+              // Core plugins for both modes
               headingsPlugin(),
               listsPlugin(),
               linkPlugin(),
               quotePlugin(),
               thematicBreakPlugin(),
+              tablePlugin(),
+              imagePlugin(),
               codeBlockPlugin({
                 defaultCodeBlockLanguage: 'text',
                 codeMirrorExtensions: []
@@ -151,10 +188,48 @@ function MDXViewerComponent({ content, metadata, isLoading = false, className = 
                   text: 'Plain Text'
                 }
               }),
-              tablePlugin(),
-              imagePlugin()
+              
+              // Advanced plugins (only when editable)
+              ...(editable ? [
+                markdownShortcutPlugin(),
+                linkDialogPlugin(),
+                diffSourcePlugin({
+                  viewMode: 'rich-text',
+                  diffMarkdown: originalContent
+                }),
+                frontmatterPlugin(),
+                toolbarPlugin({
+                  toolbarContents: () => (
+                    <DiffSourceToggleWrapper>
+                      <UndoRedo />
+                      <Separator />
+                      <BoldItalicUnderlineToggles />
+                      <StrikeThroughSupSubToggles />
+                      <Separator />
+                      <BlockTypeSelect />
+                      <Separator />
+                      <ListsToggle />
+                      <Separator />
+                      <CreateLink />
+                      <InsertImage />
+                      <Separator />
+                      <InsertTable />
+                      <InsertThematicBreak />
+                      <Separator />
+                      <InsertCodeBlock />
+                      <div style={{ flex: 1 }}></div>
+                      <ButtonWithTooltip 
+                        title="Copy Markdown"
+                        onClick={handleCopyMarkdown}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </ButtonWithTooltip>
+                    </DiffSourceToggleWrapper>
+                  )
+                })
+              ] : [])
             ]}
-            className="mdx-viewer"
+            className={`mdx-viewer ${editable ? 'mdx-editor-editable' : ''}`}
           />
         </div>
       </div>

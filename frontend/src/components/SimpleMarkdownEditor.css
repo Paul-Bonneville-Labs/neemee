@@ -110,6 +110,12 @@
   font-family: inherit !important;
 }
 
+.mdx-viewer-content:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 /* Dark mode support for viewer */
 .dark .mdx-viewer [data-lexical-editor] code {
   background-color: #374151 !important;
@@ -167,3 +173,63 @@
   border-radius: 0.5rem !important;
   margin: 1rem 0 !important;
 }
+
+
+/* Editable mode styles */
+.mdx-editor-editable {
+  border: 2px solid transparent !important;
+}
+
+.mdx-editor-editable:focus-within {
+  border-color: transparent !important;
+}
+
+.mdx-editor-editable [data-lexical-editor] {
+  min-height: 200px !important;
+}
+
+.mdx-editor-editable [data-lexical-editor]:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+[data-lexical-editor]:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* MDXEditor Dark Theme Support using CSS Variables */
+.dark-theme {
+  /* Base colors */
+  --accentBase: #3b82f6;
+  --accentBgSubtle: #1e40af;
+  --accentBg: #2563eb;
+  --accentLine: #3b82f6;
+  --accentBorder: #3b82f6;
+  --accentSolid: #3b82f6;
+  --accentSolidHover: #2563eb;
+  --accentText: #93c5fd;
+  --accentTextContrast: #ffffff;
+  
+  /* Base background and text colors */
+  --baseBg: #1f2937;
+  --baseBgSubtle: #374151;
+  --baseLine: #4b5563;
+  --baseBorder: #4b5563;
+  --baseSolid: #6b7280;
+  --baseSolidHover: #9ca3af;
+  --baseText: #e5e7eb;
+  --baseTextContrast: #f9fafb;
+}
+
+/* Remove focus outlines for MDX editors */
+.mdx-editor-editable {
+  border: 2px solid transparent !important;
+}
+
+.mdx-editor-editable:focus-within {
+  border-color: transparent !important;
+}
+

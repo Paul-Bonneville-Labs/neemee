@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a minimal FastAPI application designed for deployment on Google Cloud Run. The project serves as a foundation for building a larger application, potentially related to generative AI.
+This is a production-ready FastAPI application for personal knowledge management, deployed on Google Cloud Run with custom domain mapping. The application processes web content and newsletters, extracting entities and relationships using OpenAI's GPT-4 Turbo and storing them in a Neo4j knowledge graph database.
 
 ## Key Commands
 
@@ -15,12 +15,12 @@ The project uses a clean environment file structure:
 ```bash
 # Template files (committed to repo)
 .env.example                  # "Copy me for local development"
-.env.production.example       # "Copy me for production setup"
 
 # Your actual configs (gitignored)
 .env                          # Your real local development config
-.env.production               # Your real production config (for Cloud Secrets reference)
 ```
+
+**Note**: Production configuration uses Google Cloud Secrets instead of environment files.
 
 ### Modern Development Workflow (FastAPI-First)
 
@@ -153,7 +153,7 @@ gcloud run deploy neemee-backend \
   --set-secrets NEO4J_PASSWORD=newsletter-neo4j-password:latest \
   --set-secrets NEO4J_URI=newsletter-neo4j-uri:latest \
   --set-secrets SECRET_KEY=newsletter-secret-key:latest \
-  --no-allow-unauthenticated
+  --allow-unauthenticated
 ```
 
 ## Architecture
@@ -167,9 +167,12 @@ gcloud run deploy neemee-backend \
 ### Key Technical Details
 - **Framework**: FastAPI with Uvicorn server
 - **Python**: 3.13.5
-- **Deployment**: Docker on Google Cloud Run
-- **Authentication**: Service account required (no public access)
-- **CI/CD**: Automatic deployment on push to main branch
+- **Deployment**: Docker on Google Cloud Run with custom domain mapping
+- **Authentication**: Public API (no authentication required)
+- **AI Integration**: OpenAI GPT-4 Turbo for entity extraction
+- **Database**: Neo4j graph database for entity storage
+- **Content Processing**: Firecrawl for web content extraction
+- **Domain**: Custom domain at `api.paulbonneville.com`
 
 ### Testing Approach
 Tests use manual path manipulation to import the app. When adding new tests, follow the pattern in `tests/test_main.py`:
@@ -184,7 +187,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 - **Service**: neemee-backend
 - **Region**: us-central1
 - **Service Account**: 860937201650-compute@developer.gserviceaccount.com (default)
-- **Service URL**: https://neemee-backend-860937201650.us-central1.run.app
+- **Custom Domain**: https://api.paulbonneville.com (with SSL certificate)
+- **Cloud Run URL**: https://neemee-backend-860937201650.us-central1.run.app
+- **Authentication**: Public access enabled (`roles/run.invoker` for `allUsers`)
 
 ## Email Processing with n8n
 
@@ -199,9 +204,11 @@ This FastAPI application processes emails received through an n8n workflow. The 
 
 ## Important Notes
 
-- The application requires authentication via service account for Cloud Run access
-- No linting or type checking is currently configured
-- Tests should be run before committing changes
-- The Docker container exposes port 8080 as required by Google Cloud Run
-- Continuous deployment is enabled - changes to main branch automatically deploy
-- **Highlight Processing**: Web highlights are processed through the capture API endpoints
+- **Public API**: The application is publicly accessible at `api.paulbonneville.com`
+- **Production Ready**: Full entity extraction pipeline with OpenAI and Neo4j integration
+- **Environment-Specific Features**: Some endpoints (like `/test-openai`) are only available in development
+- **Docker Architecture**: Built for `linux/amd64` platform for Cloud Run compatibility
+- **Secrets Management**: Production secrets managed via Google Cloud Secret Manager
+- **Testing**: Comprehensive pre-deployment tests including connectivity and functionality checks
+- **Domain Mapping**: Custom domain with automatic SSL certificate provisioning
+- **Content Processing**: Advanced web content extraction via Firecrawl integration

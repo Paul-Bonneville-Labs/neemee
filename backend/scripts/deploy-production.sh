@@ -5,7 +5,16 @@
 
 set -e
 
+# Set required environment variables for deployment
+export ENVIRONMENT=production
+
 echo "🚀 Deploying Neemee Backend API to Google Cloud Run..."
+
+# Activate virtual environment if it exists
+if [ -f ".venv/bin/activate" ]; then
+    echo "📦 Activating virtual environment..."
+    source .venv/bin/activate
+fi
 
 # Run pre-deployment tests first
 echo "🧪 Running pre-deployment tests..."
@@ -26,8 +35,13 @@ gcloud config set project $PROJECT_ID
 
 echo "📦 Building and pushing Docker image..."
 
-# Build and push the image
-gcloud builds submit --tag gcr.io/$PROJECT_ID/$SERVICE_NAME .
+# Build Docker image with correct architecture for Cloud Run
+echo "Building Docker image for linux/amd64 platform..."
+docker build --platform linux/amd64 -t gcr.io/$PROJECT_ID/$SERVICE_NAME .
+
+# Push the image to registry
+echo "Pushing image to Google Container Registry..."
+docker push gcr.io/$PROJECT_ID/$SERVICE_NAME
 
 echo "🔧 Deploying to Cloud Run with secrets..."
 
@@ -58,11 +72,11 @@ gcloud run deploy $SERVICE_NAME \
   --set-env-vars ENABLE_ENTITY_CACHING=true \
   --set-env-vars ENABLE_DEBUG_MODE=false \
   --set-env-vars CORS_ORIGINS="https://neemee.paulbonneville.com" \
-  --set-secrets OPENAI_API_KEY=neemee-openai-api-key:latest \
-  --set-secrets NEO4J_PASSWORD=neemee-neo4j-password:latest \
-  --set-secrets NEO4J_URI=neemee-neo4j-uri:latest \
-  --set-secrets SECRET_KEY=neemee-secret-key:latest \
-  --set-secrets API_KEY=neemee-backend-key:latest \
+  --set-secrets OPENAI_API_KEY=newsletter-openai-api-key:latest \
+  --set-secrets NEO4J_PASSWORD=newsletter-neo4j-password:latest \
+  --set-secrets NEO4J_URI=newsletter-neo4j-uri:latest \
+  --set-secrets SECRET_KEY=newsletter-secret-key:latest \
+  --set-secrets API_KEY=neemee-backend-api-key:latest \
   --set-secrets FIRECRAWL_API_KEY=neemee-firecrawl-key:latest \
   --memory 512Mi \
   --cpu 1 \

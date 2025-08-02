@@ -3,18 +3,18 @@
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import appConfig from '../../config.json';
+import { Auth } from '@/components/Auth';
 
 export default function Home() {
-  const { user, loading, signInWithMagicLink, authState } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user && !loading) {
       router.push('/dashboard');
     }
-  }, [user, router]);
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -32,64 +32,50 @@ export default function Home() {
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-6xl font-bold text-gray-900 dark:text-white mb-6">
-            {appConfig.app.displayName}
+            Neemee
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            {appConfig.app.description}
+            Transform scattered insights into an intelligent, portable knowledge graph. Capture highlights from any website and let AI extract entities and relationships for smarter knowledge management.
           </p>
           
-          <div className="mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg max-w-3xl mx-auto">
-            <div className="flex items-center justify-center gap-8 text-sm text-gray-700 dark:text-gray-300">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                <span>Capture highlights anywhere</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                <span>AI extracts entities & relationships</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                <span>Build your knowledge graph</span>
-              </div>
+          <div className="mb-12 space-y-4">
+            <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
+              <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
+              <span className="text-sm font-medium">Capture highlights anywhere</span>
             </div>
-          </div>
-          
-          <div className="mb-12">
-            <div className="max-w-sm mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
-              />
-              <button
-                onClick={() => signInWithMagicLink(email)}
-                disabled={!email || authState.isSigningIn}
-                className="w-full inline-flex items-center justify-center gap-3 px-8 py-3 text-lg font-semibold text-white 
-                         bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed
-                         border border-transparent rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                         transition-colors duration-200"
-              >
-                {authState.isSigningIn ? (
-                  <>
-                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                    Sending Magic Link...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    Get Started with Magic Link
-                  </>
-                )}
-              </button>
-              {authState.error && (
-                <p className="text-red-600 text-sm mt-2">{authState.error.message}</p>
-              )}
+            <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 mb-2">
+              <div className="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full"></div>
+              <span className="text-sm font-medium">AI extracts entities & relationships</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-purple-600 dark:text-purple-400 mb-6">
+              <div className="w-2 h-2 bg-purple-600 dark:bg-purple-400 rounded-full"></div>
+              <span className="text-sm font-medium">Build your knowledge graph</span>
+            </div>
+
+            <div className="max-w-md mx-auto">
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                           bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                           placeholder-gray-500 dark:placeholder-gray-400
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="inline-flex items-center gap-2 px-6 py-3 text-white font-medium
+                           bg-gray-900 hover:bg-gray-800 focus:bg-gray-800
+                           border border-transparent rounded-lg 
+                           focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
+                           transition-colors duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Get Started with Magic Link
+                </button>
+              </div>
             </div>
           </div>
           
@@ -125,14 +111,14 @@ export default function Home() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-4 mx-auto">
                 <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 Smart Organization
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                All content stored as portable Markdown with YAML front matter. Your knowledge remains yours, forever.
+                Your data remains portable and AI-compatible. Export your knowledge graph or integrate with other tools.
               </p>
             </div>
           </div>
@@ -141,8 +127,20 @@ export default function Home() {
       </main>
       
       <footer className="container mx-auto px-4 py-8 text-center text-gray-600 dark:text-gray-400">
-        <p>Built with Next.js, Supabase, FastAPI, and AI-powered knowledge management</p>
+        <p>Built with Next.js, Supabase, and Tailwind CSS</p>
       </footer>
+
+      {/* Auth Modal */}
+      {showAuth && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAuth(false)} />
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative w-full max-w-md">
+              <Auth onClose={() => setShowAuth(false)} showClose={true} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
