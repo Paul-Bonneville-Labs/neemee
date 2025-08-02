@@ -5,7 +5,7 @@ steps:
       - 'build'
       - '--no-cache'
       - '-t'
-      - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/neemee-backend/neemee-backend:$COMMIT_SHA'
+      - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/neemee-backend/neemee-backend:latest'
       - '.'
       - '-f'
       - 'Dockerfile'
@@ -15,7 +15,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/neemee-backend/neemee-backend:$COMMIT_SHA'
+      - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/neemee-backend/neemee-backend:latest'
     id: 'Push'
 
   # Deploy container image to Cloud Run
@@ -27,7 +27,7 @@ steps:
       - 'update'
       - 'neemee-backend'
       - '--platform=managed'
-      - '--image=us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/neemee-backend/neemee-backend:$COMMIT_SHA'
+      - '--image=us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/neemee-backend/neemee-backend:latest'
       - '--labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID'
       - '--region=us-central1'
       - '--memory=512Mi'
@@ -70,7 +70,7 @@ steps:
 
 # Store images in Artifact Registry
 images:
-  - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/neemee-backend/neemee-backend:$COMMIT_SHA'
+  - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/neemee-backend/neemee-backend:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY
