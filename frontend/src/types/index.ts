@@ -182,7 +182,7 @@ export interface HighlightListProps {
   highlights: Highlight[];
   selectedHighlight?: string;
   onHighlightSelect: (highlightId: string) => void;
-  onDeleteHighlight: (highlightId: string) => void;
+  onDeleteHighlight?: (highlightId: string) => void;
   onViewBookmarklet: () => void;
   onRefresh?: () => void;
   isLoading?: boolean;
