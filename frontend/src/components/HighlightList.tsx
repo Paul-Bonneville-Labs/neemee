@@ -19,7 +19,7 @@ export function HighlightList({
   highlights, 
   selectedHighlight, 
   onHighlightSelect, 
-  onDeleteHighlight,
+  onDeleteHighlight, // eslint-disable-line @typescript-eslint/no-unused-vars
   onViewBookmarklet, 
   onRefresh,
   isLoading = false
