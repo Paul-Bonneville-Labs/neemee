@@ -6,9 +6,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Development
 - `npm run dev` - Start development server with Turbopack
+- `npm run dev:lint` - **Recommended**: Start dev server with real-time linting
 - `npm run build` - Build for production
 - `npm run start` - Start production server
+
+### Code Quality & Linting
 - `npm run lint` - Run ESLint
+- `npm run lint:fix` - Auto-fix ESLint issues  
+- `npm run lint:watch` - Watch mode for linting
+- `npm run type-check` - TypeScript type checking
+- `npm run type-check:watch` - Watch mode for TypeScript
+- `npm run check` - Run both TypeScript + ESLint checks
+
+### Recommended Development Workflow
+```bash
+# Start development with live linting (catches issues immediately)
+npm run dev:lint
+
+# Before committing changes
+npm run check       # Verify no errors
+npm run lint:fix    # Auto-fix what can be fixed
+```
 
 ### Cloud Run Deployment with Automatic Secrets Management
 - `./scripts/deploy.sh` - Deploy to Google Cloud Run (automatically handles secrets setup/verification)

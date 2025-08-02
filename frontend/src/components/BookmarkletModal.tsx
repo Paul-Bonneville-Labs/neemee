@@ -166,7 +166,7 @@ export function BookmarkletModal({ isOpen, onClose }: BookmarkletModalProps) {
                         <li>Copy the bookmarklet code above</li>
                         <li>Create a new bookmark in your browser</li>
                         <li>Paste the code as the bookmark URL</li>
-                        <li>Name it "Capture Highlight" or similar</li>
+                        <li>Name it &ldquo;Capture Highlight&rdquo; or similar</li>
                         <li>Visit any webpage and click the bookmark after selecting text</li>
                       </ol>
                     </div>
@@ -183,7 +183,7 @@ export function BookmarkletModal({ isOpen, onClose }: BookmarkletModalProps) {
                   <li>Select any text on a webpage before clicking the bookmarklet</li>
                   <li>The highlight will be automatically saved to your collection</li>
                   <li>Works on most websites - some may block bookmarklets for security</li>
-                  <li>Make sure you're logged in to save highlights successfully</li>
+                  <li>Make sure you&apos;re logged in to save highlights successfully</li>
                 </ul>
               </div>
             </>

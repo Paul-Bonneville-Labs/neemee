@@ -15,24 +15,10 @@ SERVICE_NAME="neemee-frontend"
 # Ensure we're using the correct project
 gcloud config set project $PROJECT_ID
 
-echo "📦 Deploying frontend with buildpacks..."
+echo "📦 Deploying frontend with Cloud Build..."
 
-# Deploy frontend to Cloud Run using buildpacks (no Docker build needed)
-gcloud run deploy $SERVICE_NAME \
-  --source ./frontend \
-  --platform managed \
-  --region $REGION \
-  --set-env-vars ENVIRONMENT=production \
-  --set-env-vars GOOGLE_CLOUD_PROJECT=$PROJECT_ID \
-  --set-env-vars GOOGLE_CLOUD_REGION=$REGION \
-  --memory 1Gi \
-  --cpu 1 \
-  --concurrency 80 \
-  --min-instances 0 \
-  --max-instances 100 \
-  --timeout 300 \
-  --port 3000 \
-  --no-invoker-iam-check
+# Use Cloud Build to handle deployment
+gcloud builds submit ../frontend --config=../frontend/cloudbuild.yaml
 
 echo "✅ Deployment complete!"
 

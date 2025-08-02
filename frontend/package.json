@@ -7,9 +7,15 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:lint": "concurrently \"npm run dev\" \"npm run lint:watch\"",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "lint:watch": "chokidar \"src/**/*.{ts,tsx,js,jsx}\" -c \"npm run lint\"",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "tsc --noEmit --watch",
+    "check": "npm run type-check && npm run lint"
   },
   "dependencies": {
     "@mdxeditor/editor": "^3.39.1",
@@ -30,6 +36,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "tailwindcss": "^4",

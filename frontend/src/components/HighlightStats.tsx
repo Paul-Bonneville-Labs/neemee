@@ -4,17 +4,15 @@ import { useState, useMemo } from 'react';
 import { 
   BarChart3, 
   TrendingUp,
-  TrendingDown,
   Calendar,
   Globe,
   FileText,
   Clock,
   RefreshCw,
   Eye,
-  ExternalLink,
-  MoreHorizontal
+  ExternalLink
 } from 'lucide-react';
-import { HighlightListResponse, Highlight } from '@/types';
+import { HighlightListResponse } from '@/types';
 import { formatDateTime } from '@/lib/dateUtils';
 
 interface HighlightStatsProps {
@@ -270,7 +268,7 @@ export function HighlightStats({ highlights, onRefresh, className = '' }: Highli
           
           {/* Simple bar chart */}
           <div className="space-y-2">
-            {stats.activity.slice(-14).map((day, index) => (
+            {stats.activity.slice(-14).map((day) => (
               <div key={day.date} className="flex items-center gap-3">
                 <span className="text-xs text-gray-500 dark:text-gray-400 w-16">
                   {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -303,7 +301,7 @@ export function HighlightStats({ highlights, onRefresh, className = '' }: Highli
           
           {stats.domains.length > 0 ? (
             <div className="space-y-3">
-              {stats.domains.map((domain, index) => (
+              {stats.domains.map((domain) => (
                 <div key={domain.domain} className="flex items-center gap-3">
                   <span className="text-lg">{getDomainIcon(domain.domain)}</span>
                   <div className="flex-1">
@@ -356,7 +354,7 @@ export function HighlightStats({ highlights, onRefresh, className = '' }: Highli
           
           {stats.recent.length > 0 ? (
             <div className="space-y-3">
-              {stats.recent.map((highlight, index) => (
+              {stats.recent.map((highlight) => (
                 <div key={highlight.id} className="group">
                   <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full mt-2 flex-shrink-0" />

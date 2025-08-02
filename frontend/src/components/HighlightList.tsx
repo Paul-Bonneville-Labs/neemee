@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import { 
   BookmarkIcon, 
-  EyeIcon, 
-  TrashIcon, 
   SearchIcon, 
   GlobeIcon,
   CalendarIcon,
@@ -12,7 +10,7 @@ import {
   RefreshCwIcon
 } from 'lucide-react';
 import { HighlightListProps } from '@/types';
-import { formatDateTime, isRecent as isRecentDate } from '@/lib/dateUtils';
+import { formatDateTime } from '@/lib/dateUtils';
 
 type DateFilter = 'all' | 'today' | 'week' | 'month';
 type SortOption = 'recent' | 'oldest' | 'alphabetical';
@@ -24,9 +22,8 @@ export function HighlightList({
   onDeleteHighlight,
   onViewBookmarklet, 
   onRefresh,
-  isLoading = false,
-  sidebarWidth
-}: HighlightListProps & { sidebarWidth?: number }) {
+  isLoading = false
+}: HighlightListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
@@ -103,22 +100,6 @@ export function HighlightList({
     }
   };
 
-  // Get abbreviated full date/time format
-  const getAbbreviatedDateTime = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: '2-digit',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch {
-      return '';
-    }
-  };
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-gray-900 min-h-0">
@@ -297,7 +278,7 @@ export function HighlightList({
                           ? 'text-gray-900 dark:text-gray-100'
                           : 'text-gray-900 dark:text-gray-100'
                       }`}>
-                        "{truncateText(highlight.original_quote || highlight.highlighted_text)}"
+                        &ldquo;{truncateText(highlight.original_quote || highlight.highlighted_text)}&rdquo;
                       </p>
                       
                       {/* Domain info */}

@@ -14,7 +14,7 @@ export function AuthStatus({
   showDetails = true, 
   compact = false 
 }: AuthStatusProps) {
-  const { user, loading, isAnonymous, authState } = useAuth();
+  const { user, loading, authState } = useAuth();
 
   // Loading state
   if (loading || authState.isLoadingSession) {
@@ -58,8 +58,8 @@ export function AuthStatus({
     );
   }
 
-  // Anonymous user
-  if (isAnonymous) {
+  // Anonymous user - functionality not implemented
+  if (false) {
     if (compact) {
       return (
         <div className={`flex items-center gap-2 ${className}`}>
@@ -125,7 +125,7 @@ export function AuthStatus({
 
 // Specific status indicator variants
 export function AuthStatusBadge({ className = '' }: { className?: string }) {
-  const { user, loading, isAnonymous } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -147,7 +147,7 @@ export function AuthStatusBadge({ className = '' }: { className?: string }) {
     );
   }
 
-  if (isAnonymous) {
+  if (false) {
     return (
       <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                      bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 ${className}`}>
@@ -171,7 +171,7 @@ export function ConnectionStatus({ className = '' }: { className?: string }) {
   const { authState, user } = useAuth();
 
   const getConnectionStatus = () => {
-    if (authState.isSigningIn || authState.isSigningUp || authState.isSigningOut) {
+    if (authState.isSigningIn || authState.isSigningOut) {
       return {
         icon: Loader2,
         text: 'Connecting...',

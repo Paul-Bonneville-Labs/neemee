@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { BookmarkletInstaller } from '@/components/BookmarkletInstaller';
-import { BookmarkletInstructions } from '@/components/BookmarkletInstructions';
 import { HighlightStats } from '@/components/HighlightStats';
 import { 
   Bookmark, 
   Key, 
-  BookOpen, 
   BarChart3, 
   AlertCircle,
   UserPlus,

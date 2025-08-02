@@ -20,10 +20,11 @@ const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:8000';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id: highlightId } = await params;
+  
   try {
-    const highlightId = params.id;
     
     // Authenticate user
     const authContext = await getAuthContext(request);
@@ -135,9 +136,9 @@ export async function POST(
       
       // Handle 422 validation errors specifically  
       if (backendResponse.status === 422 && errorData.detail && Array.isArray(errorData.detail)) {
-        const validationErrors = errorData.detail.map((err: any) => {
+        const validationErrors = errorData.detail.map((err: { loc?: string[]; msg?: string; input?: unknown }) => {
           const field = err.loc ? err.loc.join('.') : 'unknown';
-          return `${field}: ${err.msg} (received: ${JSON.stringify(err.input)})`;
+          return `${field}: ${err.msg}${err.input ? ` (received: ${JSON.stringify(err.input)})` : ''}`;
         });
         console.error('Validation errors:', validationErrors);
         console.error('Sent request:', extractionRequest);

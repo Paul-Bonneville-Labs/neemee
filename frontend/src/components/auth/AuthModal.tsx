@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import { Auth, type AuthTab } from '../Auth';
+import { Auth } from '../Auth';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  defaultTab?: AuthTab;
+  defaultTab?: string;
   title?: string;
   subtitle?: string;
 }
@@ -15,7 +15,7 @@ interface AuthModalProps {
 export function AuthModal({ 
   isOpen, 
   onClose, 
-  defaultTab = 'anonymous',
+  defaultTab,
   title,
   subtitle 
 }: AuthModalProps) {
@@ -78,8 +78,8 @@ export function AuthModal({
           {/* Auth Component */}
           <Auth 
             onClose={onClose}
-            defaultTab={defaultTab}
             showClose={false} // We handle close externally
+            defaultTab={defaultTab}
             title={title}
             subtitle={subtitle}
           />

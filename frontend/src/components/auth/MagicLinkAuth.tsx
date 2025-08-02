@@ -64,7 +64,7 @@ export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
             Check your email
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            We've sent a magic link to <span className="font-medium text-gray-900 dark:text-gray-100">{email}</span>
+            We&apos;ve sent a magic link to <span className="font-medium text-gray-900 dark:text-gray-100">{email}</span>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Click the link in the email to complete your sign in. The link will expire in 60 minutes.
@@ -76,7 +76,7 @@ export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
             <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
             <div className="text-left">
               <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                Didn't receive the email?
+                Didn&apos;t receive the email?
               </p>
               <ul className="text-xs text-blue-700 dark:text-blue-300 mt-1 space-y-1">
                 <li>• Check your spam/junk folder</li>
@@ -112,7 +112,7 @@ export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
           Magic Link Sign In
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Enter your email address and we'll send you a secure link to sign in instantly - no password required.
+          Enter your email address and we&apos;ll send you a secure link to sign in instantly - no password required.
         </p>
       </div>
 

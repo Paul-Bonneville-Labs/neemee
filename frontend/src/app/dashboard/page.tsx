@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import dynamic from 'next/dynamic';
 import { HighlightList } from '@/components/HighlightList';
-import { HighlightEditor } from '@/components/HighlightEditor';
+// import { HighlightEditor } from '@/components/HighlightEditor';
 import { MarkdownViewer } from '@/components/MarkdownViewer';
 import { ToastContainer, useToasts } from '@/components/Toast';
 import { DeleteConfirmationModal } from '@/components/DeleteConfirmationModal';
 import { Highlight, HighlightListResponse, ApiResponse, HighlightUpdateRequest } from '@/types';
-import { LogOut, RefreshCw, Bookmark, FileText, Edit3, BookOpen, User } from 'lucide-react';
+import { LogOut, RefreshCw, Bookmark, FileText, User, ExternalLink } from 'lucide-react';
 import { BookmarkletDashboard } from '@/components/BookmarkletDashboard';
 import { useContentExtraction } from '@/hooks';
 import { formatDetailedDate } from '@/lib/dateUtils';
@@ -139,7 +139,7 @@ function DashboardContent() {
           console.error('API error:', result.error);
           setCurrentHighlight(null);
         }
-      } catch (err) {
+      } catch {
         setCurrentHighlight(null);
       }
     };
@@ -330,7 +330,7 @@ function DashboardContent() {
   const handleExtractContent = async () => {
     if (!currentHighlight) return;
     
-    const success = await extractContent(currentHighlight.id);
+    await extractContent(currentHighlight.id);
     
     // Always refresh the current highlight to get the updated content
     // (either successful extraction or error message saved as content)
@@ -550,7 +550,6 @@ function DashboardContent() {
                 onViewBookmarklet={handleViewBookmarklet}
                 onRefresh={handleRefreshHighlights}
                 isLoading={isLoading}
-                sidebarWidth={sidebarWidth}
               />
               
               {/* Resize Handle */}
@@ -592,14 +591,6 @@ function DashboardContent() {
                     <div className="absolute top-4 right-6 z-10">
                       <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg p-2">
                         <div className="flex items-center gap-2">
-                          <a 
-                            href={currentHighlight.page_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-4 py-2 bg-green-600/60 text-white text-sm font-medium rounded-lg hover:bg-green-600/80 transition-colors"
-                          >
-                            Visit Source
-                          </a>
                           <button
                             onClick={() => handleDeleteHighlight(currentHighlight.id)}
                             className="inline-flex items-center px-4 py-2 bg-red-600/60 text-white text-sm font-medium rounded-lg hover:bg-red-600/80 transition-colors"
@@ -641,13 +632,38 @@ function DashboardContent() {
                                 <label htmlFor="page-url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                   Page URL
                                 </label>
+                                <div className="relative">
+                                  <input
+                                    id="page-url"
+                                    type="url"
+                                    value={formData.page_url}
+                                    onChange={(e) => handleFormChange('page_url', e.target.value)}
+                                    className="w-full px-3 py-2 pr-10 rounded-md shadow-sm focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                    placeholder="https://example.com"
+                                  />
+                                  {formData.page_url && (
+                                    <button
+                                      type="button"
+                                      onClick={() => window.open(formData.page_url, '_blank', 'noopener,noreferrer')}
+                                      className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                                      title="Open in new tab"
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <label htmlFor="highlight-id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  Highlight ID
+                                </label>
                                 <input
-                                  id="page-url"
-                                  type="url"
-                                  value={formData.page_url}
-                                  onChange={(e) => handleFormChange('page_url', e.target.value)}
-                                  className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                                  placeholder="https://example.com"
+                                  id="highlight-id"
+                                  type="text"
+                                  value={currentHighlight.id}
+                                  disabled
+                                  className="w-full px-3 py-2 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                                 />
                               </div>
                               

@@ -10,7 +10,6 @@ import {
   Shield, 
   Github, 
   Chrome,
-  Mail,
   Loader2
 } from 'lucide-react';
 import { useAuth } from '../AuthProvider';

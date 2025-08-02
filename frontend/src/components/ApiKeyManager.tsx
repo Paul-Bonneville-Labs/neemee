@@ -287,7 +287,7 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
               </div>
               
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                This will create a new API key and invalidate the current one. You'll need to update your bookmarklet with the new key.
+                This will create a new API key and invalidate the current one. You&apos;ll need to update your bookmarklet with the new key.
               </p>
               
               <div className="flex gap-3">
