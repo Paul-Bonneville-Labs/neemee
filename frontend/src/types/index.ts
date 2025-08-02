@@ -125,8 +125,8 @@ export interface HighlightCreateRequest {
 
 export interface HighlightUpdateRequest {
   highlighted_text: string;
-  title?: string;
-  url?: string;
+  page_title?: string;
+  page_url?: string;
 }
 
 export interface HighlightFormData {
