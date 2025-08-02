@@ -108,7 +108,8 @@ gcloud run deploy $SERVICE_NAME \
   --set-secrets NEXT_PUBLIC_SUPABASE_ANON_KEY=neemee-supabase-anon-key:latest \
   --set-secrets GITHUB_REPO_OWNER=neemee-github-repo-owner:latest \
   --set-secrets GITHUB_REPO_NAME=neemee-github-repo-name:latest \
-  --set-env-vars NODE_ENV=production
+  --set-env-vars NODE_ENV=production \
+  --set-env-vars NEXT_PUBLIC_BASE_URL=https://neemee.paulbonneville.com
 
 echo ""
 echo "🎉 Deployment completed successfully!"
