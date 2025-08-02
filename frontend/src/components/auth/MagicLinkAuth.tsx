@@ -8,7 +8,7 @@ interface MagicLinkAuthProps {
   onSuccess?: () => void;
 }
 
-export function MagicLinkAuth({ }: MagicLinkAuthProps) {
+export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);

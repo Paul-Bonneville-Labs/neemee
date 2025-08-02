@@ -316,8 +316,8 @@ function DashboardContent() {
     try {
       await handleSaveHighlight({
         highlighted_text: formData.highlighted_text.trim(),
-        title: formData.page_title.trim(),
-        url: formData.page_url.trim()
+        page_title: formData.page_title.trim(),
+        page_url: formData.page_url.trim()
       });
       
       setHasUnsavedChanges(false);
@@ -546,6 +546,7 @@ function DashboardContent() {
                 highlights={highlights}
                 selectedHighlight={selectedHighlight || undefined}
                 onHighlightSelect={handleHighlightSelect}
+                onDeleteHighlight={handleDeleteHighlight}
                 onViewBookmarklet={handleViewBookmarklet}
                 onRefresh={handleRefreshHighlights}
                 isLoading={isLoading}

@@ -15,9 +15,10 @@ interface AuthModalProps {
 export function AuthModal({ 
   isOpen, 
   onClose, 
+  defaultTab,
   title,
   subtitle 
-}: Omit<AuthModalProps, 'defaultTab'>) {
+}: AuthModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Handle escape key
@@ -78,6 +79,7 @@ export function AuthModal({
           <Auth 
             onClose={onClose}
             showClose={false} // We handle close externally
+            defaultTab={defaultTab}
             title={title}
             subtitle={subtitle}
           />

@@ -19,10 +19,11 @@ export function HighlightList({
   highlights, 
   selectedHighlight, 
   onHighlightSelect, 
+  onDeleteHighlight,
   onViewBookmarklet, 
   onRefresh,
   isLoading = false
-}: Omit<HighlightListProps, 'onDeleteHighlight'>) {
+}: HighlightListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
