@@ -20,7 +20,7 @@ interface BookmarkletDashboardProps {
 }
 
 export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardProps) {
-  const { user, isAnonymous } = useAuth();
+  const { user } = useAuth();
   const [apiKey, setApiKey] = useState<UserApiKey | null>(null);
   const [bookmarklet, setBookmarklet] = useState<BookmarkletResponse | null>(null);
   const [highlights, setHighlights] = useState<HighlightListResponse | null>(null);
