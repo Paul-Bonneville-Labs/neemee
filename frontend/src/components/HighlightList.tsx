@@ -177,8 +177,8 @@ export function HighlightList({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-3 py-2 text-sm 
-                     bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                     border border-gray-200 dark:border-gray-700 rounded-md
+                     bg-white dark:bg-gray-800/40 text-gray-900 dark:text-gray-100
+                     rounded-md
                      placeholder-gray-500 dark:placeholder-gray-400
                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
@@ -209,7 +209,7 @@ export function HighlightList({
               <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-                className="w-full text-xs bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
+                className="w-full text-xs bg-white dark:bg-gray-700 
                          rounded px-2 py-1 text-gray-900 dark:text-gray-100"
               >
                 <option value="all">All time</option>
@@ -225,7 +225,7 @@ export function HighlightList({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full text-xs bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
+                className="w-full text-xs bg-white dark:bg-gray-700 
                          rounded px-2 py-1 text-gray-900 dark:text-gray-100"
               >
                 <option value="recent">Most recent</option>
@@ -264,28 +264,27 @@ export function HighlightList({
             )}
           </div>
         ) : (
-          <div className="p-2">
-            <div className="space-y-2">
+          <div className="p-4">
+            <div className="space-y-3">
               {sortedHighlights.map((highlight) => (
                 <div
                   key={highlight.id}
-                  className={`group relative rounded-md border transition-colors duration-200 ${
+                  className={`group relative rounded-md transition-colors duration-200 ${
                     selectedHighlight === highlight.id
-                      ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700'
-                      : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      ? 'bg-gray-50 dark:bg-gray-700'
+                      : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <button
                     onClick={() => onHighlightSelect(highlight.id)}
                     className="w-full text-left p-3"
-                    title={highlight.original_quote || highlight.highlighted_text}
                   >
                     <div className="space-y-2">
                       {/* Page title - moved above quote */}
                       {highlight.page_title && (
                         <p className={`text-xs font-medium truncate ${
                           selectedHighlight === highlight.id
-                            ? 'text-blue-700 dark:text-blue-300'
+                            ? 'text-gray-800 dark:text-gray-200'
                             : 'text-gray-700 dark:text-gray-300'
                         }`}>
                           {highlight.page_title}
@@ -295,7 +294,7 @@ export function HighlightList({
                       {/* Highlight preview with quotes */}
                       <p className={`text-sm font-bold italic leading-relaxed ${
                         selectedHighlight === highlight.id
-                          ? 'text-blue-900 dark:text-blue-100'
+                          ? 'text-gray-900 dark:text-gray-100'
                           : 'text-gray-900 dark:text-gray-100'
                       }`}>
                         "{truncateText(highlight.original_quote || highlight.highlighted_text)}"
@@ -324,7 +323,7 @@ export function HighlightList({
                             <span 
                               className={`text-xs font-bold truncate ${
                                 selectedHighlight === highlight.id
-                                  ? 'text-blue-600 dark:text-blue-400'
+                                  ? 'text-gray-700 dark:text-gray-300'
                                   : 'text-gray-600 dark:text-gray-400'
                               }`}
                               title={highlight.page_url}
@@ -336,7 +335,7 @@ export function HighlightList({
                           {/* Date */}
                           <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${
                             selectedHighlight === highlight.id
-                              ? 'text-blue-600 dark:text-blue-400'
+                              ? 'text-gray-600 dark:text-gray-300'
                               : 'text-gray-500 dark:text-gray-400'
                           }`}>
                             <CalendarIcon className="h-3 w-3 flex-shrink-0" />
@@ -347,35 +346,6 @@ export function HighlightList({
                     </div>
                   </button>
 
-                  {/* Action buttons */}
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onHighlightSelect(highlight.id);
-                        }}
-                        className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 
-                                 bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-200 dark:border-gray-600
-                                 transition-colors duration-200"
-                        title="View highlight"
-                      >
-                        <EyeIcon className="h-3 w-3" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteHighlight(highlight.id);
-                        }}
-                        className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 
-                                 bg-white dark:bg-gray-800 rounded shadow-sm border border-gray-200 dark:border-gray-600
-                                 transition-colors duration-200"
-                        title="Delete highlight"
-                      >
-                        <TrashIcon className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>

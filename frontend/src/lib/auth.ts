@@ -37,7 +37,7 @@ export async function getSession(): Promise<AuthSession | null> {
     // Map Supabase user to our AuthUser format
     const authUser: AuthUser = {
       id: user.id,
-      name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+      name: user.user_metadata?.full_name || user.user_metadata?.name || user.email || null,
       email: user.email || null,
       image: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
       username: user.user_metadata?.user_name || user.user_metadata?.preferred_username || null,

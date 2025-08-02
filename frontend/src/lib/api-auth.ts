@@ -6,7 +6,6 @@ import { getSession } from './auth';
  */
 export async function authenticateApiKey(apiKey: string): Promise<string | null> {
   try {
-    console.log('Authenticating API key:', apiKey?.substring(0, 8) + '...');
     const supabase = await createClient();
     
     // Find user by API key in user_api_keys table
@@ -16,11 +15,6 @@ export async function authenticateApiKey(apiKey: string): Promise<string | null>
       .eq('apiKey', apiKey)
       .single();
     
-    console.log('API key lookup result:', { 
-      found: !!apiKeyRecord, 
-      error: error?.message || error?.code,
-      apiKeyRecord: apiKeyRecord ? { userId: apiKeyRecord.userId } : null 
-    });
     
     if (error || !apiKeyRecord) {
       console.error('API key authentication failed:', error);
@@ -103,7 +97,6 @@ export async function getAuthContext(request: Request): Promise<{ userId: string
       };
     }
   } catch (error) {
-    console.log('Session auth failed, trying API key auth');
   }
   
   // Try API key authentication

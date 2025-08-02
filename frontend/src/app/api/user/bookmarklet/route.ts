@@ -121,7 +121,6 @@ function captureHighlight() {
     urlParams.set('key', API_KEY);
     
     var finalUrl = captureUrl + '?' + urlParams.toString();
-    console.log('Opening capture URL:', finalUrl.length, 'characters');
     
     // Open capture page in new window
     var newWindow = window.open(finalUrl, '_blank', 'width=600,height=800,scrollbars=yes,resizable=yes');

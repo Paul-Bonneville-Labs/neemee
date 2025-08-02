@@ -283,71 +283,45 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
       {/* Main Content */}
       {activeSection === 'setup' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - Setup */}
-          <div className="space-y-6">
-            {/* API Key Management */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <Key className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    API Key Management
-                  </h3>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Your API key is required for the bookmarklet to work
-                </p>
+          {/* API Key Management */}
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <Key className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  API Key Management
+                </h3>
               </div>
-              <div className="p-4">
-                <ApiKeyManager 
-                  apiKey={apiKey} 
-                  onUpdate={handleApiKeyUpdate}
-                />
-              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Your API key is required for the bookmarklet to work
+              </p>
             </div>
-
-            {/* Bookmarklet Installation */}
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <Bookmark className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Bookmarklet Installation
-                  </h3>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Drag the button below to your bookmarks bar
-                </p>
-              </div>
-              <div className="p-4">
-                <BookmarkletInstaller 
-                  bookmarklet={bookmarklet}
-                  isReady={!!apiKey}
-                />
-              </div>
+            <div className="p-4">
+              <ApiKeyManager 
+                apiKey={apiKey} 
+                onUpdate={handleApiKeyUpdate}
+              />
             </div>
           </div>
 
-          {/* Right Column - Instructions */}
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Setup Instructions
-                  </h3>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Step-by-step guide to get started
-                </p>
+          {/* Bookmarklet Installation */}
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <Bookmark className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Bookmarklet Installation
+                </h3>
               </div>
-              <div className="p-4">
-                <BookmarkletInstructions 
-                  hasApiKey={!!apiKey}
-                  hasBookmarklet={!!bookmarklet}
-                />
-              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Drag the button below to your bookmarks bar
+              </p>
+            </div>
+            <div className="p-4">
+              <BookmarkletInstaller 
+                bookmarklet={bookmarklet}
+                isReady={!!apiKey}
+              />
             </div>
           </div>
         </div>

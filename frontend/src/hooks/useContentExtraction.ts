@@ -30,13 +30,7 @@ export function useContentExtraction(): UseContentExtractionResult {
         result = {};
       }
       
-      console.log('API Response:', { 
-        status: response.status, 
-        ok: response.ok, 
-        result 
-      });
 
-      console.log('Response OK?', response.ok);
 
       if (!response.ok) {
         // Extract the error message (should already be formatted with Firecrawl status)
@@ -67,14 +61,12 @@ export function useContentExtraction(): UseContentExtractionResult {
       }
 
       if (result && result.status === 'error') {
-        console.log('HOOK DEBUG - Success response but status=error, result:', JSON.stringify(result, null, 2));
         throw new Error(result.errors?.join(', ') || 'Content extraction failed - no error details provided');
       }
 
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Content extraction failed';
-      console.log('Setting extraction error:', errorMessage);
       setExtractionError(errorMessage);
       return false;
     } finally {

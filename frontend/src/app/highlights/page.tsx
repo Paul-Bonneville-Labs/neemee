@@ -14,7 +14,6 @@ export default function HighlightsPage() {
 
   const handleHighlightSelect = (highlightId: string) => {
     setSelectedHighlight(highlightId);
-    console.log('Selected highlight:', highlightId);
     // Here you would typically:
     // 1. Fetch the full highlight details
     // 2. Show them in a detail view or modal

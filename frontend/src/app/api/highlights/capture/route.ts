@@ -20,14 +20,7 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('=== CAPTURE API START ===');
     const body = await request.json();
-    console.log('Request body:', { 
-      highlighted_text: body.highlighted_text?.length + ' chars', 
-      page_url: body.page_url, 
-      page_title: body.page_title,
-      api_key: body.api_key?.substring(0, 8) + '...'
-    });
     const { highlighted_text, page_url, page_title, api_key } = body;
 
     // Validate API key
@@ -43,11 +36,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Authenticate user via API key
-    console.log('Starting API key authentication...');
     const userId = await authenticateApiKey(api_key);
-    console.log('Authentication result:', { userId });
     if (!userId) {
-      console.log('Authentication failed - returning 401');
       const response: HighlightCaptureResponse = {
         success: false,
         message: 'Invalid API key',
@@ -120,7 +110,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log('Highlight saved successfully:', highlight.id);
 
     const response: HighlightCaptureResponse = {
       success: true,
