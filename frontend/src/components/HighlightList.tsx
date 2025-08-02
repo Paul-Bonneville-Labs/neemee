@@ -19,7 +19,7 @@ export function HighlightList({
   highlights, 
   selectedHighlight, 
   onHighlightSelect, 
-  onDeleteHighlight,
+  onDeleteHighlight: _onDeleteHighlight,
   onViewBookmarklet, 
   onRefresh,
   isLoading = false
