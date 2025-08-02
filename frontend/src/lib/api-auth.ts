@@ -96,7 +96,7 @@ export async function getAuthContext(request: Request): Promise<{ userId: string
         authType: 'session'
       };
     }
-  } catch (error) {
+  } catch {
   }
   
   // Try API key authentication

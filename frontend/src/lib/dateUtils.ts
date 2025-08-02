@@ -109,7 +109,7 @@ export const isRecent = (dateString: string): boolean => {
     const diffInMs = now.getTime() - date.getTime();
     const diffInDays = diffInMs / (24 * 60 * 60 * 1000);
     return diffInDays < 7;
-  } catch (error) {
+  } catch {
     return false;
   }
 };

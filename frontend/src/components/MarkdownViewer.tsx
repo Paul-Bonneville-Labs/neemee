@@ -27,7 +27,6 @@ import {
   InsertThematicBreak,
   InsertCodeBlock,
   InsertImage,
-  CodeToggle,
   StrikeThroughSupSubToggles,
   DiffSourceToggleWrapper,
   ButtonWithTooltip,
@@ -47,7 +46,7 @@ interface MarkdownViewerProps {
 
 function MDXViewerComponent({ content, isLoading = false, className = '', editable = false, onChange }: MarkdownViewerProps) {
   const [mounted, setMounted] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [, setIsDarkMode] = useState(false);
   const [originalContent, setOriginalContent] = useState(content);
 
   useEffect(() => {
@@ -135,7 +134,7 @@ function MDXViewerComponent({ content, isLoading = false, className = '', editab
               No Content Available
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Click the "Extract Text" button above to get the full content from this page's URL.
+              Click the &ldquo;Extract Text&rdquo; button above to get the full content from this page&apos;s URL.
             </p>
           </div>
         </div>

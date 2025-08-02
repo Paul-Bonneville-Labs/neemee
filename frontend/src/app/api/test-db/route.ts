@@ -20,7 +20,7 @@ export async function GET() {
     }
     
     // Test auth connection
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     
     return NextResponse.json({ 
       success: true,

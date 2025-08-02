@@ -12,7 +12,7 @@ export default function CapturePage() {
     title: string;
   } | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
-  const [processingStage, setProcessingStage] = useState<'saving' | 'complete'>('saving');
+  const [, setProcessingStage] = useState<'saving' | 'complete'>('saving');
 
   useEffect(() => {
     const captureHighlight = async () => {
@@ -156,7 +156,7 @@ export default function CapturePage() {
               
               <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-3 rounded-r mb-4">
                 <p className="text-sm text-gray-800 dark:text-gray-200 italic">
-                  "{highlightData.text}"
+                  &ldquo;{highlightData.text}&rdquo;
                 </p>
               </div>
               

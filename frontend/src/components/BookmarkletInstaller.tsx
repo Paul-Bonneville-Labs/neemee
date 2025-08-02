@@ -7,8 +7,6 @@ import {
   AlertCircle,
   Chrome,
   Globe,
-  ArrowDown,
-  MousePointer,
   Copy,
   ExternalLink,
   Monitor,
@@ -24,8 +22,7 @@ interface BookmarkletInstallerProps {
 
 export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: BookmarkletInstallerProps) {
   const [userAgent, setUserAgent] = useState('');
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [showTestResult, setShowTestResult] = useState<'success' | 'error' | null>(null);
+  const [showTestResult] = useState<'success' | 'error' | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
@@ -73,12 +70,6 @@ export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: B
     }
   };
 
-  const testBookmarklet = () => {
-    // Simulate testing the bookmarklet
-    setShowTestResult('success');
-    setIsInstalled(true);
-    setTimeout(() => setShowTestResult(null), 3000);
-  };
 
   if (!isReady) {
     return (
@@ -147,8 +138,8 @@ export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: B
               Installation Steps
             </h4>
             <ol className="text-xs text-blue-800 dark:text-blue-200 space-y-2 list-decimal list-inside text-left max-w-md mx-auto">
-              <li>Right-click on your bookmarks bar and select "Add bookmark" (or use Ctrl+Shift+D / Cmd+Shift+D)</li>
-              <li>Set the name to: <strong>"Post to Neemee"</strong></li>
+              <li>Right-click on your bookmarks bar and select &ldquo;Add bookmark&rdquo; (or use Ctrl+Shift+D / Cmd+Shift+D)</li>
+              <li>Set the name to: <strong>&ldquo;Post to Neemee&rdquo;</strong></li>
               <li>Copy the JavaScript code below and paste it as the URL</li>
               <li>Save the bookmark</li>
             </ol>
@@ -200,7 +191,7 @@ export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: B
             
             <ol className="text-sm text-gray-600 dark:text-gray-400 space-y-2 list-decimal list-inside ml-4">
               <li>Select some text on any webpage</li>
-              <li>Click the "Post to Neemee" bookmark</li>
+              <li>Click the &ldquo;Post to Neemee&rdquo; bookmark</li>
               <li>Look for a success notification</li>
             </ol>
 
@@ -244,7 +235,7 @@ export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: B
               <>
                 <p>• Make sure your bookmarks bar is visible (Ctrl+Shift+B)</p>
                 <p>• Drag the button directly to the bookmarks bar</p>
-                <p>• You can also right-click and "Bookmark this link"</p>
+                <p>• You can also right-click and &ldquo;Bookmark this link&rdquo;</p>
               </>
             )}
             {browser.name === 'Firefox' && (
@@ -265,7 +256,7 @@ export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: B
               <>
                 <p>• Look for a bookmarks or favorites bar in your browser</p>
                 <p>• Drag the button there, or copy the code manually</p>
-                <p>• Enable JavaScript if bookmarklets don't work</p>
+                <p>• Enable JavaScript if bookmarklets don&apos;t work</p>
               </>
             )}
           </div>

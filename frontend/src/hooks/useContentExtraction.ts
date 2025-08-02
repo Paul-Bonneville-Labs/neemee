@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { Highlight } from '@/types';
 
 interface UseContentExtractionResult {
   extractContent: (highlightId: string) => Promise<boolean>;

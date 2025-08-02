@@ -28,7 +28,7 @@ export function SocialAuth({ onSuccess }: SocialAuthProps) {
           // onSuccess will be called after redirect
         }
       }
-    } catch (error) {
+    } catch {
       // Error handling is done by the auth context
     }
   };

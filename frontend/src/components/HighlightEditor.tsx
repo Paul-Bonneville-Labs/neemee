@@ -3,15 +3,12 @@
 import { useState, useEffect } from 'react';
 import { 
   Edit3, 
-  Database, 
   Save, 
   X, 
   AlertTriangle,
-  CheckCircle,
   Loader2
 } from 'lucide-react';
 import { 
-  Highlight, 
   HighlightEditTab, 
   HighlightEditProps, 
   HighlightFormData, 

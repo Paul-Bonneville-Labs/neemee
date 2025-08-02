@@ -7,13 +7,8 @@ import {
   ChevronRight,
   ChevronDown,
   HelpCircle,
-  AlertTriangle,
   Lightbulb,
-  MousePointer,
-  Bookmark,
-  Zap,
-  Shield,
-  Globe
+  Shield
 } from 'lucide-react';
 
 interface BookmarkletInstructionsProps {
@@ -309,7 +304,7 @@ export function BookmarkletInstructions({
               Pro Tips
             </h3>
             <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
-              <li>• Keep your API key secure and don't share it with others</li>
+              <li>• Keep your API key secure and don&apos;t share it with others</li>
               <li>• The bookmarklet works on most websites, including news sites and blogs</li>
               <li>• You can highlight multiple selections on the same page</li>
               <li>• Your highlights are automatically organized by domain and date</li>
