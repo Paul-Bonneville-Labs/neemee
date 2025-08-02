@@ -242,7 +242,7 @@ export interface HighlightStats {
 // Browser Detection Types
 export interface BrowserInfo {
   name: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<Record<string, unknown>>;
   color: string;
 }
 

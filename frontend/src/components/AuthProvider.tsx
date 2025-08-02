@@ -70,9 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
-  const handleAuthError = (error: SupabaseAuthError | any): AuthError => ({
-    message: error?.message || 'An authentication error occurred',
-    code: error?.code || error?.status?.toString()
+  const handleAuthError = (error: SupabaseAuthError | Error | unknown): AuthError => ({
+    message: (error as any)?.message || 'An authentication error occurred',
+    code: (error as any)?.code || (error as any)?.status?.toString()
   });
 
   const updateAuthState = (updates: Partial<AuthState>) => {

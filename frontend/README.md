@@ -30,12 +30,37 @@ cp .env.example .env.local  # Configure with your keys
 npm run dev                 # Start with Turbopack
 ```
 
-**Available Scripts:**
+**Development Scripts:**
 ```bash
-npm run dev     # Development server with Turbopack
-npm run build   # Production build
-npm run start   # Production server
-npm run lint    # ESLint
+# Development Servers
+npm run dev              # Development server with Turbopack
+npm run dev:lint         # Dev server + real-time linting (recommended)
+
+# Code Quality & Linting
+npm run lint             # Run ESLint
+npm run lint:fix         # Auto-fix ESLint issues
+npm run lint:watch       # Watch mode for linting
+npm run type-check       # TypeScript type checking
+npm run type-check:watch # Watch mode for TypeScript
+npm run check            # Run both TypeScript + ESLint
+
+# Production
+npm run build            # Production build
+npm run start            # Production server
+```
+
+**Recommended Development Workflow:**
+```bash
+# Start development with live linting
+npm run dev:lint
+
+# Or run in separate terminals:
+npm run dev              # Terminal 1: Dev server  
+npm run lint:watch       # Terminal 2: Live linting
+
+# Before committing
+npm run check            # Verify no errors
+npm run lint:fix         # Auto-fix issues
 ```
 
 ### Tech Stack

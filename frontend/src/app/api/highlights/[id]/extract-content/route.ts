@@ -135,7 +135,7 @@ export async function POST(
       
       // Handle 422 validation errors specifically  
       if (backendResponse.status === 422 && errorData.detail && Array.isArray(errorData.detail)) {
-        const validationErrors = errorData.detail.map((err: any) => {
+        const validationErrors = errorData.detail.map((err: { loc?: string[]; msg?: string }) => {
           const field = err.loc ? err.loc.join('.') : 'unknown';
           return `${field}: ${err.msg} (received: ${JSON.stringify(err.input)})`;
         });

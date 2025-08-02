@@ -212,7 +212,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const supabase = await createClient();
     
     // Build update object (map interface fields to database fields)
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       highlighted_text: sanitizedText,
     };
 
