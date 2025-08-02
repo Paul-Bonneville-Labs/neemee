@@ -43,9 +43,7 @@ export async function GET() {
     const userApiKey = apiKeys[0].apiKey;
 
     // Get the base URL from environment or request
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-                   'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     // Generate bookmarklet JavaScript code using void wrapper to bypass CSP
     const jsCode = `void(function(){

@@ -57,7 +57,7 @@ gcloud run deploy $SERVICE_NAME \
   --set-env-vars ENABLE_ASYNC_PROCESSING=true \
   --set-env-vars ENABLE_ENTITY_CACHING=true \
   --set-env-vars ENABLE_DEBUG_MODE=false \
-  --set-env-vars CORS_ORIGINS="[\"https://arrgh.paulbonneville.com\"]" \
+  --set-env-vars CORS_ORIGINS="[\"https://neemee.paulbonneville.com\"]" \
   --set-secrets OPENAI_API_KEY=newsletter-openai-api-key:latest \
   --set-secrets NEO4J_PASSWORD=newsletter-neo4j-password:latest \
   --set-secrets NEO4J_URI=newsletter-neo4j-uri:latest \

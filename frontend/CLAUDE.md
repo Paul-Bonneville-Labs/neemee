@@ -149,7 +149,7 @@ gcloud run deploy neemee-frontend \
 - **Production Ready**: Successfully builds and deploys on Cloud Run with buildpacks
 
 ### Repository Status
-- **Repository**: https://github.com/Paul-Bonneville-Labs/arrgh-collect
+- **Repository**: https://github.com/Paul-Bonneville-Labs/neemee
 - **Main branch**: Deployable and tested
 - **Latest Features**: Resizable sidebar, recursive file discovery, enhanced UX improvements
 - **Recent PRs**: PR #8 for resizable sidebar and file list improvements
@@ -176,5 +176,6 @@ gcloud run deploy neemee-frontend \
 - **Public Access**: Enabled
 - **Scaling**: Managed by Cloud Run
 - **Cost**: Pay-per-use model
-- **Live URL**: https://arrgh-collect-860937201650.us-central1.run.app
+- **Live URL**: https://neemee.paulbonneville.com (Custom domain)
+- **Cloud Run URL**: https://neemee-frontend-860937201650.us-central1.run.app
 - **Build Status**: Stable with latest enhancements deployed
