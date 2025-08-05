@@ -25,10 +25,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
   
   const { 
     user, 
-    isAnonymous, 
     signOut, 
-    signInWithProvider, 
-    linkAccount, 
     authState 
   } = useAuth();
 
@@ -55,12 +52,9 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
     setIsOpen(false);
   };
 
-  const handleLinkAccount = async (provider: 'github' | 'google') => {
-    if (isAnonymous) {
-      await linkAccount(provider);
-    } else {
-      await signInWithProvider(provider);
-    }
+  const handleLinkAccount = async () => {
+    // Note: Current auth system doesn't support provider linking
+    // This would need to be implemented in the auth system
     setIsOpen(false);
     setShowUpgradeOptions(false);
   };
@@ -94,7 +88,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
           ) : (
             <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           )}
-          {isAnonymous && (
+          {false && (
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border border-white dark:border-gray-800" />
           )}
         </div>
@@ -105,11 +99,11 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
             {user.name || 'Anonymous'}
           </div>
           <div className={`text-xs truncate ${
-            isAnonymous 
+            false 
               ? 'text-amber-600 dark:text-amber-400' 
               : 'text-gray-500 dark:text-gray-400'
           }`}>
-            {isAnonymous ? 'Temporary Session' : (user.role || 'User')}
+            {user.role || 'User'}
           </div>
         </div>
 
@@ -136,7 +130,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                 ) : (
                   <User className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                 )}
-                {isAnonymous && (
+                {false && (
                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full border-2 border-white dark:border-gray-800" />
                 )}
               </div>
@@ -150,18 +144,18 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                   </div>
                 )}
                 <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                  isAnonymous
+                  false
                     ? 'bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200'
                     : 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200'
                 }`}>
-                  {isAnonymous ? 'Temporary' : 'Permanent'}
+                  {'Permanent'}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Anonymous User Upgrade Options */}
-          {isAnonymous && (
+          {false && (
             <div className="p-2 border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setShowUpgradeOptions(!showUpgradeOptions)}
@@ -180,7 +174,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
               {showUpgradeOptions && (
                 <div className="mt-2 space-y-1">
                   <button
-                    onClick={() => handleLinkAccount('google')}
+                    onClick={() => handleLinkAccount()}
                     disabled={isLoading}
                     className="w-full flex items-center gap-3 px-3 py-2 text-left
                              text-gray-700 dark:text-gray-300 
@@ -197,7 +191,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                   </button>
                   
                   <button
-                    onClick={() => handleLinkAccount('github')}
+                    onClick={() => handleLinkAccount()}
                     disabled={isLoading}
                     className="w-full flex items-center gap-3 px-3 py-2 text-left
                              text-gray-700 dark:text-gray-300 
@@ -234,7 +228,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
               <span className="text-sm">Settings</span>
             </button>
 
-            {!isAnonymous && (
+            {true && (
               <button
                 className="w-full flex items-center gap-3 px-3 py-2 text-left
                          text-gray-700 dark:text-gray-300 
@@ -265,7 +259,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                 <LogOut className="h-4 w-4" />
               )}
               <span className="text-sm">
-                {isAnonymous ? 'End Session' : 'Sign Out'}
+                {'Sign Out'}
               </span>
             </button>
           </div>

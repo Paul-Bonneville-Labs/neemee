@@ -186,6 +186,11 @@ export interface HighlightListProps {
   onViewBookmarklet: () => void;
   onRefresh?: () => void;
   isLoading?: boolean;
+  sidebarWidth?: number;
+  userInfo?: {
+    name?: string;
+    role?: string;
+  };
 }
 
 // Bookmarklet Dashboard Types

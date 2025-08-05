@@ -28,7 +28,9 @@ function DashboardContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false); // Guard to prevent multiple loads
   const [sidebarWidth, setSidebarWidth] = useState(320); // Default 320px (w-80)
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(320); // Default 320px (w-80)
   const [isResizing, setIsResizing] = useState(false);
+  const [isRightResizing, setIsRightResizing] = useState(false);
   const [activeTab, setActiveTab] = useState<'files' | 'bookmarklet'>('files');
   
   // Form state for inline editing
@@ -55,6 +57,15 @@ function DashboardContent() {
       const width = parseInt(savedWidth, 10);
       if (!isNaN(width) && width >= 240 && width <= 600) { // Validate range and NaN
         setSidebarWidth(width);
+      }
+    }
+    
+    // Load saved right sidebar width from localStorage with enhanced validation
+    const savedRightWidth = localStorage.getItem('right-sidebar-width');
+    if (savedRightWidth && /^\d+$/.test(savedRightWidth.trim())) {
+      const width = parseInt(savedRightWidth, 10);
+      if (!isNaN(width) && width >= 240 && width <= 600) { // Validate range and NaN
+        setRightSidebarWidth(width);
       }
     }
   }, []);
@@ -399,6 +410,40 @@ function DashboardContent() {
     setIsResizing(false);
   }, []);
 
+  // Right sidebar resize handlers
+  const handleRightMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsRightResizing(true);
+    e.preventDefault();
+  }, []);
+
+  const handleRightMouseMove = useCallback((e: MouseEvent) => {
+    if (!isRightResizing) return;
+    
+    // Throttle the resize for better performance
+    const now = Date.now();
+    const lastCall = (handleRightMouseMove as unknown as { lastCall?: number }).lastCall || 0;
+    if (now - lastCall < 16) return; // ~60fps
+    (handleRightMouseMove as unknown as { lastCall: number }).lastCall = now;
+    
+    // Calculate relative width for right sidebar (resize from left edge)
+    const rightSidebar = document.querySelector('[data-right-sidebar]') as HTMLElement;
+    if (!rightSidebar) return;
+    
+    const sidebarRect = rightSidebar.getBoundingClientRect();
+    const newWidth = sidebarRect.right - e.clientX;
+    const minWidth = 240; // Minimum sidebar width
+    const maxWidth = Math.min(600, window.innerWidth * 0.4); // Max 40% of window width or 600px
+    
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      setRightSidebarWidth(newWidth);
+      localStorage.setItem('right-sidebar-width', newWidth.toString());
+    }
+  }, [isRightResizing]);
+
+  const handleRightMouseUp = useCallback(() => {
+    setIsRightResizing(false);
+  }, []);
+
   // Add global mouse event listeners for resizing
   useEffect(() => {
     if (isResizing) {
@@ -415,6 +460,23 @@ function DashboardContent() {
       };
     }
   }, [isResizing, handleMouseMove, handleMouseUp]);
+
+  // Add global mouse event listeners for right sidebar resizing
+  useEffect(() => {
+    if (isRightResizing) {
+      document.addEventListener('mousemove', handleRightMouseMove);
+      document.addEventListener('mouseup', handleRightMouseUp);
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+      
+      return () => {
+        document.removeEventListener('mousemove', handleRightMouseMove);
+        document.removeEventListener('mouseup', handleRightMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+    }
+  }, [isRightResizing, handleRightMouseMove, handleRightMouseUp]);
 
   // TEMPORARY: Skip loading and session checks for testing
   // if (status === 'loading') {
@@ -435,7 +497,7 @@ function DashboardContent() {
   // Prevent hydration mismatch - show loading until mounted
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading...</p>
@@ -445,7 +507,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
+    <div className="h-screen bg-white dark:bg-black flex flex-col overflow-hidden">
       {/* Header */}
       <header>
         <div className="px-6 py-3">
@@ -566,19 +628,19 @@ function DashboardContent() {
             <div className="flex-1 flex flex-col relative min-h-0">
               {selectedHighlight && !currentHighlight ? (
                 /* Loading state when highlight is selected but not yet loaded */
-                <div className="flex-1 flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-8">
+                <div className="flex-1 flex flex-col items-center justify-center bg-white dark:bg-black p-8">
                   <div className="text-center">
                     <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
                     <p className="text-gray-600 dark:text-gray-400">Loading highlight...</p>
                   </div>
                 </div>
               ) : currentHighlight ? (
-                  <div className="flex flex-col h-full relative">
+                  <div className="flex h-full relative">
                     {/* Mobile Back Button */}
-                    <div className="lg:hidden px-6 py-4">
+                    <div className="lg:hidden absolute top-4 left-6 z-10">
                       <button
                         onClick={handleCancelView}
-                        className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-md"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -586,32 +648,24 @@ function DashboardContent() {
                         Back to Highlights
                       </button>
                     </div>
-
-                    {/* Floating Action Buttons */}
-                    <div className="absolute top-4 right-6 z-10">
-                      <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-lg p-2">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleDeleteHighlight(currentHighlight.id)}
-                            className="inline-flex items-center px-4 py-2 bg-red-600/60 text-white text-sm font-medium rounded-lg hover:bg-red-600/80 transition-colors"
-                          >
-                            Delete
-                          </button>
-                          <button
-                            onClick={handleSaveForm}
-                            disabled={!hasUnsavedChanges}
-                            className="flex items-center px-4 py-2 bg-blue-600/60 text-white text-sm font-medium rounded-lg hover:bg-blue-600/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                          >
-                            {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
                     
+                    {/* Main Content Area */}
                     <div className="flex-1 overflow-y-auto">
-                      <div className="p-6 bg-white dark:bg-gray-900">
+                      <div className="p-6 bg-white dark:bg-black">
                         <div className="w-full">
                           <div className="space-y-6">
+                            {/* Original Quote Section - Moved to top with enhanced styling */}
+                            <div>
+                              <label htmlFor="original-quote" className="block text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                                Original Quote
+                              </label>
+                              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                <p className="text-lg leading-relaxed text-gray-800 dark:text-gray-200 italic">
+                                  {formData.original_quote || '(No original quote available for this highlight)'}
+                                </p>
+                              </div>
+                            </div>
+
                             {/* Page Information Section */}
                             <div className="space-y-4">
                               <div>
@@ -654,45 +708,6 @@ function DashboardContent() {
                                 </div>
                               </div>
                               
-                              <div>
-                                <label htmlFor="highlight-id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                  Highlight ID
-                                </label>
-                                <input
-                                  id="highlight-id"
-                                  type="text"
-                                  value={currentHighlight.id}
-                                  disabled
-                                  className="w-full px-3 py-2 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                                />
-                              </div>
-                              
-                              <div>
-                                <label htmlFor="created-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                  Created On
-                                </label>
-                                <input
-                                  id="created-date"
-                                  type="text"
-                                  value={formatDetailedDate(currentHighlight.created_at)}
-                                  disabled
-                                  className="w-full px-3 py-2 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                                />
-                              </div>
-                              
-                              {/* Original Quote Section - Read Only */}
-                              <div>
-                                <label htmlFor="original-quote" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                  Original Quote
-                                </label>
-                                <textarea
-                                  id="original-quote"
-                                  value={formData.original_quote || '(No original quote available for this highlight)'}
-                                  disabled
-                                  rows={3}
-                                  className="w-full px-3 py-2 rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed resize-none"
-                                />
-                              </div>
                             </div>
                             
                             {/* Highlighted Text Section */}
@@ -743,9 +758,77 @@ function DashboardContent() {
                         </div>
                       </div>
                     </div>
+                    
+                    {/* Sticky Right Sidebar with Action Buttons */}
+                    <div 
+                      data-right-sidebar
+                      className="flex-shrink-0 sticky top-0 h-screen overflow-y-auto hidden lg:block relative"
+                      style={{ width: rightSidebarWidth }}
+                    >
+                      {/* Resize Handle - Left side of right sidebar */}
+                      <div
+                        className={`absolute top-0 left-0 w-1 h-full cursor-ew-resize bg-transparent hover:bg-blue-500 hover:bg-opacity-50 transition-colors duration-200 group ${isRightResizing ? 'bg-blue-500 bg-opacity-50' : ''}`}
+                        onMouseDown={handleRightMouseDown}
+                      >
+                        {/* Visual indicator */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-gray-300 group-hover:bg-blue-500 transition-colors duration-200 rounded-full"></div>
+                      </div>
+                      
+                      <div className="p-4 bg-white dark:bg-black h-full">
+                        <div className="space-y-4">
+                          {/* Save Button - Larger and at top */}
+                          <button
+                            onClick={handleSaveForm}
+                            disabled={!hasUnsavedChanges}
+                            className="w-full flex items-center justify-center px-6 py-4 bg-blue-600 text-white text-base font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
+                          >
+                            {hasUnsavedChanges ? 'Save Changes' : 'Saved'}
+                          </button>
+                          
+                          {/* Delete Button - Below save */}
+                          <button
+                            onClick={() => handleDeleteHighlight(currentHighlight.id)}
+                            className="w-full inline-flex items-center justify-center px-4 py-3 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors shadow-md"
+                          >
+                            Delete Highlight
+                          </button>
+                          
+                          {/* Highlight Details */}
+                          <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+                            <div>
+                              <label htmlFor="sidebar-highlight-id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Highlight ID
+                              </label>
+                              <input
+                                id="sidebar-highlight-id"
+                                type="text"
+                                value={currentHighlight.id}
+                                disabled
+                                title={currentHighlight.id}
+                                className="w-full px-3 py-2 text-xs rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed font-mono"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label htmlFor="sidebar-created-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Created On
+                              </label>
+                              <input
+                                id="sidebar-created-date"
+                                type="text"
+                                value={formatDetailedDate(currentHighlight.created_at)}
+                                disabled
+                                title={formatDetailedDate(currentHighlight.created_at)}
+                                className="w-full px-3 py-2 text-xs rounded-md shadow-sm bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
               ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-8">
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-black p-8">
                   <div className="text-center max-w-md">
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FileText className="h-8 w-8 text-gray-400" />
@@ -799,7 +882,7 @@ function DashboardContent() {
 export default dynamic(() => Promise.resolve(DashboardContent), {
   ssr: false,
   loading: () => (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+    <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
         <p className="text-gray-600 dark:text-gray-400">Loading Dashboard...</p>

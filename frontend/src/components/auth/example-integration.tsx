@@ -49,7 +49,6 @@ export function ExampleHeader() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        defaultTab="anonymous"
       />
     </header>
   );
@@ -57,7 +56,7 @@ export function ExampleHeader() {
 
 // Example: Dashboard page with auth protection
 export function ExampleDashboard() {
-  const { user, loading, isAnonymous } = useAuth();
+  const { user, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   if (loading) {
@@ -98,16 +97,16 @@ export function ExampleDashboard() {
       <ExampleHeader />
       
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Anonymous user upgrade prompt */}
-        {isAnonymous && (
+        {/* Unauthenticated user prompt */}
+        {!user && (
           <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                  Anonymous Session Active
+                  Sign In Required
                 </h3>
                 <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                  Create a permanent account to save your progress
+                  Create an account to save your progress
                 </p>
               </div>
               <button
@@ -170,7 +169,6 @@ export function ExampleDashboard() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        defaultTab="email"
         title="Upgrade Your Account"
         subtitle="Create a permanent account to save your data"
       />
@@ -183,7 +181,6 @@ export function ExampleQuickAuth() {
   return (
     <div className="max-w-md mx-auto mt-8">
       <Auth
-        defaultTab="anonymous"
         title="Quick Demo"
         subtitle="Try Neemee instantly"
         onClose={() => window.location.href = '/dashboard'}

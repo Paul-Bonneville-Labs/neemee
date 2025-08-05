@@ -162,8 +162,7 @@ function MDXViewerComponent({ content, isLoading = false, className = '', editab
               tablePlugin(),
               imagePlugin(),
               codeBlockPlugin({
-                defaultCodeBlockLanguage: 'text',
-                codeMirrorExtensions: []
+                defaultCodeBlockLanguage: 'text'
               }),
               codeMirrorPlugin({
                 codeBlockLanguages: {

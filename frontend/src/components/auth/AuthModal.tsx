@@ -7,7 +7,6 @@ import { Auth } from '../Auth';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  defaultTab?: string;
   title?: string;
   subtitle?: string;
 }
@@ -15,7 +14,6 @@ interface AuthModalProps {
 export function AuthModal({ 
   isOpen, 
   onClose, 
-  defaultTab,
   title,
   subtitle 
 }: AuthModalProps) {
@@ -79,7 +77,6 @@ export function AuthModal({
           <Auth 
             onClose={onClose}
             showClose={false} // We handle close externally
-            defaultTab={defaultTab}
             title={title}
             subtitle={subtitle}
           />

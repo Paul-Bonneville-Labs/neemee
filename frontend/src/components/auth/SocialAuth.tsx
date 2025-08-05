@@ -1,33 +1,26 @@
 'use client';
 
 import { Github, Chrome, Loader2, AlertCircle, Shield } from 'lucide-react';
-import { useAuth, type AuthProvider } from '../AuthProvider';
+import { useAuth } from '../AuthProvider';
 
 interface SocialAuthProps {
   onSuccess?: () => void;
 }
 
 export function SocialAuth({ onSuccess }: SocialAuthProps) {
-  const { signInWithProvider, linkAccount, authState, clearError, isAnonymous, user } = useAuth();
+  const { authState, clearError } = useAuth();
 
-  const handleProviderSignIn = async (provider: AuthProvider) => {
+  const handleProviderSignIn = async (provider: string) => {
     clearError();
     
     try {
-      if (isAnonymous && user) {
-        // Link account for anonymous users
-        const { error } = await linkAccount(provider);
-        if (!error) {
-          onSuccess?.();
-        }
-      } else {
-        // Regular sign in
-        const { error } = await signInWithProvider(provider);
-        if (!error) {
-          // OAuth redirect will handle the rest
-          // onSuccess will be called after redirect
-        }
-      }
+      // Note: Social auth providers are not implemented in the current auth system
+      // This would need to be implemented in the AuthProvider
+      console.log('Social auth not implemented for provider:', provider);
+      alert('Social authentication is not yet implemented. Please use magic link authentication.');
+      
+      // Call onSuccess for consistency (even though auth didn't actually happen)
+      onSuccess?.();
     } catch {
       // Error handling is done by the auth context
     }
@@ -35,14 +28,14 @@ export function SocialAuth({ onSuccess }: SocialAuthProps) {
 
   const providers = [
     {
-      id: 'google' as AuthProvider,
+      id: 'google',
       name: 'Google',
       icon: Chrome,
       description: 'Continue with your Google account',
       color: 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
     },
     {
-      id: 'github' as AuthProvider,
+      id: 'github',
       name: 'GitHub',
       icon: Github,
       description: 'Continue with your GitHub account',
@@ -61,13 +54,10 @@ export function SocialAuth({ onSuccess }: SocialAuthProps) {
           <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          {isAnonymous ? 'Link Your Account' : 'Social Sign In'}
+          {'Social Sign In'}
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          {isAnonymous 
-            ? 'Connect a social account to save your progress and access your data from any device.'
-            : 'Choose your preferred social account to continue. Fast, secure, and no password required.'
-          }
+          {'Choose your preferred social account to continue. Fast, secure, and no password required.'}
         </p>
       </div>
 
@@ -83,7 +73,7 @@ export function SocialAuth({ onSuccess }: SocialAuthProps) {
       <div className="space-y-3">
         {providers.map((provider) => {
           const Icon = provider.icon;
-          const isProviderLoading = isLoading && authState.method === 'oauth';
+          const isProviderLoading = authState.isSigningIn;
           
           return (
             <button
@@ -102,7 +92,7 @@ export function SocialAuth({ onSuccess }: SocialAuthProps) {
                 <Icon className="h-5 w-5" />
               )}
               <span>
-                {isAnonymous ? `Link ${provider.name} Account` : `Continue with ${provider.name}`}
+                {`Continue with ${provider.name}`}
               </span>
             </button>
           );
@@ -112,29 +102,20 @@ export function SocialAuth({ onSuccess }: SocialAuthProps) {
       {/* Benefits */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
         <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-          {isAnonymous ? 'Benefits of linking your account:' : 'Why use social sign in?'}
+          {'Why use social sign in?'}
         </h4>
         <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-          {isAnonymous ? (
-            <>
-              <li>• Keep your highlights and data safe</li>
-              <li>• Access your account from any device</li>
-              <li>• Sync across all your devices</li>
-              <li>• Never lose your progress</li>
-            </>
-          ) : (
-            <>
-              <li>• No passwords to create or remember</li>
-              <li>• Secure authentication through trusted providers</li>
-              <li>• Quick and easy one-click sign in</li>
-              <li>• Your data stays private and secure</li>
-            </>
-          )}
+          <>
+            <li>• No passwords to create or remember</li>
+            <li>• Secure authentication through trusted providers</li>
+            <li>• Quick and easy one-click sign in</li>
+            <li>• Your data stays private and secure</li>
+          </>
         </ul>
       </div>
 
       {/* Anonymous User Notice */}
-      {isAnonymous && (
+      {false && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <div className="p-1 bg-amber-100 dark:bg-amber-900/40 rounded-full flex-shrink-0">

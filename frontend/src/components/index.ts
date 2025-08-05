@@ -14,5 +14,3 @@ export { Auth } from './Auth';
 export { AuthProvider } from './AuthProvider';
 
 // UI components
-export { ResizableSidebar } from './ResizableSidebar';
-export { Sidebar } from './Sidebar';
