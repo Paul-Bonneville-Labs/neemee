@@ -23,6 +23,7 @@
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
     "@types/js-yaml": "^4.0.9",
+    "daisyui": "^5.0.50",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.0",
     "lucide-react": "^0.525.0",

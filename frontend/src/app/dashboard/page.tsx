@@ -508,90 +508,158 @@ function DashboardContent() {
 
   return (
     <div className="h-screen bg-white dark:bg-black flex flex-col overflow-hidden">
-      {/* Header */}
-      <header>
-        <div className="px-6 py-3">
-          <div className="flex items-center justify-between">
-            {/* Left side - App name */}
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {appConfig.app.displayName}
-              </h1>
+      {/* Modern DaisyUI Navigation Header */}
+      <div className="navbar bg-base-100 shadow-sm border-b border-base-200">
+        <div className="navbar-start">
+          {/* Mobile Navigation Dropdown */}
+          <div className="dropdown lg:hidden">
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
+              </svg>
             </div>
-            
-            {/* Center - Navigation Links */}
-            <nav className="flex items-center gap-6">
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow-lg border border-base-200"
+            >
+              <li>
+                <button
+                  onClick={() => setActiveTab('files')}
+                  className={`${activeTab === 'files' ? 'active' : ''}`}
+                >
+                  <FileText className="h-4 w-4" />
+                  Highlights
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => setActiveTab('bookmarklet')}
+                  className={`${activeTab === 'bookmarklet' ? 'active' : ''}`}
+                >
+                  <Bookmark className="h-4 w-4" />
+                  Bookmarklet
+                </button>
+              </li>
+            </ul>
+          </div>
+          
+          {/* App Brand */}
+          <a className="btn btn-ghost text-xl font-bold">
+            {appConfig.app.displayName}
+          </a>
+        </div>
+        
+        <div className="navbar-center hidden lg:flex">
+          {/* Desktop Navigation Menu */}
+          <ul className="menu menu-horizontal px-1">
+            <li>
               <button
                 onClick={() => setActiveTab('files')}
-                className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                  activeTab === 'files'
-                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
+                className={`${activeTab === 'files' ? 'active' : ''}`}
               >
                 <FileText className="h-4 w-4" />
                 Highlights
               </button>
-              
+            </li>
+            <li>
               <button
                 onClick={() => setActiveTab('bookmarklet')}
-                className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                  activeTab === 'bookmarklet'
-                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 pb-1'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
+                className={`${activeTab === 'bookmarklet' ? 'active' : ''}`}
               >
                 <Bookmark className="h-4 w-4" />
                 Bookmarklet
               </button>
-            </nav>
+            </li>
+          </ul>
+        </div>
+        
+        <div className="navbar-end">
+          <div className="flex items-center gap-2">
+            {/* Refresh Button - Only show on Files tab */}
+            {activeTab === 'files' && (
+              <button
+                onClick={handleRefreshHighlights}
+                disabled={isLoading}
+                className="btn btn-ghost btn-circle"
+                title="Load/Refresh highlights"
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+            )}
 
-            {/* Right side - Refresh button, user info, and sign out */}
-            <div className="flex items-center gap-4">
-              {/* Refresh Button - Only show on Files tab */}
-              {activeTab === 'files' && (
-                <button
-                  onClick={handleRefreshHighlights}
-                  disabled={isLoading}
-                  className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50"
-                  title="Load/Refresh highlights"
-                >
-                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                </button>
-              )}
-
-              {/* User Avatar */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="text-sm">
-                    <p className="font-medium text-gray-900 dark:text-white truncate">
-                      {user?.name || user?.username || 'Test User'}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                      {user?.role || 'developer'}
-                    </p>
+            {/* User Avatar Dropdown */}
+            <div className="dropdown dropdown-end">
+              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+                <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                  <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary-content" />
                   </div>
                 </div>
               </div>
-
-              <button
-                onClick={async () => {
-                  await supabaseSignOut();
-                  window.location.href = '/';
-                }}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 
-                         hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              <div
+                tabIndex={0}
+                className="card card-compact dropdown-content bg-base-100 z-[1] mt-3 w-64 shadow-xl border border-base-200"
               >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
+                <div className="card-body">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="avatar">
+                      <div className="w-12 rounded-full">
+                        <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                          <User className="h-6 w-6 text-primary-content" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base-content">
+                        {user?.name || user?.username || 'Test User'}
+                      </h3>
+                      <p className="text-xs text-base-content/70 capitalize">
+                        {user?.role || 'developer'}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="divider my-1"></div>
+                  
+                  <ul className="menu p-0 gap-1">
+                    <li>
+                      <a className="justify-between rounded-btn">
+                        <span className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          Profile
+                        </span>
+                        <span className="badge badge-primary badge-sm">New</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a className="rounded-btn">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Settings
+                      </a>
+                    </li>
+                  </ul>
+                  
+                  <div className="divider my-1"></div>
+                  
+                  <button
+                    onClick={async () => {
+                      await supabaseSignOut();
+                      window.location.href = '/';
+                    }}
+                    className="btn btn-ghost btn-sm justify-start text-error hover:bg-error/10"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
 
       {/* Main Content */}
