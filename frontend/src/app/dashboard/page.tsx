@@ -497,7 +497,7 @@ function DashboardContent() {
   // Prevent hydration mismatch - show loading until mounted
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading...</p>
@@ -507,74 +507,52 @@ function DashboardContent() {
   }
 
   return (
-    <div className="h-screen bg-white dark:bg-black flex flex-col overflow-hidden">
+    <div className="h-screen bg-white dark:bg-gray-900 flex flex-col overflow-hidden">
       {/* Modern DaisyUI Navigation Header */}
       <div className="navbar bg-base-100 shadow-sm border-b border-base-200">
         <div className="navbar-start">
           {/* Mobile Navigation Dropdown */}
           <div className="dropdown lg:hidden">
-            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
+            <div tabIndex={0} role="button" className="btn btn-ghost">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
               </svg>
             </div>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow-lg border border-base-200"
-            >
-              <li>
-                <button
-                  onClick={() => setActiveTab('files')}
-                  className={`${activeTab === 'files' ? 'active' : ''}`}
-                >
-                  <FileText className="h-4 w-4" />
-                  Highlights
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setActiveTab('bookmarklet')}
-                  className={`${activeTab === 'bookmarklet' ? 'active' : ''}`}
-                >
-                  <Bookmark className="h-4 w-4" />
-                  Bookmarklet
-                </button>
-              </li>
+            <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+              <li><a onClick={() => setActiveTab('files')} className={activeTab === 'files' ? 'active' : ''}><FileText className="h-4 w-4" />Highlights</a></li>
+              <li><a onClick={() => setActiveTab('bookmarklet')} className={activeTab === 'bookmarklet' ? 'active' : ''}><Bookmark className="h-4 w-4" />Bookmarklet</a></li>
             </ul>
           </div>
           
-          {/* App Brand */}
-          <a className="btn btn-ghost text-xl font-bold">
-            {appConfig.app.displayName}
-          </a>
+          {/* Brand/Logo - always visible */}
+          <a className="btn btn-ghost text-xl lg:ml-4">{appConfig.app.name}</a>
         </div>
         
         <div className="navbar-center hidden lg:flex">
-          {/* Desktop Navigation Menu */}
           <ul className="menu menu-horizontal px-1">
             <li>
-              <button
+              <a
                 onClick={() => setActiveTab('files')}
-                className={`${activeTab === 'files' ? 'active' : ''}`}
+                className={activeTab === 'files' ? 'active' : ''}
               >
                 <FileText className="h-4 w-4" />
                 Highlights
-              </button>
+              </a>
             </li>
             <li>
-              <button
+              <a
                 onClick={() => setActiveTab('bookmarklet')}
-                className={`${activeTab === 'bookmarklet' ? 'active' : ''}`}
+                className={activeTab === 'bookmarklet' ? 'active' : ''}
               >
                 <Bookmark className="h-4 w-4" />
                 Bookmarklet
-              </button>
+              </a>
             </li>
           </ul>
         </div>
         
         <div className="navbar-end">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pr-4">
             {/* Refresh Button - Only show on Files tab */}
             {activeTab === 'files' && (
               <button
@@ -696,7 +674,7 @@ function DashboardContent() {
             <div className="flex-1 flex flex-col relative min-h-0">
               {selectedHighlight && !currentHighlight ? (
                 /* Loading state when highlight is selected but not yet loaded */
-                <div className="flex-1 flex flex-col items-center justify-center bg-white dark:bg-black p-8">
+                <div className="flex-1 flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-8">
                   <div className="text-center">
                     <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
                     <p className="text-gray-600 dark:text-gray-400">Loading highlight...</p>
@@ -719,7 +697,7 @@ function DashboardContent() {
                     
                     {/* Main Content Area */}
                     <div className="flex-1 overflow-y-auto">
-                      <div className="p-6 bg-white dark:bg-black">
+                      <div className="p-6 bg-white dark:bg-gray-900">
                         <div className="w-full">
                           <div className="space-y-6">
                             {/* Original Quote Section - Moved to top with enhanced styling */}
@@ -842,7 +820,7 @@ function DashboardContent() {
                         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-gray-300 group-hover:bg-blue-500 transition-colors duration-200 rounded-full"></div>
                       </div>
                       
-                      <div className="p-4 bg-white dark:bg-black h-full">
+                      <div className="p-4 bg-white dark:bg-gray-900 h-full">
                         <div className="space-y-4">
                           {/* Save Button - Larger and at top */}
                           <button
@@ -896,7 +874,7 @@ function DashboardContent() {
                     </div>
                   </div>
               ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-black p-8">
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-8">
                   <div className="text-center max-w-md">
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                       <FileText className="h-8 w-8 text-gray-400" />
