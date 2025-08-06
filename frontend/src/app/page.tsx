@@ -283,7 +283,8 @@ export default function LibraryPage() {
                   placeholder="Search library..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input w-64 pl-10"
+                  className="no-border w-64 pl-10 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
+                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                 />
               </div>
 
