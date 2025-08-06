@@ -182,7 +182,7 @@ export default function NoteDetailsPage() {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900">
         {/* Header */}
-        <header className="glass-nav border-b border-gray-200 dark:border-gray-700">
+        <header className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-16">
               <button 
@@ -216,7 +216,7 @@ export default function NoteDetailsPage() {
   return (
     <div className="bg-white dark:bg-gray-900">
       {/* Header */}
-      <header className="sticky top-0 z-50 glass-nav">
+      <header className="sticky top-0 z-50 bg-white/60 dark:bg-gray-900/60 backdrop-blur-lg">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button 
@@ -265,8 +265,12 @@ export default function NoteDetailsPage() {
           {/* Original Snippet Section */}
           {formData.snippet && (
             <div className="relative">
-              <div className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 italic font-bold pl-8">
-                {formData.snippet}
+              <div className="relative overflow-hidden">
+                <div className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 italic font-bold pl-8 max-h-44 overflow-hidden">
+                  {formData.snippet}
+                </div>
+                {/* Gradient fade-out overlay */}
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 dark:from-gray-900 dark:via-gray-900/80 to-transparent pointer-events-none"></div>
               </div>
               {/* Large decorative curly quotation mark */}
               <div className="absolute left-0 -top-2 text-6xl text-white opacity-30 pointer-events-none select-none font-bold leading-none" style={{fontFamily: 'var(--font-geist-sans)'}}>
