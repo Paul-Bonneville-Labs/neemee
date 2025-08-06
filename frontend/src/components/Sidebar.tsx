@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Home, Settings, HelpCircle, User } from 'lucide-react';
+import { X, Home, Bookmark } from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -98,38 +98,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </li>
             <li>
               <a
-                href="#"
+                href="/setup"
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300
                          hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 onClick={onClose}
               >
-                <User className="w-5 h-5" />
-                <span className="font-medium">Profile</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300
-                         hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                onClick={onClose}
-              >
-                <Settings className="w-5 h-5" />
-                <span className="font-medium">Settings</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300
-                         hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                onClick={onClose}
-              >
-                <HelpCircle className="w-5 h-5" />
-                <span className="font-medium">Help & Support</span>
+                <Bookmark className="w-5 h-5" />
+                <span className="font-medium">Bookmarklet Setup</span>
               </a>
             </li>
           </ul>
