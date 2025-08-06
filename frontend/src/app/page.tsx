@@ -415,7 +415,7 @@ export default function LibraryPage() {
                   </div>
 
                   {/* Card Footer - Metadata */}
-                  <div className="card-footer px-6 pb-6 pt-0">
+                  <div className="card-footer px-6 pb-6 pt-0 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
                     <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
                       {/* Page Title */}
                       {note.page_title && (
