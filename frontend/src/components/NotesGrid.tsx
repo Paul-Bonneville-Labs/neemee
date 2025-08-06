@@ -4,16 +4,12 @@ import { useState } from 'react';
 import { 
   Search, 
   Filter,
-  Calendar,
-  SortAsc,
-  SortDesc,
   Grid,
   List,
   Loader2
 } from 'lucide-react';
 import { Note } from '@/types';
 import { NoteCard, NoteCardSkeleton } from './NoteCard';
-import { formatDateTime } from '@/lib/dateUtils';
 
 type DateFilter = 'all' | 'today' | 'week' | 'month';
 type SortOption = 'recent' | 'oldest' | 'alphabetical';
@@ -54,8 +50,8 @@ export function NotesGrid({
     // Search filter
     if (searchTerm) {
       const searchableText = [
-        note.content || note.highlighted_text || '', // Backward compatibility
-        note.snippet || note.original_quote || '', // Backward compatibility  
+        note.content || '',
+        note.snippet || '',
         note.page_title || '',
         note.page_url || ''
       ].join(' ').toLowerCase();

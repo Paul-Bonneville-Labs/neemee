@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, hasPermission } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { ApiResponse, HighlightListResponse } from '@/types';
+import { ApiResponse, NotesLibraryResponse } from '@/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,30 +36,32 @@ export async function GET(request: NextRequest) {
     
     const offset = (page - 1) * limit;
 
-    // Build query - select and map fields to match interface
+    // Build query - select using new field names
     let query = supabase
-      .from('highlights')
+      .from('notes')
       .select(`
         id,
         user_id,
-        highlighted_text,
-        original_quote,
-        url,
-        title,
+        content,
+        snippet,
+        page_url,
+        page_title,
+        markdown_content,
         metadata,
-        created_at
+        created_at,
+        updated_at
       `, { count: 'exact' })
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    // Apply filters using correct database field names
+    // Apply filters using new field names
     if (search) {
-      query = query.or(`highlighted_text.ilike.%${search}%,title.ilike.%${search}%`);
+      query = query.or(`content.ilike.%${search}%,page_title.ilike.%${search}%,snippet.ilike.%${search}%`);
     }
 
     if (domain) {
-      query = query.like('url', `%${domain}%`);
+      query = query.like('page_url', `%${domain}%`);
     }
 
     if (startDate) {
@@ -70,30 +72,19 @@ export async function GET(request: NextRequest) {
       query = query.lte('created_at', endDate);
     }
 
-    const { data: highlights, error, count } = await query;
+    const { data: notes, error, count } = await query;
 
     if (error) {
-      console.error('Error fetching highlights:', error);
+      console.error('Error fetching notes:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch highlights' },
+        { success: false, error: 'Failed to fetch notes' },
         { status: 500 }
       );
     }
 
-    // Transform database fields to match TypeScript interface
-    const transformedHighlights = (highlights || []).map(highlight => ({
-      id: highlight.id,
-      user_id: highlight.user_id,
-      highlighted_text: highlight.highlighted_text,
-      original_quote: highlight.original_quote,
-      page_url: highlight.url, // Map database 'url' to interface 'page_url'
-      page_title: highlight.title, // Map database 'title' to interface 'page_title'
-      metadata: highlight.metadata, // Include full metadata with opengraph_data
-      created_at: highlight.created_at
-    }));
-
-    const responseData: HighlightListResponse = {
-      highlights: transformedHighlights,
+    // No transformation needed as database fields now match interface
+    const responseData: NotesLibraryResponse = {
+      notes: notes || [],
       pagination: {
         total: count || 0,
         page,
@@ -104,15 +95,15 @@ export async function GET(request: NextRequest) {
     const response: ApiResponse = {
       success: true,
       data: responseData,
-      message: `Found ${highlights?.length || 0} highlights`,
+      message: `Found ${notes?.length || 0} notes`,
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error listing highlights:', error);
+    console.error('Error listing notes:', error);
     const response: ApiResponse = {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to list highlights',
+      error: error instanceof Error ? error.message : 'Failed to list notes',
     };
     return NextResponse.json(response, { status: 500 });
   }

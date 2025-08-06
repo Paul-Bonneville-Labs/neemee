@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { BookmarkletInstaller } from '@/components/BookmarkletInstaller';
-import { HighlightStats } from '@/components/HighlightStats';
+// import { HighlightStats } from '@/components/HighlightStats'; // Temporarily disabled
 import { 
   Bookmark, 
   Key, 
@@ -86,10 +86,6 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
     loadDashboardData();
   };
 
-  const handleHighlightUpdate = () => {
-    // Reload highlights data
-    loadDashboardData();
-  };
 
   // Anonymous user state
   if (!user) {
@@ -338,10 +334,11 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
             </p>
           </div>
           <div className="p-4">
-            <HighlightStats 
-              highlights={highlights}
-              onRefresh={handleHighlightUpdate}
-            />
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Statistics coming soon</p>
+              <p className="text-sm mt-2">Notes analytics will be available in a future update</p>
+            </div>
           </div>
         </div>
       )}

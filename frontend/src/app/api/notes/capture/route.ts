@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { authenticateApiKey, validateUrl, validateHighlightText } from '@/lib/api-auth';
-import { HighlightCaptureResponse } from '@/types';
+import { NoteCaptureResponse } from '@/types';
 
 // CORS headers for bookmarklet requests
 const corsHeaders = {
@@ -21,11 +21,11 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { highlighted_text, page_url, page_title, api_key } = body;
+    const { content, snippet, page_url, page_title, api_key } = body;
 
     // Validate API key
     if (!api_key || typeof api_key !== 'string') {
-      const response: HighlightCaptureResponse = {
+      const response: NoteCaptureResponse = {
         success: false,
         message: 'Missing or invalid API key',
       };
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // Authenticate user via API key
     const userId = await authenticateApiKey(api_key);
     if (!userId) {
-      const response: HighlightCaptureResponse = {
+      const response: NoteCaptureResponse = {
         success: false,
         message: 'Invalid API key',
       };
@@ -48,12 +48,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Validate highlighted text
-    const textValidation = validateHighlightText(highlighted_text);
-    if (!textValidation.valid) {
-      const response: HighlightCaptureResponse = {
+    // Validate content (use existing validation logic adapted for content)
+    const contentValidation = validateHighlightText(content);
+    if (!contentValidation.valid) {
+      const response: NoteCaptureResponse = {
         success: false,
-        message: textValidation.error || 'Invalid highlight text',
+        message: contentValidation.error || 'Invalid content',
       };
       return NextResponse.json(response, { 
         status: 400,
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     // Validate page URL
     if (!page_url || typeof page_url !== 'string' || !validateUrl(page_url)) {
-      const response: HighlightCaptureResponse = {
+      const response: NoteCaptureResponse = {
         success: false,
         message: 'Invalid or missing page URL',
       };
@@ -78,31 +78,36 @@ export async function POST(request: NextRequest) {
       ? page_title.substring(0, 500) 
       : null;
 
-    // Format highlighted text as markdown quote with URL
-    const formattedContent = `> ${highlighted_text.trim()}\n\n${page_url.trim()}`;
+    const sanitizedSnippet = snippet && typeof snippet === 'string'
+      ? snippet.trim()
+      : null;
 
-    // Save highlight to database with queued status
+    // Format content as markdown quote with URL if it's a snippet from a webpage
+    const formattedContent = sanitizedSnippet 
+      ? `> ${sanitizedSnippet}\n\n${page_url.trim()}`
+      : content.trim();
+
+    // Save note to database
     const supabase = await createClient();
-    const { data: highlight, error } = await supabase
-      .from('highlights')
+    const { data: note, error } = await supabase
+      .from('notes')
       .insert({
         user_id: userId,
-        highlighted_text: formattedContent,
-        original_quote: highlighted_text.trim(), // Store the original unmodified text
-        title: sanitizedTitle || 'Untitled Page',
-        content: formattedContent, // Required field
+        content: formattedContent,
+        snippet: sanitizedSnippet, // Store the original unmodified text if provided
+        page_title: sanitizedTitle || 'Untitled Page',
         markdown_content: '', // Empty string - will be set by async extraction
-        url: page_url.trim(),
+        page_url: page_url.trim(),
         domain: new URL(page_url).hostname
       })
       .select('id')
       .single();
 
     if (error) {
-      console.error('Error saving highlight:', error);
-      const response: HighlightCaptureResponse = {
+      console.error('Error saving note:', error);
+      const response: NoteCaptureResponse = {
         success: false,
-        message: 'Failed to save highlight',
+        message: 'Failed to save note',
       };
       return NextResponse.json(response, { 
         status: 500,
@@ -110,11 +115,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-
-    const response: HighlightCaptureResponse = {
+    const response: NoteCaptureResponse = {
       success: true,
-      message: 'Highlight saved successfully!',
-      highlightId: highlight.id,
+      message: 'Note saved successfully!',
+      noteId: note.id,
     };
 
     return NextResponse.json(response, { 
@@ -122,8 +126,8 @@ export async function POST(request: NextRequest) {
       headers: corsHeaders 
     });
   } catch (error) {
-    console.error('Error capturing highlight:', error);
-    const response: HighlightCaptureResponse = {
+    console.error('Error capturing note:', error);
+    const response: NoteCaptureResponse = {
       success: false,
       message: 'Internal server error',
     };

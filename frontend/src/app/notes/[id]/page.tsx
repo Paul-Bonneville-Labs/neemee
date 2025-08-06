@@ -4,11 +4,11 @@ import { useAuth } from '@/components/AuthProvider';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Note, NoteUpdateRequest, ApiResponse } from '@/types';
-import { ArrowLeft, Save, Trash2, ExternalLink, Calendar, Link } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, ExternalLink } from 'lucide-react';
+import { SimpleMarkdownEditor } from '@/components/SimpleMarkdownEditor';
 import { formatDetailedDate } from '@/lib/dateUtils';
 import { ToastContainer, useToasts } from '@/components/Toast';
 import { DeleteConfirmationModal } from '@/components/DeleteConfirmationModal';
-import appConfig from '../../../../config.json';
 
 export default function NoteDetailsPage() {
   const { user, loading } = useAuth();
@@ -34,7 +34,6 @@ export default function NoteDetailsPage() {
   
   // Delete confirmation modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -47,7 +46,7 @@ export default function NoteDetailsPage() {
     
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/highlights/${noteId}`, {
+      const response = await fetch(`/api/notes/${noteId}`, {
         credentials: 'include',
       });
       const result: ApiResponse<Note> = await response.json();
@@ -56,10 +55,10 @@ export default function NoteDetailsPage() {
         const noteData = result.data;
         setNote(noteData);
         
-        // Set form data with backward compatibility
+        // Set form data
         setFormData({
-          content: noteData.content || noteData.highlighted_text || '',
-          snippet: noteData.snippet || noteData.original_quote || '',
+          content: noteData.content || '',
+          snippet: noteData.snippet || '',
           page_title: noteData.page_title || '',
           page_url: noteData.page_url || '',
           markdown_content: noteData.markdown_content || ''
@@ -105,7 +104,7 @@ export default function NoteDetailsPage() {
         page_url: formData.page_url
       };
       
-      const response = await fetch(`/api/highlights/${note.id}`, {
+      const response = await fetch(`/api/notes/${note.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -136,9 +135,8 @@ export default function NoteDetailsPage() {
     if (!note) return;
     
     try {
-      setIsDeleting(true);
       
-      const response = await fetch(`/api/highlights/${note.id}`, {
+      const response = await fetch(`/api/notes/${note.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -154,7 +152,6 @@ export default function NoteDetailsPage() {
     } catch (err) {
       console.error('Error deleting note:', err);
     } finally {
-      setIsDeleting(false);
       setDeleteModalOpen(false);
     }
   };
@@ -217,13 +214,16 @@ export default function NoteDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="bg-white dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button 
-              onClick={() => router.push('/')}
+              onClick={() => {
+                console.log('Back button clicked');
+                router.push('/');
+              }}
               className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -263,36 +263,40 @@ export default function NoteDetailsPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Original Snippet Section */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Captured Text</h2>
-            <div className="text-lg leading-relaxed text-gray-800 dark:text-gray-200 italic">
-              {formData.snippet || 'No captured text available for this note'}
+          {formData.snippet && (
+            <div className="relative">
+              <div className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 italic pl-16">
+                {formData.snippet}
+              </div>
+              {/* Large decorative quotation mark */}
+              <div className="absolute left-0 -top-2 text-8xl text-gray-200 dark:text-gray-700 opacity-30 pointer-events-none select-none font-bold leading-none" style={{fontFamily: 'var(--font-geist-sans)'}}>
+                "
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Editable Content */}
           <div className="space-y-6">
             {/* Page Title */}
             <div>
-              <label htmlFor="page_title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Page Title
+              <label htmlFor="page_title" className="label">
+                <span className="label-text">Page Title</span>
               </label>
               <input
                 id="page_title"
                 type="text"
                 value={formData.page_title}
                 onChange={(e) => handleFormChange('page_title', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="no-border w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
+                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                 placeholder="Enter page title..."
               />
             </div>
 
             {/* Page URL */}
             <div>
-              <label htmlFor="page_url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Source URL
+              <label htmlFor="page_url" className="label">
+                <span className="label-text">Source URL</span>
               </label>
               <div className="relative">
                 <input
@@ -300,9 +304,8 @@ export default function NoteDetailsPage() {
                   type="url"
                   value={formData.page_url}
                   onChange={(e) => handleFormChange('page_url', e.target.value)}
-                  className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md
-                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-10 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
+                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                   placeholder="https://example.com"
                 />
                 {formData.page_url && (
@@ -310,7 +313,7 @@ export default function NoteDetailsPage() {
                     href={formData.page_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
@@ -320,39 +323,31 @@ export default function NoteDetailsPage() {
 
             {/* Main Content */}
             <div>
-              <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Content
+              <label htmlFor="content" className="label">
+                <span className="label-text">Content</span>
               </label>
-              <textarea
-                id="content"
-                rows={8}
-                value={formData.content}
-                onChange={(e) => handleFormChange('content', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter note content..."
-              />
+              <div className="bg-white dark:bg-neutral-100 rounded-lg p-4 border border-gray-200 dark:border-neutral-200">
+                <SimpleMarkdownEditor
+                  initialContent={formData.content}
+                  onChange={(content) => handleFormChange('content', content)}
+                />
+              </div>
             </div>
           </div>
 
           {/* Metadata */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Note Information</h3>
+          <div className="pt-6">
+            <h3 className="text-lg font-semibold mb-4">Note Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Note ID
-                </label>
-                <div className="text-sm text-gray-900 dark:text-gray-100 font-mono bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded">
+                <div className="text-sm font-medium mb-2">Note ID</div>
+                <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg font-mono cursor-text">
                   {note.id}
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Created
-                </label>
-                <div className="text-sm text-gray-900 dark:text-gray-100">
+                <div className="text-sm font-medium mb-2">Created</div>
+                <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg cursor-text">
                   {formatDetailedDate(note.created_at)}
                 </div>
               </div>
@@ -365,10 +360,11 @@ export default function NoteDetailsPage() {
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        onConfirm={handleDelete}
+        onConfirm={() => {
+          handleDelete();
+        }}
         title="Delete Note"
         message="Are you sure you want to delete this note? This action cannot be undone."
-        isDeleting={isDeleting}
       />
 
       {/* Toast Container */}

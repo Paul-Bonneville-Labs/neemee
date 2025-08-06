@@ -127,7 +127,7 @@ function MDXEditorComponent({ initialContent, onChange }: SimpleMarkdownEditorPr
             )
           })
         ]}
-        className="min-h-[400px]"
+        className=""
       />
     </div>
   );
@@ -135,5 +135,5 @@ function MDXEditorComponent({ initialContent, onChange }: SimpleMarkdownEditorPr
 
 export const SimpleMarkdownEditor = dynamic(() => Promise.resolve(MDXEditorComponent), {
   ssr: false,
-  loading: () => <div className="min-h-[400px] bg-gray-50 animate-pulse rounded-lg"></div>
+  loading: () => <div className="h-20 bg-gray-50 animate-pulse rounded-lg"></div>
 });

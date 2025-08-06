@@ -5,10 +5,10 @@ export async function GET() {
   try {
     const supabase = await createClient();
     
-    // Get first few highlights to test with
-    const { data: highlights, error } = await supabase
-      .from('highlights')
-      .select('id, url, highlighted_text, title, user_id')
+    // Get first few notes to test with
+    const { data: notes, error } = await supabase
+      .from('notes')
+      .select('id, page_url, content, page_title, user_id')
       .limit(5);
     
     if (error) {
@@ -21,8 +21,8 @@ export async function GET() {
     
     return NextResponse.json({
       status: 'success',
-      highlights: highlights || [],
-      count: highlights?.length || 0
+      notes: notes || [],
+      count: notes?.length || 0
     });
   } catch (error) {
     return NextResponse.json({

@@ -4,9 +4,9 @@ export { FrontmatterForm } from './FrontmatterForm';
 export { MarkdownEditor } from './MarkdownEditor';
 export { MarkdownViewer } from './MarkdownViewer';
 
-// Highlight management components
-export { HighlightList } from './HighlightList';
-export { HighlightManager } from './HighlightManager';
+// Highlight management components (deprecated - use Notes system)
+// export { HighlightList } from './HighlightList';
+// export { HighlightManager } from './HighlightManager';
 export { BookmarkletModal } from './BookmarkletModal';
 
 // Authentication components
