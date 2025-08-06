@@ -79,7 +79,8 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
                   className="w-3 h-3 flex-shrink-0"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling!.style.display = 'inline';
+                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (nextElement) nextElement.style.display = 'inline';
                   }}
                 />
                 <Globe className="w-3 h-3 hidden" />
@@ -137,7 +138,8 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
               className="w-3 h-3 flex-shrink-0"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
-                e.currentTarget.nextElementSibling!.style.display = 'inline';
+                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                if (nextElement) nextElement.style.display = 'inline';
               }}
             />
             <Globe className="w-3 h-3 flex-shrink-0 hidden" />
