@@ -7,8 +7,10 @@ import { ProfileMenu } from '@/components/auth/ProfileMenu';
 import { Sidebar, HamburgerButton } from '@/components/Sidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Note, NotesLibraryResponse, ApiResponse } from '@/types';
-import { Search, Plus, Grid, List, Clock, Globe, Edit3, Zap, Network } from 'lucide-react';
+import { Search, Plus, Grid, List, Clock, Globe, Edit3, Zap, Network, Copy } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useToasts, ToastContainer } from '@/components/Toast';
 import appConfig from '../../config.json';
 
 // Utility function to get favicon URL for a domain
@@ -42,6 +44,7 @@ export default function LibraryPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { toasts, dismissToast, showSuccess, showError } = useToasts();
   
   // Library state
   const [notes, setNotes] = useState<Note[]>([]);
@@ -119,7 +122,7 @@ export default function LibraryPage() {
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <p>Loading...</p>
         </div>
       </div>
     );
@@ -130,7 +133,7 @@ export default function LibraryPage() {
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <p>Loading...</p>
         </div>
       </div>
     );
@@ -251,6 +254,9 @@ export default function LibraryPage() {
   // Main library view for authenticated users
   return (
     <div className="min-h-screen bg-base-100">
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      
       {/* Sidebar */}
       <Sidebar 
         isOpen={sidebarOpen} 
@@ -267,9 +273,9 @@ export default function LibraryPage() {
                 isOpen={sidebarOpen}
                 onClick={() => setSidebarOpen(!sidebarOpen)}
               />
-              <h1 className="text-2xl font-bold text-base-content">
+              <Link href="/" className="text-2xl font-bold text-base-content hover:text-primary transition-colors">
                 {appConfig.app.name}
-              </h1>
+              </Link>
               <span className="ml-2 text-2xl text-base-content/70">Library</span>
             </div>
 
@@ -277,14 +283,13 @@ export default function LibraryPage() {
             <div className="flex items-center gap-4">
               {/* Search Bar */}
               <div className="form-control relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 z-10" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 z-10 text-base-content/50" />
                 <input
                   type="text"
                   placeholder="Search library..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="no-border w-64 pl-10 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
-                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                  className="input input-bordered w-64 pl-10 bg-base-200 text-base-content placeholder:text-base-content/50 focus:bg-base-300 border-base-300 focus:border-primary"
                 />
               </div>
 
@@ -292,13 +297,13 @@ export default function LibraryPage() {
               <div className="join">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`join-item btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : 'btn-ghost'}`}
+                  className={`join-item btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : ''}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`join-item btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}
+                  className={`join-item btn btn-sm ${viewMode === 'list' ? 'btn-primary' : ''}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -357,21 +362,19 @@ export default function LibraryPage() {
         ) : (
           <>
             {/* Results Summary */}
-            <div className="mb-6">
-              <p className="text-sm text-base-content/70">
+            <div className="mb-6 flex justify-end">
+              <div className="badge badge-outline text-base-content border-base-content/20 bg-base-200 rounded-full">
                 {searchTerm ? (
                   <>Showing {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''} for &ldquo;{searchTerm}&rdquo;</>
                 ) : (
                   <>{filteredNotes.length} note{filteredNotes.length !== 1 ? 's' : ''} in your library</>
                 )}
-              </p>
+              </div>
             </div>
 
-            {/* Notes Grid */}
-            <div className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-              : 'space-y-4'
-            }>
+            {/* Notes Content */}
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredNotes.map((note) => (
                 <div
                   key={note.id}
@@ -395,31 +398,63 @@ export default function LibraryPage() {
                     const card = e.currentTarget;
                     card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.02)';
                   }}
-                  className="card bg-base-100 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 ease-out transform-gpu"
+                  className="card bg-base-200 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 ease-out transform-gpu"
                 >
                   {/* Card Body - Note preview content */}
-                  <div className="card-body p-6">
+                  <div className="card-body pt-6 px-6 pb-4">
                     <p className="text-base-content text-sm leading-relaxed line-clamp-5 font-bold italic">
                       {note.snippet || note.content || 'No content'}
                     </p>
+                    <div className="text-left">
+                      <div className="tooltip tooltip-top tooltip-left tooltip-delayed z-50" data-tip={new Date(note.created_at).toLocaleString()}>
+                        <div className="inline-flex items-center gap-1 text-xs text-base-content/70 cursor-help">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatRelativeTime(new Date(note.created_at))}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Card Footer - Metadata */}
-                  <div className="card-footer p-4 bg-base-200 rounded-b-lg">
+                  <div className="card-footer p-4 bg-base-300 rounded-b-lg">
                     <div className="space-y-2 text-xs text-base-content/70">
                       {/* Page Title */}
                       {note.page_title && (
-                        <div className="tooltip tooltip-top w-full" data-tip={note.page_title}>
+                        <div className="tooltip tooltip-top w-full tooltip-delayed z-50" data-tip={note.page_title}>
                           <div className="font-bold text-base-content truncate cursor-help">
                             {note.page_title}
                           </div>
                         </div>
                       )}
                       
-                      {/* Domain and Date Row */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="tooltip tooltip-top flex-1" data-tip={note.page_url || 'Unknown source'}>
-                          <div className="flex items-center gap-1 truncate cursor-help">
+                      {/* Domain Row */}
+                      <div className="flex items-center">
+                        <div className="tooltip tooltip-top flex-1 tooltip-delayed z-50" data-tip={note.page_url || 'Unknown source'}>
+                          <div 
+                            className="badge gap-1 cursor-pointer rounded-full bg-base-100 hover:bg-base-200 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (note.page_url) {
+                                navigator.clipboard.writeText(note.page_url).then(() => {
+                                  // Show success toast
+                                  showSuccess('URL copied to clipboard');
+                                  
+                                  // Optional: Show a brief visual feedback on badge
+                                  const badge = e.currentTarget as HTMLElement;
+                                  if (badge) {
+                                    const originalClasses = badge.className;
+                                    badge.className = badge.className.replace('bg-base-100', 'bg-success');
+                                    setTimeout(() => {
+                                      badge.className = originalClasses;
+                                    }, 200);
+                                  }
+                                }).catch(err => {
+                                  console.error('Failed to copy URL:', err);
+                                  showError('Failed to copy URL', 'Please try again');
+                                });
+                              }
+                            }}
+                          >
                             <img 
                               src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
                               alt="" 
@@ -434,12 +469,7 @@ export default function LibraryPage() {
                             <span className="truncate">
                               {note.page_url ? new URL(note.page_url).hostname : 'Unknown source'}
                             </span>
-                          </div>
-                        </div>
-                        <div className="tooltip tooltip-top tooltip-left" data-tip={new Date(note.created_at).toLocaleString()}>
-                          <div className="flex items-center gap-1 whitespace-nowrap cursor-help">
-                            <Clock className="w-3 h-3" />
-                            <span>{formatRelativeTime(new Date(note.created_at))}</span>
+                            <Copy className="w-3 h-3 flex-shrink-0 opacity-60 hover:opacity-100" />
                           </div>
                         </div>
                       </div>
@@ -447,7 +477,106 @@ export default function LibraryPage() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="table table-sm table-zebra">
+                  <thead>
+                    <tr>
+                      <th className="w-16">Time</th>
+                      <th>Content</th>
+                      <th className="w-48">Domain</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredNotes.map((note) => (
+                      <tr 
+                        key={note.id}
+                        className="hover:bg-base-200 cursor-pointer"
+                        onClick={() => router.push(`/notes/${note.id}`)}
+                      >
+                        {/* Time Column */}
+                        <td className="text-sm whitespace-nowrap">
+                          <div 
+                            className="tooltip tooltip-right tooltip-delayed"
+                            data-tip={new Date(note.created_at).toLocaleString()}
+                          >
+                            <time className="text-base-content/70 text-xs">
+                              {formatRelativeTime(new Date(note.created_at))}
+                            </time>
+                          </div>
+                        </td>
+
+                        {/* Content Column */}
+                        <td className="max-w-0 w-full">
+                          <div className="space-y-1">
+                            <div className="line-clamp-2">
+                              <span className="italic text-base-content/80 text-sm">
+                                "{note.snippet || note.content || 'No content'}"
+                              </span>
+                            </div>
+                            {/* Page Title */}
+                            {note.page_title && (
+                              <div className="text-sm font-bold text-base-content whitespace-normal break-words">
+                                {note.page_title}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Source Column (Domain Only) */}
+                        <td className="w-48">
+                          {/* Domain Badge */}
+                          {note.page_url && (
+                            <div className="tooltip tooltip-top flex-1 tooltip-delayed" data-tip={note.page_url || 'Unknown source'}>
+                              <div 
+                                className="badge gap-1 cursor-pointer rounded-full bg-base-100 hover:bg-base-200 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (note.page_url) {
+                                    navigator.clipboard.writeText(note.page_url).then(() => {
+                                      showSuccess('URL copied to clipboard');
+                                      
+                                      const badge = e.currentTarget as HTMLElement;
+                                      if (badge) {
+                                        const originalClasses = badge.className;
+                                        badge.className = badge.className.replace('bg-base-100', 'bg-success');
+                                        setTimeout(() => {
+                                          badge.className = originalClasses;
+                                        }, 200);
+                                      }
+                                    }).catch(err => {
+                                      console.error('Failed to copy URL:', err);
+                                      showError('Failed to copy URL', 'Please try again');
+                                    });
+                                  }
+                                }}
+                              >
+                                <img 
+                                  src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
+                                  alt="" 
+                                  className="w-3 h-3 flex-shrink-0"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                                    if (nextElement) nextElement.style.display = 'inline';
+                                  }}
+                                />
+                                <Globe className="w-3 h-3 flex-shrink-0 hidden" />
+                                <span className="truncate">
+                                  {note.page_url ? new URL(note.page_url).hostname : 'Unknown source'}
+                                </span>
+                                <Copy className="w-3 h-3 flex-shrink-0 opacity-60 hover:opacity-100" />
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </>
         )}
       </main>

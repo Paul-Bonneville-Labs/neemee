@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
-type ResolvedTheme = 'light' | 'dark';
+type ResolvedTheme = 'nord' | 'business';
 
 interface ThemeContextType {
   theme: Theme;
@@ -20,7 +20,7 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children, defaultTheme = 'system' }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light');
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('nord');
   const [mounted, setMounted] = useState(false);
 
   // Load theme from localStorage on mount
@@ -37,16 +37,13 @@ export function ThemeProvider({ children, defaultTheme = 'system' }: ThemeProvid
     if (!mounted) return;
 
     const updateTheme = () => {
-      let newResolvedTheme: ResolvedTheme = 'light';
+      const isDark = theme === 'dark' || 
+        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
       
-      if (theme === 'system') {
-        newResolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      } else {
-        newResolvedTheme = theme as ResolvedTheme;
-      }
-
-      setResolvedTheme(newResolvedTheme);
-      document.documentElement.setAttribute('data-theme', newResolvedTheme);
+      const selectedTheme: ResolvedTheme = isDark ? 'business' : 'nord';
+      
+      setResolvedTheme(selectedTheme);
+      document.documentElement.setAttribute('data-theme', selectedTheme);
       
       // Save theme preference
       localStorage.setItem('theme', theme);

@@ -11,12 +11,14 @@ export function ThemeScript() {
       }
       
       function applyTheme(theme) {
-        let resolvedTheme = 'light';
+        let resolvedTheme = 'nord';
         
         if (theme === 'system') {
-          resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        } else {
-          resolvedTheme = theme;
+          resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'nord';
+        } else if (theme === 'light') {
+          resolvedTheme = 'nord';
+        } else if (theme === 'dark') {
+          resolvedTheme = 'dark';
         }
         
         document.documentElement.setAttribute('data-theme', resolvedTheme);

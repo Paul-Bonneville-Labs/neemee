@@ -214,10 +214,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       updateData.page_url = sanitizedUrl;
       
       // Update domain if URL changed
-      try {
-        updateData.domain = new URL(sanitizedUrl).hostname;
-      } catch {
-        // Keep existing domain if URL is invalid
+      if (sanitizedUrl && sanitizedUrl.trim()) {
+        try {
+          updateData.domain = new URL(sanitizedUrl).hostname;
+        } catch {
+          // Keep existing domain if URL is invalid
+          console.log('PUT /api/notes/[id] - Invalid URL for domain extraction:', sanitizedUrl);
+        }
       }
     }
 

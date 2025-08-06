@@ -3,8 +3,11 @@
 import { useAuth } from '@/components/AuthProvider';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { Note, NoteUpdateRequest, ApiResponse } from '@/types';
 import { ArrowLeft, Save, Trash2, ExternalLink } from 'lucide-react';
+import { Sidebar, HamburgerButton } from '@/components/Sidebar';
+import appConfig from '../../../../config.json';
 import { SimpleMarkdownEditor } from '@/components/SimpleMarkdownEditor';
 import { formatDetailedDate } from '@/lib/dateUtils';
 import { ToastContainer, useToasts } from '@/components/Toast';
@@ -14,7 +17,7 @@ export default function NoteDetailsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const { toasts, dismissToast } = useToasts();
+  const { toasts, dismissToast, showSuccess, showError } = useToasts();
   const noteId = params.id as string;
   
   const [mounted, setMounted] = useState(false);
@@ -22,6 +25,7 @@ export default function NoteDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Form state for editing
   const [formData, setFormData] = useState({
@@ -133,13 +137,14 @@ export default function NoteDetailsPage() {
       if (result.success && result.data) {
         setNote(result.data);
         setHasUnsavedChanges(false);
-        // Show success toast (implementation depends on toast system)
+        showSuccess('Note saved successfully');
       } else {
         console.error('Failed to save note:', result.error);
-        // Show error toast
+        showError('Failed to save note', result.error || 'Please try again');
       }
     } catch (err) {
       console.error('Error saving note:', err);
+      showError('Error saving note', err instanceof Error ? err.message : 'Please try again');
     } finally {
       setIsSaving(false);
     }
@@ -230,21 +235,28 @@ export default function NoteDetailsPage() {
 
   return (
     <div className="bg-base-100">
+      {/* Sidebar */}
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)}
+      />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 bg-base-100/50 backdrop-blur-lg border-b border-base-200">
         <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <button 
-              onClick={() => {
-                console.log('Back button clicked');
-                router.push('/');
-              }}
-              className="flex items-center gap-2 text-base-content/70 hover:text-base-content transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Library
-            </button>
-            
+          <div className="flex justify-between items-center h-16">
+            {/* Logo with Hamburger */}
+            <div className="flex items-center gap-3">
+              <HamburgerButton 
+                isOpen={sidebarOpen}
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              />
+              <Link href="/" className="text-2xl font-bold text-base-content hover:text-primary transition-colors">
+                {appConfig.app.name}
+              </Link>
+              <span className="ml-2 text-2xl text-base-content/70">Note Details</span>
+            </div>
+
             <div className="flex items-center gap-3">
               <button
                 onClick={handleSave}
@@ -270,6 +282,19 @@ export default function NoteDetailsPage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
+          {/* Back to Library Button */}
+          <div>
+            <button 
+              onClick={() => {
+                console.log('Back button clicked');
+                router.push('/');
+              }}
+              className="btn btn-ghost btn-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Library
+            </button>
+          </div>
           {/* Original Snippet Section */}
           {formData.snippet && (
             <div>

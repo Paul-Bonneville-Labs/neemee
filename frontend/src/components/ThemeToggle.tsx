@@ -15,18 +15,18 @@ export function ThemeToggle() {
   return (
     <div className="dropdown dropdown-end">
       <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-        {theme === 'light' && <Sun className="w-5 h-5" />}
-        {theme === 'dark' && <Moon className="w-5 h-5" />}
-        {theme === 'system' && <Monitor className="w-5 h-5" />}
+        {theme === 'light' && <Sun className="w-5 h-5 text-base-content" />}
+        {theme === 'dark' && <Moon className="w-5 h-5 text-base-content" />}
+        {theme === 'system' && <Monitor className="w-5 h-5 text-base-content" />}
       </div>
       <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow-lg border border-base-300">
         {themes.map(({ value, label, icon: Icon }) => (
           <li key={value}>
             <button
               onClick={() => setTheme(value)}
-              className={`flex items-center gap-2 ${theme === value ? 'active' : ''}`}
+              className={`flex items-center gap-2 text-base-content ${theme === value ? 'active' : ''}`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4 text-base-content" />
               {label}
             </button>
           </li>
@@ -52,9 +52,9 @@ export function ThemeToggleCompact() {
       className="btn btn-ghost btn-circle"
       title={`Current: ${theme} (click to cycle)`}
     >
-      {theme === 'light' && <Sun className="w-5 h-5" />}
-      {theme === 'dark' && <Moon className="w-5 h-5" />}
-      {theme === 'system' && <Monitor className="w-5 h-5" />}
+      {theme === 'light' && <Sun className="w-5 h-5 text-base-content" />}
+      {theme === 'dark' && <Moon className="w-5 h-5 text-base-content" />}
+      {theme === 'system' && <Monitor className="w-5 h-5 text-base-content" />}
     </button>
   );
 }

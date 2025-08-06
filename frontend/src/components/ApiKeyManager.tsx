@@ -179,32 +179,32 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
       )}
 
       {/* API Key Display */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+      <div className="bg-base-300 rounded-lg p-4 border border-base-300">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Key className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
+            <Key className="h-4 w-4 text-base-content/60" />
+            <span className="text-sm font-medium text-base-content">
               Your API Key
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-            <span className="text-xs text-green-700 dark:text-green-300 font-medium">
+            <CheckCircle className="h-4 w-4 text-success" />
+            <span className="text-xs text-success font-medium">
               Active
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2 mb-3">
-          <div className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-md px-3 py-2">
-            <code className="text-sm font-mono text-gray-900 dark:text-gray-100">
+          <div className="flex-1 bg-base-100 border border-base-300 rounded-md px-3 py-2">
+            <code className="text-sm font-mono text-base-content">
               {isVisible ? apiKey.api_key : maskApiKey(apiKey.api_key)}
             </code>
           </div>
           
           <button
             onClick={() => setIsVisible(!isVisible)}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+            className="p-2 text-base-content/60 hover:text-base-content hover:bg-base-200 rounded-md transition-colors"
             title={isVisible ? 'Hide API key' : 'Show API key'}
           >
             {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -212,11 +212,11 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
           
           <button
             onClick={() => copyToClipboard(apiKey.api_key)}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+            className="p-2 text-base-content/60 hover:text-base-content hover:bg-base-200 rounded-md transition-colors"
             title="Copy to clipboard"
           >
             {copySuccess ? (
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-success" />
             ) : (
               <Copy className="h-4 w-4" />
             )}
@@ -225,18 +225,18 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
 
         {/* Copy Success Message */}
         {copySuccess && (
-          <div className="text-xs text-green-700 dark:text-green-300 mb-3">
+          <div className="text-xs text-success mb-3">
             API key copied to clipboard!
           </div>
         )}
 
         {/* Key Metadata */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-base-content/70">
             <Calendar className="h-3 w-3" />
             <span>Created: {formatDetailedDate(apiKey.created_at)}</span>
           </div>
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-base-content/70">
             <Activity className="h-3 w-3" />
             <span>Last used: Recently</span>
           </div>
@@ -248,7 +248,7 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
         <button
           onClick={() => setShowConfirmDialog(true)}
           disabled={isRegenerating}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="btn btn-error"
         >
           {isRegenerating ? (
             <>
@@ -265,7 +265,7 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
 
         <button
           onClick={() => copyToClipboard(apiKey.api_key)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+          className="btn btn-primary"
         >
           <Copy className="h-4 w-4" />
           Copy Key
@@ -312,13 +312,16 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
       )}
 
       {/* Security Notice */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-          Security Notice
-        </h4>
-        <p className="text-xs text-blue-800 dark:text-blue-200">
-          Keep your API key secure and never share it publicly. The key provides access to your Neemee account for highlight capture.
-        </p>
+      <div role="alert" className="alert alert-soft">
+        <AlertTriangle className="h-5 w-5 shrink-0 self-start" />
+        <div>
+          <h4 className="text-sm font-semibold mb-2">
+            Security Notice
+          </h4>
+          <p className="text-xs">
+            Keep your API key secure and never share it publicly. The key provides access to your Neemee account for highlight capture.
+          </p>
+        </div>
       </div>
     </div>
   );
