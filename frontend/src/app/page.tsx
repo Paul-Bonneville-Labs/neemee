@@ -405,42 +405,47 @@ export default function LibraryPage() {
                     const card = e.currentTarget;
                     card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.02)';
                   }}
-                  className="bg-white dark:bg-gray-800 rounded-lg p-6
-                           hover:shadow-lg cursor-pointer 
-                           transition-all duration-300 ease-out transform-gpu"
+                  className="card bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 ease-out transform-gpu"
                 >
-                  {/* Note preview content */}
-                  <div className="mb-4">
+                  {/* Card Body - Note preview content */}
+                  <div className="card-body p-6 pb-3">
                     <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed line-clamp-4 font-bold italic">
                       {note.snippet || note.content || 'No content'}
                     </p>
                   </div>
 
-                  {/* Note metadata */}
-                  <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                    {note.page_title && (
-                      <div className="font-medium">{note.page_title}</div>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 truncate flex-1 mr-2">
-                        <img 
-                          src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
-                          alt="" 
-                          className="w-3 h-3 flex-shrink-0"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                            if (nextElement) nextElement.style.display = 'inline';
-                          }}
-                        />
-                        <Globe className="w-3 h-3 flex-shrink-0 hidden" />
-                        <span className="truncate">
-                          {note.page_url ? new URL(note.page_url).hostname : 'Unknown source'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1 whitespace-nowrap">
-                        <Clock className="w-3 h-3" />
-                        <span>{formatRelativeTime(new Date(note.created_at))}</span>
+                  {/* Card Footer - Metadata */}
+                  <div className="card-footer px-6 pb-6 pt-0">
+                    <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                      {/* Page Title */}
+                      {note.page_title && (
+                        <div className="font-medium text-gray-700 dark:text-gray-300 truncate">
+                          {note.page_title}
+                        </div>
+                      )}
+                      
+                      {/* Domain and Date Row */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1 truncate flex-1">
+                          <img 
+                            src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
+                            alt="" 
+                            className="w-3 h-3 flex-shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (nextElement) nextElement.style.display = 'inline';
+                            }}
+                          />
+                          <Globe className="w-3 h-3 flex-shrink-0 hidden" />
+                          <span className="truncate">
+                            {note.page_url ? new URL(note.page_url).hostname : 'Unknown source'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 whitespace-nowrap">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatRelativeTime(new Date(note.created_at))}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
