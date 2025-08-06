@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { X, Home, Bookmark } from 'lucide-react';
 
 interface SidebarProps {
@@ -85,7 +86,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <nav className="p-6">
           <ul className="space-y-2">
             <li>
-              <a
+              <Link
                 href="/"
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300
                          hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200
@@ -94,10 +95,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               >
                 <Home className="w-5 h-5" />
                 <span className="font-medium">Library</span>
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="/setup"
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300
                          hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200
@@ -106,7 +107,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               >
                 <Bookmark className="w-5 h-5" />
                 <span className="font-medium">Bookmarklet Setup</span>
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>

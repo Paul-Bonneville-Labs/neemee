@@ -24,10 +24,7 @@ import {
   InsertCodeBlock,
   ListsToggle,
   CreateLink,
-  InsertThematicBreak,
   InsertTable,
-  InsertImage,
-  InsertFrontmatter,
   BlockTypeSelect,
   DiffSourceToggleWrapper,
   Separator

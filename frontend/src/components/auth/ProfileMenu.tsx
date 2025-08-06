@@ -7,7 +7,8 @@ import {
   UserPlus, 
   Github, 
   Chrome,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../AuthProvider';
 

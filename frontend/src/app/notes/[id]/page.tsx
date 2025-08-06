@@ -270,7 +270,7 @@ export default function NoteDetailsPage() {
               </div>
               {/* Large decorative curly quotation mark */}
               <div className="absolute left-0 -top-2 text-6xl text-white opacity-30 pointer-events-none select-none font-bold leading-none" style={{fontFamily: 'var(--font-geist-sans)'}}>
-                "
+                &ldquo;
               </div>
             </div>
           )}

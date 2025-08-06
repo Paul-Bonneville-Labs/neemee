@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { MagicLinkAuth } from './auth/MagicLinkAuth';
 
 interface AuthProps {
@@ -12,9 +12,7 @@ interface AuthProps {
 
 export function Auth({ 
   onClose, 
-  showClose = false,
-  title = 'Welcome to Neemee',
-  subtitle = 'Sign in to save your highlights and access them from anywhere'
+  showClose = false
 }: AuthProps) {
 
   return (

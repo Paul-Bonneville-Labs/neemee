@@ -1,7 +1,7 @@
 'use client';
 
 import { Note } from '@/types';
-import { ExternalLink, Calendar, Globe, Clock } from 'lucide-react';
+import { ExternalLink, Globe, Clock } from 'lucide-react';
 
 interface NoteCardProps {
   note: Note;

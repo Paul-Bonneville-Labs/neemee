@@ -39,7 +39,6 @@ function formatRelativeTime(date: Date): string {
 export default function LibraryPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [showAuth, setShowAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
