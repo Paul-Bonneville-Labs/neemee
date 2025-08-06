@@ -405,22 +405,22 @@ export default function LibraryPage() {
                     const card = e.currentTarget;
                     card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1.02)';
                   }}
-                  className="card bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 ease-out transform-gpu"
+                  className="card bg-base-100 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 ease-out transform-gpu"
                 >
                   {/* Card Body - Note preview content */}
                   <div className="card-body p-6">
-                    <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed line-clamp-5 font-bold italic">
+                    <p className="text-base-content text-sm leading-relaxed line-clamp-5 font-bold italic">
                       {note.snippet || note.content || 'No content'}
                     </p>
                   </div>
 
                   {/* Card Footer - Metadata */}
-                  <div className="card-footer p-4 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
-                    <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="card-footer p-4 bg-base-200 rounded-b-lg">
+                    <div className="space-y-2 text-xs text-base-content/70">
                       {/* Page Title */}
                       {note.page_title && (
                         <div className="tooltip tooltip-top w-full" data-tip={note.page_title}>
-                          <div className="font-bold text-gray-800 dark:text-gray-200 truncate cursor-help">
+                          <div className="font-bold text-base-content truncate cursor-help">
                             {note.page_title}
                           </div>
                         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/components/AuthProvider';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Note, NoteUpdateRequest, ApiResponse } from '@/types';
 import { ArrowLeft, Save, Trash2, ExternalLink } from 'lucide-react';
@@ -34,6 +34,10 @@ export default function NoteDetailsPage() {
   
   // Delete confirmation modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  
+  // Snippet height tracking
+  const snippetRef = useRef<HTMLDivElement>(null);
+  const [shouldShowFade, setShouldShowFade] = useState(false);
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -264,17 +268,16 @@ export default function NoteDetailsPage() {
         <div className="space-y-8">
           {/* Original Snippet Section */}
           {formData.snippet && (
-            <div className="relative">
+            <div>
+              <label htmlFor="snippet" className="block text-sm font-medium mb-2">
+                Original Snippet
+              </label>
               <div className="relative overflow-hidden">
-                <div className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 italic font-bold pl-8 max-h-44 overflow-hidden">
+                <div className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 max-h-44 overflow-hidden">
                   {formData.snippet}
                 </div>
                 {/* Gradient fade-out overlay */}
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 dark:from-gray-900 dark:via-gray-900/80 to-transparent pointer-events-none"></div>
-              </div>
-              {/* Large decorative curly quotation mark */}
-              <div className="absolute left-0 -top-2 text-6xl text-white opacity-30 pointer-events-none select-none font-bold leading-none" style={{fontFamily: 'var(--font-geist-sans)'}}>
-                &ldquo;
               </div>
             </div>
           )}
