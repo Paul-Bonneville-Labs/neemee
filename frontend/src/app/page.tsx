@@ -408,8 +408,8 @@ export default function LibraryPage() {
                   className="card bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg cursor-pointer transition-all duration-300 ease-out transform-gpu"
                 >
                   {/* Card Body - Note preview content */}
-                  <div className="card-body p-6 pb-3">
-                    <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed line-clamp-4 font-bold italic">
+                  <div className="card-body p-6">
+                    <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed line-clamp-5 font-bold italic">
                       {note.snippet || note.content || 'No content'}
                     </p>
                   </div>
