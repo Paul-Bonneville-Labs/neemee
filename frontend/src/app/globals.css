@@ -1,11 +1,15 @@
 @import "tailwindcss";
+
 @plugin "daisyui" {
-  themes: nord --default, light, dark --prefersdark;
+  themes: light --default, dark --prefersdark;
   base: true;
   styled: true;
   utils: true;
-  logs: true;
+  logs: false;
 }
+
+/* Enable Tailwind dark mode to work with DaisyUI themes */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 :root {
   --background: #ffffff;

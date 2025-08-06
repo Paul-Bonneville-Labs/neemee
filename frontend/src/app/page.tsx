@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Auth } from '@/components/Auth';
 import { ProfileMenu } from '@/components/auth/ProfileMenu';
 import { Sidebar, HamburgerButton } from '@/components/Sidebar';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Note, NotesLibraryResponse, ApiResponse } from '@/types';
 import { Search, Plus, Grid, List, Clock, Globe, Edit3, Zap, Network } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -317,6 +318,9 @@ export default function LibraryPage() {
                 <Plus className="w-4 h-4" />
                 Setup Bookmarklet
               </button>
+
+              {/* Theme Toggle */}
+              <ThemeToggle />
 
               {/* Profile Menu */}
               <ProfileMenu />

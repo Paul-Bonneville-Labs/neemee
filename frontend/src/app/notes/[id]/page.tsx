@@ -180,10 +180,10 @@ export default function NoteDetailsPage() {
 
   if (!mounted || loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-base-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="text-base-content/70">Loading...</p>
         </div>
       </div>
     );
@@ -202,7 +202,7 @@ export default function NoteDetailsPage() {
             <div className="flex items-center h-16">
               <button 
                 onClick={() => router.push('/')}
-                className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                className="flex items-center gap-2 text-base-content/70 hover:text-base-content"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Library
@@ -216,7 +216,7 @@ export default function NoteDetailsPage() {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading note details...</p>
+              <p className="text-base-content/70">Loading note details...</p>
             </div>
           </div>
         </main>
@@ -231,7 +231,7 @@ export default function NoteDetailsPage() {
   return (
     <div className="bg-base-100">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-base-100/50 backdrop-blur-lg">
+      <header className="sticky top-0 z-50 bg-base-100/50 backdrop-blur-lg border-b border-base-200">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button 
@@ -239,7 +239,7 @@ export default function NoteDetailsPage() {
                 console.log('Back button clicked');
                 router.push('/');
               }}
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              className="flex items-center gap-2 text-base-content/70 hover:text-base-content transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Library
@@ -249,11 +249,7 @@ export default function NoteDetailsPage() {
               <button
                 onClick={handleSave}
                 disabled={!hasUnsavedChanges || isSaving}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white
-                         bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 disabled:bg-gray-400
-                         border border-transparent rounded-lg focus:outline-none focus:ring-2 
-                         focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200
-                         disabled:cursor-not-allowed"
+                className="btn btn-primary"
               >
                 <Save className="w-4 h-4" />
                 {isSaving ? 'Saving...' : 'Save'}
@@ -261,10 +257,7 @@ export default function NoteDetailsPage() {
               
               <button
                 onClick={() => setDeleteModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white
-                         bg-red-600 hover:bg-red-700 focus:bg-red-700
-                         border border-transparent rounded-lg focus:outline-none focus:ring-2 
-                         focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
+                className="btn btn-error"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete
@@ -280,13 +273,13 @@ export default function NoteDetailsPage() {
           {/* Original Snippet Section */}
           {formData.snippet && (
             <div>
-              <label htmlFor="snippet" className="block text-sm font-medium mb-2">
+              <label htmlFor="snippet" className="block text-sm font-medium mb-2 text-base-content">
                 Original Snippet
               </label>
               <div className={`relative ${shouldShowFade ? 'overflow-hidden' : ''}`}>
                 <div 
                   ref={snippetRef}
-                  className={`text-xl leading-relaxed text-gray-700 dark:text-gray-300 ${
+                  className={`text-xl leading-relaxed text-base-content ${
                     shouldShowFade ? 'max-h-72 overflow-hidden' : ''
                   }`}
                 >
@@ -294,7 +287,7 @@ export default function NoteDetailsPage() {
                 </div>
                 {/* Gradient fade-out overlay - only show when content is long */}
                 {shouldShowFade && (
-                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 dark:from-gray-900 dark:via-gray-900/80 to-transparent pointer-events-none"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-base-100 via-base-100/80 to-transparent pointer-events-none"></div>
                 )}
               </div>
             </div>
@@ -304,7 +297,7 @@ export default function NoteDetailsPage() {
           <div className="space-y-6">
             {/* Page Title */}
             <div>
-              <label htmlFor="page_title" className="block text-sm font-medium mb-2">
+              <label htmlFor="page_title" className="block text-sm font-medium mb-2 text-base-content">
                 Page Title
               </label>
               <input
@@ -312,15 +305,14 @@ export default function NoteDetailsPage() {
                 type="text"
                 value={formData.page_title}
                 onChange={(e) => handleFormChange('page_title', e.target.value)}
-                className="no-border w-full px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
-                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                className="input input-bordered w-full bg-base-200 focus:bg-base-100"
                 placeholder="Enter page title..."
               />
             </div>
 
             {/* Page URL */}
             <div>
-              <label htmlFor="page_url" className="block text-sm font-medium mb-2">
+              <label htmlFor="page_url" className="block text-sm font-medium mb-2 text-base-content">
                 Source URL
               </label>
               <div className="relative">
@@ -329,8 +321,7 @@ export default function NoteDetailsPage() {
                   type="url"
                   value={formData.page_url}
                   onChange={(e) => handleFormChange('page_url', e.target.value)}
-                  className="w-full px-3 py-2 pr-10 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
-                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                  className="input input-bordered w-full pr-10 bg-base-200 focus:bg-base-100"
                   placeholder="https://example.com"
                 />
                 {formData.page_url && (
@@ -338,7 +329,7 @@ export default function NoteDetailsPage() {
                     href={formData.page_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/50 hover:text-base-content/70"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>
@@ -348,10 +339,10 @@ export default function NoteDetailsPage() {
 
             {/* Main Content */}
             <div>
-              <label htmlFor="content" className="block text-sm font-medium mb-2">
+              <label htmlFor="content" className="block text-sm font-medium mb-2 text-base-content">
                 Content
               </label>
-              <div className="bg-white dark:bg-neutral-100 rounded-lg p-4 border border-gray-200 dark:border-neutral-200">
+              <div className="bg-white rounded-lg p-4 border border-base-300">
                 <SimpleMarkdownEditor
                   initialContent={formData.content}
                   onChange={(content) => handleFormChange('content', content)}
@@ -362,17 +353,17 @@ export default function NoteDetailsPage() {
 
           {/* Metadata */}
           <div className="pt-2">
-            <h3 className="text-lg font-semibold mb-4">Note Information</h3>
+            <h3 className="text-lg font-semibold mb-4 text-base-content">Note Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <div className="text-sm font-medium mb-2">Note ID</div>
-                <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg font-mono cursor-text">
+                <div className="text-sm font-medium mb-2 text-base-content">Note ID</div>
+                <div className="px-4 py-3 bg-base-200 rounded-lg font-mono cursor-text text-base-content">
                   {note.id}
                 </div>
               </div>
               <div>
-                <div className="text-sm font-medium mb-2">Created</div>
-                <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg cursor-text">
+                <div className="text-sm font-medium mb-2 text-base-content">Created</div>
+                <div className="px-4 py-3 bg-base-200 rounded-lg cursor-text text-base-content">
                   {formatDetailedDate(note.created_at)}
                 </div>
               </div>
