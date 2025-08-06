@@ -249,7 +249,7 @@ export default function LibraryPage() {
 
   // Main library view for authenticated users
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-base-100">
       {/* Sidebar */}
       <Sidebar 
         isOpen={sidebarOpen} 
@@ -266,10 +266,10 @@ export default function LibraryPage() {
                 isOpen={sidebarOpen}
                 onClick={() => setSidebarOpen(!sidebarOpen)}
               />
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-base-content">
                 {appConfig.app.name}
               </h1>
-              <span className="ml-2 text-2xl text-gray-500 dark:text-gray-400">Library</span>
+              <span className="ml-2 text-2xl text-base-content/70">Library</span>
             </div>
 
             {/* Search and Actions */}
@@ -312,11 +312,7 @@ export default function LibraryPage() {
               {/* Add Note Button */}
               <button 
                 onClick={() => router.push('/setup')}
-                className="inline-flex items-center gap-2 px-4 py-2 text-white font-medium
-                         bg-blue-600 hover:bg-blue-700 focus:bg-blue-700
-                         border border-transparent rounded-lg 
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                         transition-colors duration-200"
+                className="btn btn-primary"
               >
                 <Plus className="w-4 h-4" />
                 Setup Bookmarklet
@@ -335,7 +331,7 @@ export default function LibraryPage() {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading your library...</p>
+              <p className="text-base-content/70">Loading your library...</p>
             </div>
           </div>
         ) : filteredNotes.length === 0 ? (
@@ -343,10 +339,10 @@ export default function LibraryPage() {
             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
               <Plus className="w-8 h-8 text-gray-400" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <h2 className="text-xl font-semibold text-base-content mb-2">
               {searchTerm ? 'No notes found' : 'Your library is empty'}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4 text-center max-w-md">
+            <p className="text-base-content/70 mb-4 text-center max-w-md">
               {searchTerm 
                 ? `No notes match "${searchTerm}". Try a different search term.`
                 : 'Start building your knowledge base by capturing your first note.'
@@ -354,11 +350,7 @@ export default function LibraryPage() {
             </p>
             <button 
               onClick={() => router.push('/setup')}
-              className="inline-flex items-center gap-2 px-4 py-2 text-white font-medium
-                       bg-blue-600 hover:bg-blue-700 focus:bg-blue-700
-                       border border-transparent rounded-lg 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                       transition-colors duration-200"
+              className="btn btn-primary"
             >
               <Plus className="w-4 h-4" />
               Setup Bookmarklet
@@ -368,7 +360,7 @@ export default function LibraryPage() {
           <>
             {/* Results Summary */}
             <div className="mb-6">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-base-content/70">
                 {searchTerm ? (
                   <>Showing {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''} for &ldquo;{searchTerm}&rdquo;</>
                 ) : (

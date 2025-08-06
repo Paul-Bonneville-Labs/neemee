@@ -86,6 +86,17 @@ export default function NoteDetailsPage() {
     }
   }, [user, mounted, noteId, loadNote]);
 
+  // Check snippet height to determine if fade should be shown
+  useEffect(() => {
+    if (formData.snippet && snippetRef.current) {
+      const element = snippetRef.current;
+      const lineHeight = 32; // text-xl with leading-relaxed is approximately 32px per line
+      const sixLinesHeight = lineHeight * 6; // ~192px
+      
+      setShouldShowFade(element.scrollHeight > sixLinesHeight);
+    }
+  }, [formData.snippet]);
+
   // Handle form changes
   const handleFormChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -272,12 +283,19 @@ export default function NoteDetailsPage() {
               <label htmlFor="snippet" className="block text-sm font-medium mb-2">
                 Original Snippet
               </label>
-              <div className="relative overflow-hidden">
-                <div className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 max-h-44 overflow-hidden">
+              <div className={`relative ${shouldShowFade ? 'overflow-hidden' : ''}`}>
+                <div 
+                  ref={snippetRef}
+                  className={`text-xl leading-relaxed text-gray-700 dark:text-gray-300 ${
+                    shouldShowFade ? 'max-h-72 overflow-hidden' : ''
+                  }`}
+                >
                   {formData.snippet}
                 </div>
-                {/* Gradient fade-out overlay */}
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 dark:from-gray-900 dark:via-gray-900/80 to-transparent pointer-events-none"></div>
+                {/* Gradient fade-out overlay - only show when content is long */}
+                {shouldShowFade && (
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white via-white/80 dark:from-gray-900 dark:via-gray-900/80 to-transparent pointer-events-none"></div>
+                )}
               </div>
             </div>
           )}
