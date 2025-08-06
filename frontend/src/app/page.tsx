@@ -257,7 +257,7 @@ export default function LibraryPage() {
       />
       
       {/* Navigation Header */}
-      <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md">
+      <header className="sticky top-0 z-30 glass-nav">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo with Hamburger */}
