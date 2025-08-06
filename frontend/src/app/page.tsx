@@ -311,7 +311,7 @@ export default function LibraryPage() {
 
               {/* Add Note Button */}
               <button 
-                onClick={() => window.open('https://docs.anthropic.com/en/docs/bookmarklet-setup', '_blank')}
+                onClick={() => router.push('/setup')}
                 className="inline-flex items-center gap-2 px-4 py-2 text-white font-medium
                          bg-blue-600 hover:bg-blue-700 focus:bg-blue-700
                          border border-transparent rounded-lg 
@@ -353,7 +353,7 @@ export default function LibraryPage() {
               }
             </p>
             <button 
-              onClick={() => window.open('https://docs.anthropic.com/en/docs/bookmarklet-setup', '_blank')}
+              onClick={() => router.push('/setup')}
               className="inline-flex items-center gap-2 px-4 py-2 text-white font-medium
                        bg-blue-600 hover:bg-blue-700 focus:bg-blue-700
                        border border-transparent rounded-lg 
