@@ -19,7 +19,7 @@ export function ThemeToggle() {
         {theme === 'dark' && <Moon className="w-5 h-5" />}
         {theme === 'system' && <Monitor className="w-5 h-5" />}
       </div>
-      <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow border border-base-200">
+      <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-36 p-2 shadow-lg border border-base-300">
         {themes.map(({ value, label, icon: Icon }) => (
           <li key={value}>
             <button

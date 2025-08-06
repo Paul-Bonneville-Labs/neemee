@@ -289,22 +289,16 @@ export default function LibraryPage() {
               </div>
 
               {/* View Mode Toggle */}
-              <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+              <div className="join">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 transition-colors duration-200 ${viewMode === 'grid' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'
-                  }`}
+                  className={`join-item btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : 'btn-ghost'}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 transition-colors duration-200 ${viewMode === 'list' 
-                    ? 'bg-blue-500 text-white' 
-                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'
-                  }`}
+                  className={`join-item btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -334,14 +328,14 @@ export default function LibraryPage() {
         {isLoading && !hasLoaded ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="loading loading-spinner loading-lg text-primary"></div>
               <p className="text-base-content/70">Loading your library...</p>
             </div>
           </div>
         ) : filteredNotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-              <Plus className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mb-4">
+              <Plus className="w-8 h-8 text-base-content/50" />
             </div>
             <h2 className="text-xl font-semibold text-base-content mb-2">
               {searchTerm ? 'No notes found' : 'Your library is empty'}
