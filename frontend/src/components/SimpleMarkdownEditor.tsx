@@ -72,7 +72,7 @@ function MDXEditorComponent({ initialContent, onChange }: SimpleMarkdownEditorPr
   const CopyButton = () => (
     <button
       onClick={handleCopyToClipboard}
-      className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded border border-gray-300 dark:border-gray-600 transition-colors"
+      className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 dark:bg-gray-100 dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded border border-gray-600 dark:border-gray-300 transition-colors"
       title="Copy markdown to clipboard"
     >
       {copied ? (
