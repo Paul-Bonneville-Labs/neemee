@@ -265,7 +265,7 @@ export default function NoteDetailsPage() {
           {/* Original Snippet Section */}
           {formData.snippet && (
             <div className="relative">
-              <div className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 italic font-bold pl-12">
+              <div className="text-xl leading-relaxed text-gray-700 dark:text-gray-300 italic font-bold pl-8">
                 {formData.snippet}
               </div>
               {/* Large decorative curly quotation mark */}
