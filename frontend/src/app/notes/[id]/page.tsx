@@ -279,15 +279,15 @@ export default function NoteDetailsPage() {
           <div className="space-y-6">
             {/* Page Title */}
             <div>
-              <label htmlFor="page_title" className="label">
-                <span className="label-text">Page Title</span>
+              <label htmlFor="page_title" className="block text-sm font-medium mb-2">
+                Page Title
               </label>
               <input
                 id="page_title"
                 type="text"
                 value={formData.page_title}
                 onChange={(e) => handleFormChange('page_title', e.target.value)}
-                className="no-border w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
+                className="no-border w-full px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
                 style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                 placeholder="Enter page title..."
               />
@@ -295,8 +295,8 @@ export default function NoteDetailsPage() {
 
             {/* Page URL */}
             <div>
-              <label htmlFor="page_url" className="label">
-                <span className="label-text">Source URL</span>
+              <label htmlFor="page_url" className="block text-sm font-medium mb-2">
+                Source URL
               </label>
               <div className="relative">
                 <input
@@ -304,7 +304,7 @@ export default function NoteDetailsPage() {
                   type="url"
                   value={formData.page_url}
                   onChange={(e) => handleFormChange('page_url', e.target.value)}
-                  className="w-full px-4 py-3 pr-10 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
+                  className="w-full px-3 py-2 pr-10 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-200 dark:focus:bg-gray-700 transition-colors"
                   style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
                   placeholder="https://example.com"
                 />
@@ -323,8 +323,8 @@ export default function NoteDetailsPage() {
 
             {/* Main Content */}
             <div>
-              <label htmlFor="content" className="label">
-                <span className="label-text">Content</span>
+              <label htmlFor="content" className="block text-sm font-medium mb-2">
+                Content
               </label>
               <div className="bg-white dark:bg-neutral-100 rounded-lg p-4 border border-gray-200 dark:border-neutral-200">
                 <SimpleMarkdownEditor
