@@ -195,9 +195,9 @@ export default function NoteDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="min-h-screen bg-base-100">
         {/* Header */}
-        <header className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700">
+        <header className="bg-base-100/50 backdrop-blur-lg border-b border-base-200">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-16">
               <button 
@@ -229,9 +229,9 @@ export default function NoteDetailsPage() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900">
+    <div className="bg-base-100">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/60 dark:bg-gray-900/60 backdrop-blur-lg">
+      <header className="sticky top-0 z-50 bg-base-100/50 backdrop-blur-lg">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button 
