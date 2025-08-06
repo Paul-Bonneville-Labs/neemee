@@ -419,32 +419,38 @@ export default function LibraryPage() {
                     <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
                       {/* Page Title */}
                       {note.page_title && (
-                        <div className="font-medium text-gray-700 dark:text-gray-300 truncate">
-                          {note.page_title}
+                        <div className="tooltip tooltip-top w-full" data-tip={note.page_title}>
+                          <div className="font-bold text-gray-800 dark:text-gray-200 truncate cursor-help">
+                            {note.page_title}
+                          </div>
                         </div>
                       )}
                       
                       {/* Domain and Date Row */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1 truncate flex-1">
-                          <img 
-                            src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
-                            alt="" 
-                            className="w-3 h-3 flex-shrink-0"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                              if (nextElement) nextElement.style.display = 'inline';
-                            }}
-                          />
-                          <Globe className="w-3 h-3 flex-shrink-0 hidden" />
-                          <span className="truncate">
-                            {note.page_url ? new URL(note.page_url).hostname : 'Unknown source'}
-                          </span>
+                        <div className="tooltip tooltip-top flex-1" data-tip={note.page_url || 'Unknown source'}>
+                          <div className="flex items-center gap-1 truncate cursor-help">
+                            <img 
+                              src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
+                              alt="" 
+                              className="w-3 h-3 flex-shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (nextElement) nextElement.style.display = 'inline';
+                              }}
+                            />
+                            <Globe className="w-3 h-3 flex-shrink-0 hidden" />
+                            <span className="truncate">
+                              {note.page_url ? new URL(note.page_url).hostname : 'Unknown source'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 whitespace-nowrap">
-                          <Clock className="w-3 h-3" />
-                          <span>{formatRelativeTime(new Date(note.created_at))}</span>
+                        <div className="tooltip tooltip-top tooltip-left" data-tip={new Date(note.created_at).toLocaleString()}>
+                          <div className="flex items-center gap-1 whitespace-nowrap cursor-help">
+                            <Clock className="w-3 h-3" />
+                            <span>{formatRelativeTime(new Date(note.created_at))}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
