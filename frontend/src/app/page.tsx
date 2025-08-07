@@ -4,15 +4,16 @@ import { useAuth } from '@/components/AuthProvider';
 import { useState, useEffect, useCallback } from 'react';
 import { Auth } from '@/components/Auth';
 import { Sidebar } from '@/components/Sidebar';
-import { Note, NotesLibraryResponse, ApiResponse, UserApiKey } from '@/types';
+import { UserApiKey } from '@/types';
 import { Edit3, Zap, Network } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToasts, ToastContainer } from '@/components/Toast';
 import { LibraryHeader } from '@/components/library/LibraryHeader';
 import { EmptyLibraryState } from '@/components/library/EmptyLibraryState';
-import { useLibraryFilters } from '@/components/library/LibraryFilters';
 import { NotesGridView } from '@/components/library/NotesGridView';
 import { NotesListView } from '@/components/library/NotesListView';
+import { InfiniteScrollContainer, NotesGridSkeleton, NotesListSkeleton } from '@/components/InfiniteScrollContainer';
+import { usePaginatedNotes } from '@/hooks/usePaginatedNotes';
 import appConfig from '../../config.json';
 
 export default function LibraryPage() {
@@ -22,11 +23,22 @@ export default function LibraryPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toasts, dismissToast, showSuccess, showError } = useToasts();
   
-  // Library state
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  // Pagination state using our custom hook
+  const {
+    notes,
+    total,
+    hasMore,
+    isInitialLoading,
+    isPaginating,
+    error: paginationError,
+    loadMore,
+    search,
+    refresh,
+    searchTerm,
+    isSearching
+  } = usePaginatedNotes();
+  
+  // View and API key state
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [apiKey, setApiKey] = useState<UserApiKey | null>(null);
 
@@ -56,46 +68,6 @@ export default function LibraryPage() {
     router.push('/setup');
   };
 
-  const loadNotes = useCallback(async () => {
-    if (hasLoaded || !user) return;
-    
-    try {
-      setIsLoading(true);
-      console.log('Loading notes for user:', user);
-      const response = await fetch('/api/notes/list', {
-        credentials: 'include',
-      });
-      console.log('Notes API response status:', response.status);
-      const result: ApiResponse<NotesLibraryResponse> = await response.json();
-      console.log('Notes API result:', result);
-      
-      if (result.success && result.data) {
-        console.log('Found notes:', result.data.notes?.length || 0);
-        setNotes(result.data.notes || []);
-        setHasLoaded(true);
-      } else {
-        console.log('API returned error:', result.error, 'Status:', response.status);
-        // Only log errors that aren't authentication-related
-        if (response.status !== 401) {
-          console.error('Failed to load notes:', result.error);
-        }
-        // For 401 errors, just mark as loaded so we don't retry
-        if (response.status === 401) {
-          setHasLoaded(true);
-        }
-      }
-    } catch (err) {
-      console.error('Exception loading notes:', err);
-      // Handle network errors, but don't spam console for auth issues
-      if (err instanceof Error && !err.message.includes('401')) {
-        console.error('Error loading notes:', err);
-      }
-      setHasLoaded(true); // Prevent infinite retry loops
-    } finally {
-      setIsLoading(false);
-    }
-  }, [hasLoaded, user]);
-
   const loadApiKey = useCallback(async () => {
     if (!user) return;
     
@@ -117,15 +89,12 @@ export default function LibraryPage() {
     }
   }, [user]);
 
-  // Load notes and API key when user is authenticated
+  // Load API key when user is authenticated
   useEffect(() => {
-    if (user && mounted && !hasLoaded) {
-      loadNotes();
-    }
     if (user && mounted) {
       loadApiKey();
     }
-  }, [user, mounted, hasLoaded, loadNotes, loadApiKey]);
+  }, [user, mounted, loadApiKey]);
 
   // Refresh API key when page becomes visible (in case user reset on another tab)
   useEffect(() => {
@@ -139,8 +108,10 @@ export default function LibraryPage() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user, mounted, loadApiKey]);
 
-  // Use the filtering hook
-  const { filteredNotes } = useLibraryFilters({ notes, searchTerm });
+  // Handle search changes (delegate to pagination hook)
+  const handleSearchChange = (term: string) => {
+    search(term);
+  };
 
   if (!mounted) {
     return (
@@ -293,7 +264,7 @@ export default function LibraryPage() {
         sidebarOpen={sidebarOpen}
         onSidebarToggle={() => setSidebarOpen(!sidebarOpen)}
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         viewMode={viewMode}
         onViewModeChange={handleViewModeChange}
         apiKey={apiKey}
@@ -302,14 +273,16 @@ export default function LibraryPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isLoading && !hasLoaded ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="loading loading-spinner loading-lg text-primary"></div>
-              <p className="text-base-content/70">Loading your library...</p>
-            </div>
-          </div>
-        ) : filteredNotes.length === 0 ? (
+        {/* Initial Loading State */}
+        {isInitialLoading ? (
+          <>
+            {viewMode === 'grid' ? (
+              <NotesGridSkeleton />
+            ) : (
+              <NotesListSkeleton />
+            )}
+          </>
+        ) : notes.length === 0 && !isSearching ? (
           <EmptyLibraryState 
             searchTerm={searchTerm}
             apiKey={apiKey}
@@ -318,40 +291,70 @@ export default function LibraryPage() {
         ) : (
           <>
             {/* Results Summary */}
-            <div className="mb-6 flex justify-end">
+            <div className="mb-6 flex justify-between items-center">
               <div className="badge badge-outline text-base-content border-base-content/20 bg-base-200 rounded-full">
                 {searchTerm ? (
-                  <>Showing {filteredNotes.length} result{filteredNotes.length !== 1 ? 's' : ''} for &ldquo;{searchTerm}&rdquo;</>
+                  <>Showing {notes.length} result{notes.length !== 1 ? 's' : ''} for &ldquo;{searchTerm}&rdquo;{hasMore ? ' (loading more...)' : ''}</>
                 ) : (
-                  <>{filteredNotes.length} note{filteredNotes.length !== 1 ? 's' : ''} in your library</>
+                  <>Showing {notes.length} of {total} note{total !== 1 ? 's' : ''} in your library</>
                 )}
               </div>
+              
+              {/* Refresh button */}
+              <button
+                onClick={refresh}
+                className="btn btn-ghost btn-sm text-base-content/70 hover:text-base-content"
+                disabled={isInitialLoading || isPaginating}
+              >
+                {isInitialLoading ? 'Loading...' : 'Refresh'}
+              </button>
             </div>
 
-            {/* Notes Content */}
-            {viewMode === 'grid' ? (
-              <NotesGridView 
-                notes={filteredNotes}
-                onToast={(type, message, description) => {
-                  if (type === 'success') {
-                    showSuccess(message);
-                  } else {
-                    showError(message, description);
-                  }
-                }}
-              />
-            ) : (
-              <NotesListView 
-                notes={filteredNotes}
-                onToast={(type, message, description) => {
-                  if (type === 'success') {
-                    showSuccess(message);
-                  } else {
-                    showError(message, description);
-                  }
-                }}
-              />
+            {/* Error display */}
+            {paginationError && (
+              <div className="alert alert-error mb-6">
+                <span>Error loading notes: {paginationError}</span>
+                <button
+                  onClick={refresh}
+                  className="btn btn-sm btn-error btn-outline ml-auto"
+                >
+                  Retry
+                </button>
+              </div>
             )}
+
+            {/* Notes Content with Infinite Scroll */}
+            <InfiniteScrollContainer
+              hasMore={hasMore}
+              isLoading={isPaginating || isSearching}
+              onLoadMore={loadMore}
+              error={paginationError}
+              onRetry={refresh}
+            >
+              {viewMode === 'grid' ? (
+                <NotesGridView 
+                  notes={notes}
+                  onToast={(type, message, description) => {
+                    if (type === 'success') {
+                      showSuccess(message);
+                    } else {
+                      showError(message, description);
+                    }
+                  }}
+                />
+              ) : (
+                <NotesListView 
+                  notes={notes}
+                  onToast={(type, message, description) => {
+                    if (type === 'success') {
+                      showSuccess(message);
+                    } else {
+                      showError(message, description);
+                    }
+                  }}
+                />
+              )}
+            </InfiniteScrollContainer>
           </>
         )}
       </main>
