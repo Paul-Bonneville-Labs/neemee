@@ -4,7 +4,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useState, useEffect, useCallback } from 'react';
 import { Auth } from '@/components/Auth';
 import { Sidebar } from '@/components/Sidebar';
-import { UserApiKey } from '@/types';
+import { UserApiKey, ApiResponse } from '@/types';
 import { Edit3, Zap, Network } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToasts, ToastContainer } from '@/components/Toast';

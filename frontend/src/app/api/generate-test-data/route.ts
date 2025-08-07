@@ -173,6 +173,7 @@ export async function POST(request: NextRequest) {
       count = 100,
       timeSpread = 'month',
       clear = false,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       categories = []
     } = body;
 

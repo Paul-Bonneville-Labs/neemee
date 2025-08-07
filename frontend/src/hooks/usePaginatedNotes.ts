@@ -53,7 +53,7 @@ export function usePaginatedNotes(options: UsePaginatedNotesOptions = {}): UsePa
   
   // Refs to prevent duplicate requests
   const loadingRef = useRef(false);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const hasLoadedInitialRef = useRef(false);
 
   // Search debouncing
@@ -136,7 +136,7 @@ export function usePaginatedNotes(options: UsePaginatedNotesOptions = {}): UsePa
       
       // Update pagination state
       setTotal(pagination.total);
-      const totalPages = Math.ceil(pagination.total / limit);
+      const totalPages = Math.ceil(pagination.total / pageSize);
       setHasMore(page < totalPages);
       
       if (page > 1) {
@@ -164,8 +164,6 @@ export function usePaginatedNotes(options: UsePaginatedNotesOptions = {}): UsePa
 
   // Handle search changes
   useEffect(() => {
-    if (debouncedSearchTerm !== searchTerm) return; // Still debouncing
-    
     // Reset pagination and load with search
     setCurrentPage(1);
     setHasMore(true);
