@@ -126,8 +126,12 @@ export function usePaginatedNotes(options: UsePaginatedNotesOptions = {}): UsePa
         setNotes(newNotes);
         setCurrentPage(1);
       } else {
-        // Append notes for pagination
-        setNotes(prevNotes => [...prevNotes, ...newNotes]);
+        // Append notes for pagination, filtering out duplicates
+        setNotes(prevNotes => {
+          const existingIds = new Set(prevNotes.map(note => note.id));
+          const uniqueNewNotes = newNotes.filter(note => !existingIds.has(note.id));
+          return [...prevNotes, ...uniqueNewNotes];
+        });
       }
       
       // Update pagination state
