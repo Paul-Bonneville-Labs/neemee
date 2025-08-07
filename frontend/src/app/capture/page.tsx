@@ -5,17 +5,17 @@ import { Check, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 
 export default function CapturePage() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'timeout'>('loading');
-  const [message, setMessage] = useState('Processing highlight...');
-  const [highlightData, setHighlightData] = useState<{
+  const [message, setMessage] = useState('Processing note...');
+  const [noteData, setNoteData] = useState<{
     text: string;
     url: string;
     title: string;
   } | null>(null);
-  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [noteId, setNoteId] = useState<string | null>(null);
   const [, setProcessingStage] = useState<'saving' | 'complete'>('saving');
 
   useEffect(() => {
-    const captureHighlight = async () => {
+    const captureNote = async () => {
       try {
         // Get data from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -31,8 +31,8 @@ export default function CapturePage() {
           return;
         }
 
-        // Store the highlight data for display
-        setHighlightData({ 
+        // Store the note data for display
+        setNoteData({ 
           text, 
           url, 
           title: title || 'Untitled Page'
@@ -40,7 +40,7 @@ export default function CapturePage() {
 
         // Update progress
         setProcessingStage('saving');
-        setMessage('Saving highlight...');
+        setMessage('Saving note...');
 
         // Create timeout controller for the entire operation
         const controller = new AbortController();
@@ -51,15 +51,16 @@ export default function CapturePage() {
         }, 30000); // 30 second timeout
 
         try {
-          // Save the highlight via API with timeout
-          const response = await fetch('/api/highlights/capture', {
+          // Save the note via API with timeout
+          const response = await fetch('/api/notes/capture', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'X-API-Key': apiKey,
             },
             body: JSON.stringify({
-              highlighted_text: text,
+              content: text,
+              snippet: text,
               page_url: url,
               page_title: title,
               api_key: apiKey,
@@ -76,13 +77,13 @@ export default function CapturePage() {
             setProcessingStage('complete');
             setMessage(result.message || 'Highlight saved successfully!');
             
-            // Store the highlight ID for direct navigation
-            if (result.highlightId) {
-              setHighlightId(result.highlightId);
+            // Store the note ID for direct navigation
+            if (result.noteId) {
+              setNoteId(result.noteId);
             }
           } else {
             setStatus('error');
-            setMessage(result.message || 'Failed to save highlight');
+            setMessage(result.message || 'Failed to save note');
           }
         } catch (error) {
           clearTimeout(timeoutId);
@@ -97,13 +98,13 @@ export default function CapturePage() {
         }
 
       } catch (error) {
-        console.error('Error saving highlight:', error);
+        console.error('Error saving note:', error);
         setStatus('error');
-        setMessage('An error occurred while saving the highlight');
+        setMessage('An error occurred while saving the note');
       }
     };
 
-    captureHighlight();
+    captureNote();
   }, []);
 
   const getStatusIcon = () => {
@@ -147,7 +148,7 @@ export default function CapturePage() {
           </p>
         </div>
 
-        {highlightData && (
+        {noteData && (
           <div className="space-y-4">
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
               <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
@@ -156,7 +157,7 @@ export default function CapturePage() {
               
               <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-3 rounded-r mb-4">
                 <p className="text-sm text-gray-800 dark:text-gray-200 italic">
-                  &ldquo;{highlightData.text}&rdquo;
+                  &ldquo;{noteData.text}&rdquo;
                 </p>
               </div>
               
@@ -167,7 +168,7 @@ export default function CapturePage() {
                     Page Title
                   </h4>
                   <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">
-                    {highlightData.title}
+                    {noteData.title}
                   </p>
                 </div>
                 
@@ -177,14 +178,14 @@ export default function CapturePage() {
                     Source URL
                   </h4>
                   <a 
-                    href={highlightData.url} 
+                    href={noteData.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    title={highlightData.url}
+                    title={noteData.url}
                     className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 text-sm max-w-full"
                   >
                     <span className="truncate max-w-[280px] inline-block">
-                      {highlightData.url}
+                      {noteData.url}
                     </span>
                     <ExternalLink className="h-3 w-3 flex-shrink-0" />
                   </a>
@@ -207,9 +208,9 @@ export default function CapturePage() {
           
           <button
             onClick={() => {
-              if (highlightId) {
-                // Navigate directly to the specific highlight
-                window.open(`/dashboard?highlight=${highlightId}`, '_blank');
+              if (noteId) {
+                // Navigate directly to the specific note
+                window.open(`/notes/${noteId}`, '_blank');
               } else {
                 // Fallback to general dashboard
                 window.open('/dashboard', '_blank');
@@ -221,7 +222,7 @@ export default function CapturePage() {
           >
             {status === 'timeout' 
               ? 'Check Dashboard' 
-              : highlightId 
+              : noteId 
               ? 'View Highlight' 
               : 'View Dashboard'}
           </button>

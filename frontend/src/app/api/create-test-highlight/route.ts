@@ -14,40 +14,39 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
     
-    // Create a test highlight
-    const testHighlight = {
+    // Create a test note
+    const testNote = {
       user_id: userId,
-      url: 'https://example.com',
       page_url: 'https://example.com',
-      highlighted_text: 'This domain is for use in illustrative examples in documents.',
-      title: 'Example Domain',
+      content: 'This domain is for use in illustrative examples in documents.',
+      snippet: 'This domain is for use in illustrative examples in documents.',
       page_title: 'Example Domain',
       metadata: {
         content_status: 'pending'
       }
     };
     
-    const { data: highlight, error } = await supabase
-      .from('highlights')
-      .insert(testHighlight)
+    const { data: note, error } = await supabase
+      .from('notes')
+      .insert(testNote)
       .select()
       .single();
     
     if (error) {
-      console.error('Failed to create test highlight:', error);
+      console.error('Failed to create test note:', error);
       return NextResponse.json({
-        error: 'Failed to create test highlight',
+        error: 'Failed to create test note',
         details: error
       }, { status: 500 });
     }
     
     return NextResponse.json({
       status: 'success',
-      highlight: highlight,
-      message: 'Test highlight created successfully'
+      note: note,
+      message: 'Test note created successfully'
     });
   } catch (error) {
-    console.error('Create test highlight error:', error);
+    console.error('Create test note error:', error);
     return NextResponse.json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'

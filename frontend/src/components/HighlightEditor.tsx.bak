@@ -25,8 +25,8 @@ export function HighlightEditor({
   const [activeTab, setActiveTab] = useState<HighlightEditTab>('details');
   const [formData, setFormData] = useState<HighlightFormData>({
     highlighted_text: highlight.highlighted_text,
-    page_title: highlight.page_title || '',
-    page_url: highlight.page_url
+    title: highlight.page_title || '',
+    url: highlight.page_url
   });
   const [errors, setErrors] = useState<HighlightValidationErrors>({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -36,8 +36,8 @@ export function HighlightEditor({
   useEffect(() => {
     const hasChanges = 
       formData.highlighted_text !== highlight.highlighted_text ||
-      formData.page_title !== (highlight.page_title || '') ||
-      formData.page_url !== highlight.page_url;
+      formData.title !== (highlight.page_title || '') ||
+      formData.url !== highlight.page_url;
     setHasUnsavedChanges(hasChanges);
   }, [formData, highlight]);
 
@@ -51,17 +51,17 @@ export function HighlightEditor({
       newErrors.highlighted_text = 'Highlighted text is too long (max 10,000 characters)';
     }
 
-    if (formData.page_title.trim().length > 500) {
-      newErrors.page_title = 'Page title is too long (max 500 characters)';
+    if (formData.title.trim().length > 500) {
+      newErrors.title = 'Page title is too long (max 500 characters)';
     }
 
-    if (!formData.page_url.trim()) {
-      newErrors.page_url = 'Page URL is required';
+    if (!formData.url.trim()) {
+      newErrors.url = 'Page URL is required';
     } else {
       try {
-        new URL(formData.page_url);
+        new URL(formData.url);
       } catch {
-        newErrors.page_url = 'Please enter a valid URL';
+        newErrors.url = 'Please enter a valid URL';
       }
     }
 
@@ -80,8 +80,8 @@ export function HighlightEditor({
 
       const updates: HighlightUpdateRequest = {
         highlighted_text: formData.highlighted_text.trim(),
-        page_title: formData.page_title.trim() || undefined,
-        page_url: formData.page_url.trim()
+        page_title: formData.title.trim() || undefined,
+        page_url: formData.url.trim()
       };
 
       await onSave(updates);
@@ -204,50 +204,50 @@ export function HighlightEditor({
 
               {/* Page Title */}
               <div>
-                <label htmlFor="page_title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Page Title
                 </label>
                 <input
                   type="text"
-                  id="page_title"
-                  value={formData.page_title}
-                  onChange={(e) => handleInputChange('page_title', e.target.value)}
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
                   disabled={isLoading || isSaving}
                   className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                    errors.page_title
+                    errors.title
                       ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
                       : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
                   } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:opacity-50`}
                   placeholder="Enter the page title..."
                 />
-                {errors.page_title && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.page_title}</p>
+                {errors.title && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
                 )}
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {formData.page_title.length} / 500 characters
+                  {formData.title.length} / 500 characters
                 </p>
               </div>
 
               {/* Page URL */}
               <div>
-                <label htmlFor="page_url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Page URL *
                 </label>
                 <input
                   type="url"
-                  id="page_url"
-                  value={formData.page_url}
-                  onChange={(e) => handleInputChange('page_url', e.target.value)}
+                  id="url"
+                  value={formData.url}
+                  onChange={(e) => handleInputChange('url', e.target.value)}
                   disabled={isLoading || isSaving}
                   className={`w-full px-3 py-2 border rounded-lg text-sm ${
-                    errors.page_url
+                    errors.url
                       ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
                       : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
                   } bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:opacity-50`}
                   placeholder="https://example.com/page"
                 />
-                {errors.page_url && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.page_url}</p>
+                {errors.url && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.url}</p>
                 )}
               </div>
 

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Validate ID parameter
     if (!id || typeof id !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'Invalid highlight ID parameter' },
+        { success: false, error: 'Invalid note ID parameter' },
         { status: 400 }
       );
     }
@@ -37,25 +37,26 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid highlight ID format' },
+        { success: false, error: 'Invalid note ID format' },
         { status: 400 }
       );
     }
 
     const supabase = await createClient();
     
-    // Get highlight with user authorization check
-    const { data: highlight, error } = await supabase
-      .from('highlights')
+    // Get note with user authorization check
+    const { data: note, error } = await supabase
+      .from('notes')
       .select(`
         id,
         user_id,
-        highlighted_text,
-        original_quote,
-        url,
-        title,
+        content,
+        snippet,
+        page_url,
+        page_title,
         markdown_content,
-        created_at
+        created_at,
+        updated_at
       `)
       .eq('id', id)
       .eq('user_id', session.user.id)
@@ -64,41 +65,29 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (error) {
       if (error.code === 'PGRST116') {
         return NextResponse.json(
-          { success: false, error: 'Highlight not found' },
+          { success: false, error: 'Note not found' },
           { status: 404 }
         );
       }
-      console.error('Error fetching highlight:', error);
+      console.error('Error fetching note:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch highlight' },
+        { success: false, error: 'Failed to fetch note' },
         { status: 500 }
       );
     }
 
-    // Transform database fields to match TypeScript interface
-    const transformedHighlight = {
-      id: highlight.id,
-      user_id: highlight.user_id,
-      highlighted_text: highlight.highlighted_text,
-      original_quote: highlight.original_quote,
-      page_url: highlight.url, // Map database 'url' to interface 'page_url'
-      page_title: highlight.title, // Map database 'title' to interface 'page_title'
-      markdown_content: highlight.markdown_content,
-      created_at: highlight.created_at
-    };
-
     const response: ApiResponse = {
       success: true,
-      data: transformedHighlight,
-      message: `Retrieved highlight ${id}`,
+      data: note,
+      message: `Retrieved note ${id}`,
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error getting highlight:', error);
+    console.error('Error getting note:', error);
     const response: ApiResponse = {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to get highlight',
+      error: error instanceof Error ? error.message : 'Failed to get note',
     };
     return NextResponse.json(response, { status: 500 });
   }
@@ -129,7 +118,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Validate ID parameter
     if (!id || typeof id !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'Invalid highlight ID parameter' },
+        { success: false, error: 'Invalid note ID parameter' },
         { status: 400 }
       );
     }
@@ -138,19 +127,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid highlight ID format' },
+        { success: false, error: 'Invalid note ID format' },
         { status: 400 }
       );
     }
 
     // Parse request body
     const body = await request.json();
-    const { highlighted_text, page_title, page_url } = body;
+    const { content, page_title, page_url } = body;
 
     // Validate required fields
-    if (!highlighted_text || typeof highlighted_text !== 'string') {
+    if (!content || typeof content !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'highlighted_text is required and must be a string' },
+        { success: false, error: 'content is required and must be a string' },
         { status: 400 }
       );
     }
@@ -183,21 +172,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Sanitize inputs
-    const sanitizedText = highlighted_text.trim();
+    const sanitizedContent = content.trim();
     const sanitizedTitle = page_title?.trim() || null;
     const sanitizedUrl = page_url?.trim();
 
     // Validate lengths
-    if (sanitizedText.length === 0) {
+    if (sanitizedContent.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'highlighted_text cannot be empty' },
+        { success: false, error: 'content cannot be empty' },
         { status: 400 }
       );
     }
 
-    if (sanitizedText.length > 10000) {
+    if (sanitizedContent.length > 10000) {
       return NextResponse.json(
-        { success: false, error: 'highlighted_text is too long (max 10,000 characters)' },
+        { success: false, error: 'content is too long (max 10,000 characters)' },
         { status: 400 }
       );
     }
@@ -211,82 +200,75 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const supabase = await createClient();
     
-    // Build update object (map interface fields to database fields)
+    // Build update object
     const updateData: Record<string, unknown> = {
-      highlighted_text: sanitizedText,
+      content: sanitizedContent,
+      updated_at: new Date().toISOString()
     };
 
     if (sanitizedTitle !== undefined) {
-      updateData.title = sanitizedTitle; // Map 'page_title' to 'title'
+      updateData.page_title = sanitizedTitle;
     }
 
     if (sanitizedUrl !== undefined) {
-      updateData.url = sanitizedUrl; // Map 'page_url' to 'url'
+      updateData.page_url = sanitizedUrl;
       
       // Update domain if URL changed
-      try {
-        updateData.domain = new URL(sanitizedUrl).hostname;
-      } catch {
-        // Keep existing domain if URL is invalid
+      if (sanitizedUrl && sanitizedUrl.trim()) {
+        try {
+          updateData.domain = new URL(sanitizedUrl).hostname;
+        } catch {
+          // Keep existing domain if URL is invalid
+          console.log('PUT /api/notes/[id] - Invalid URL for domain extraction:', sanitizedUrl);
+        }
       }
     }
 
-    // Update highlight with user authorization check
-    const { data: highlight, error } = await supabase
-      .from('highlights')
+    // Update note with user authorization check
+    const { data: note, error } = await supabase
+      .from('notes')
       .update(updateData)
       .eq('id', id)
       .eq('user_id', session.user.id)
       .select(`
         id,
         user_id,
-        highlighted_text,
-        original_quote,
-        url,
-        title,
+        content,
+        snippet,
+        page_url,
+        page_title,
         markdown_content,
-        created_at
+        created_at,
+        updated_at
       `)
       .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
         return NextResponse.json(
-          { success: false, error: 'Highlight not found or access denied' },
+          { success: false, error: 'Note not found or access denied' },
           { status: 404 }
         );
       }
-      console.error('Error updating highlight:', error);
+      console.error('Error updating note:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to update highlight' },
+        { success: false, error: 'Failed to update note' },
         { status: 500 }
       );
     }
 
-    // Transform database fields to match TypeScript interface
-    const transformedHighlight = {
-      id: highlight.id,
-      user_id: highlight.user_id,
-      highlighted_text: highlight.highlighted_text,
-      original_quote: highlight.original_quote,
-      page_url: highlight.url, // Map database 'url' to interface 'page_url'
-      page_title: highlight.title, // Map database 'title' to interface 'page_title'
-      markdown_content: highlight.markdown_content,
-      created_at: highlight.created_at
-    };
-
     const response: ApiResponse = {
       success: true,
-      data: transformedHighlight,
-      message: `Highlight ${id} updated successfully`,
+      data: note,
+      message: `Note ${id} updated successfully`,
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error updating highlight:', error);
+    console.error('Error updating note:', error);
     const response: ApiResponse = {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to update highlight',
+      error: error instanceof Error ? error.message : 'Failed to update note',
     };
     return NextResponse.json(response, { status: 500 });
   }
@@ -317,7 +299,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     // Validate ID parameter
     if (!id || typeof id !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'Invalid highlight ID parameter' },
+        { success: false, error: 'Invalid note ID parameter' },
         { status: 400 }
       );
     }
@@ -326,39 +308,39 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(id)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid highlight ID format' },
+        { success: false, error: 'Invalid note ID format' },
         { status: 400 }
       );
     }
 
     const supabase = await createClient();
     
-    // Delete highlight with user authorization check
+    // Delete note with user authorization check
     const { error } = await supabase
-      .from('highlights')
+      .from('notes')
       .delete()
       .eq('id', id)
       .eq('user_id', session.user.id);
 
     if (error) {
-      console.error('Error deleting highlight:', error);
+      console.error('Error deleting note:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to delete highlight' },
+        { success: false, error: 'Failed to delete note' },
         { status: 500 }
       );
     }
 
     const response: ApiResponse = {
       success: true,
-      message: `Highlight ${id} deleted successfully`,
+      message: `Note ${id} deleted successfully`,
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error deleting highlight:', error);
+    console.error('Error deleting note:', error);
     const response: ApiResponse = {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete highlight',
+      error: error instanceof Error ? error.message : 'Failed to delete note',
     };
     return NextResponse.json(response, { status: 500 });
   }

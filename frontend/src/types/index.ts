@@ -102,12 +102,12 @@ export interface FrontmatterFormProps {
   isReadOnly?: boolean;
 }
 
-// Highlight management types
-export interface Highlight {
+// Note management types
+export interface Note {
   id: string;
   user_id: string;
-  highlighted_text: string;
-  original_quote?: string; // The original unmodified text as captured
+  content: string;
+  snippet?: string; // The original unmodified text as captured
   page_url: string;
   page_title?: string;
   markdown_content?: string;
@@ -115,43 +115,43 @@ export interface Highlight {
   updated_at?: string;
 }
 
-export interface HighlightCreateRequest {
-  highlighted_text: string;
+export interface NoteCreateRequest {
+  content: string;
   url: string;
   title?: string;
   opengraph_data?: Record<string, string>;
   api_key: string;
 }
 
-export interface HighlightUpdateRequest {
-  highlighted_text: string;
-  title?: string;
-  url?: string;
+export interface NoteUpdateRequest {
+  content: string;
+  page_title?: string;
+  page_url?: string;
 }
 
-export interface HighlightFormData {
-  highlighted_text: string;
+export interface NoteFormData {
+  content: string;
   title: string;
   url: string;
 }
 
-export interface HighlightValidationErrors {
-  highlighted_text?: string;
+export interface NoteValidationErrors {
+  content?: string;
   title?: string;
   url?: string;
 }
 
-export type HighlightEditTab = 'details' | 'content';
+export type NoteEditTab = 'details' | 'content';
 
-export interface HighlightEditProps {
-  highlight: Highlight;
-  onSave: (updates: HighlightUpdateRequest) => Promise<void>;
+export interface NoteEditProps {
+  note: Note;
+  onSave: (updates: NoteUpdateRequest) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export interface HighlightListResponse {
-  highlights: Highlight[];
+export interface NotesLibraryResponse {
+  notes: Note[];
   pagination: {
     total: number;
     page: number;
@@ -159,10 +159,10 @@ export interface HighlightListResponse {
   };
 }
 
-export interface HighlightCaptureResponse {
+export interface NoteCaptureResponse {
   success: boolean;
   message: string;
-  highlightId?: string;
+  noteId?: string;
 }
 
 export interface UserApiKey {
@@ -178,14 +178,19 @@ export interface BookmarkletResponse {
   instructions: string;
 }
 
-export interface HighlightListProps {
-  highlights: Highlight[];
-  selectedHighlight?: string;
-  onHighlightSelect: (highlightId: string) => void;
-  onDeleteHighlight: (highlightId: string) => void;
+export interface NotesGridProps {
+  notes: Note[];
+  selectedNote?: string;
+  onNoteSelect: (noteId: string) => void;
+  onDeleteNote?: (noteId: string) => void;
   onViewBookmarklet: () => void;
   onRefresh?: () => void;
   isLoading?: boolean;
+  sidebarWidth?: number;
+  userInfo?: {
+    name?: string;
+    role?: string;
+  };
 }
 
 // Bookmarklet Dashboard Types
@@ -207,8 +212,8 @@ export interface BookmarkletInstructionsProps {
   className?: string;
 }
 
-export interface HighlightStatsProps {
-  highlights: HighlightListResponse | null;
+export interface NoteStatsProps {
+  notes: NotesLibraryResponse | null;
   onRefresh?: () => void;
   className?: string;
 }
@@ -230,13 +235,13 @@ export interface ActivityStat {
   count: number;
 }
 
-export interface HighlightStats {
+export interface NoteStats {
   total: number;
   thisWeek: number;
   thisMonth: number;
   domains: DomainStat[];
   activity: ActivityStat[];
-  recent: Highlight[];
+  recent: Note[];
 }
 
 // Browser Detection Types
@@ -261,3 +266,13 @@ export interface FAQItem {
   answer: string;
   category: 'setup' | 'usage' | 'troubleshooting';
 }
+
+// Backward compatibility types (deprecated - use Note types instead)
+// @deprecated Use Note instead
+export type Highlight = Note;
+// @deprecated Use NotesLibraryResponse instead  
+export type HighlightListResponse = NotesLibraryResponse;
+// @deprecated Use NoteUpdateRequest instead
+export type HighlightUpdateRequest = NoteUpdateRequest;
+// @deprecated Use NotesGridProps instead
+export type HighlightListProps = NotesGridProps;

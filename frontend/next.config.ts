@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   
   // Enable ESLint during development builds
   eslint: {
-    // Run ESLint on all pages during development
+    // ESLint will run during builds and fail on violations
     ignoreDuringBuilds: false,
   },
   

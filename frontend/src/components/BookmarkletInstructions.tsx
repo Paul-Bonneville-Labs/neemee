@@ -151,34 +151,37 @@ export function BookmarkletInstructions({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Progress Overview */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-            Setup Progress
-          </h3>
-          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-            {completedSteps}/{totalSteps} Complete
-          </span>
+      <div role="alert" className="alert alert-soft">
+        <CheckCircle className="h-5 w-5 shrink-0 self-start" />
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">
+              Setup Progress
+            </h3>
+            <span className="text-sm font-medium">
+              {completedSteps}/{totalSteps} Complete
+            </span>
+          </div>
+          
+          <div className="w-full bg-base-300 rounded-full h-2 mb-3">
+            <div 
+              className="bg-info h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          
+          <p className="text-sm">
+            {completedSteps === totalSteps 
+              ? 'Great! You\'re all set up and ready to start highlighting.'
+              : 'Follow the steps below to complete your bookmarklet setup.'
+            }
+          </p>
         </div>
-        
-        <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2 mb-3">
-          <div 
-            className="bg-blue-600 dark:bg-blue-400 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        
-        <p className="text-sm text-blue-800 dark:text-blue-200">
-          {completedSteps === totalSteps 
-            ? 'Great! You\'re all set up and ready to start highlighting.'
-            : 'Follow the steps below to complete your bookmarklet setup.'
-          }
-        </p>
       </div>
 
       {/* Step-by-Step Instructions */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-base-content">
           Setup Steps
         </h3>
         
@@ -188,27 +191,27 @@ export function BookmarkletInstructions({
               key={step.id}
               className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
                 step.completed 
-                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                  ? 'bg-success/10 border-success/20'
                   : step.required
-                    ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                    ? 'bg-base-100 border-base-300'
+                    : 'bg-base-200 border-base-300'
               }`}
             >
               <div className="flex-shrink-0 mt-0.5">
                 {step.completed ? (
-                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <CheckCircle className="h-5 w-5 text-success" />
                 ) : (
-                  <Circle className="h-5 w-5 text-gray-400" />
+                  <Circle className="h-5 w-5 text-base-content/40" />
                 )}
               </div>
               
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  <span className="text-sm font-medium text-base-content/60">
                     Step {index + 1}
                   </span>
                   {step.required && !step.completed && (
-                    <span className="text-xs bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full">
+                    <span className="text-xs bg-warning/20 text-warning-content px-2 py-0.5 rounded-full">
                       Required
                     </span>
                   )}
@@ -216,16 +219,16 @@ export function BookmarkletInstructions({
                 
                 <h4 className={`font-semibold mb-1 ${
                   step.completed 
-                    ? 'text-green-900 dark:text-green-100'
-                    : 'text-gray-900 dark:text-white'
+                    ? 'text-success-content'
+                    : 'text-base-content'
                 }`}>
                   {step.title}
                 </h4>
                 
                 <p className={`text-sm ${
                   step.completed 
-                    ? 'text-green-700 dark:text-green-300'
-                    : 'text-gray-600 dark:text-gray-400'
+                    ? 'text-success-content/80'
+                    : 'text-base-content/70'
                 }`}>
                   {step.description}
                 </p>
@@ -237,25 +240,25 @@ export function BookmarkletInstructions({
 
 
       {/* FAQ Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-base-100 rounded-lg border border-base-300">
+        <div className="p-4 border-b border-base-300">
           <div className="flex items-center gap-2 mb-3">
-            <HelpCircle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <HelpCircle className="h-5 w-5 text-base-content/60" />
+            <h3 className="text-lg font-semibold text-base-content">
               Frequently Asked Questions
             </h3>
           </div>
           
           {/* Category Tabs */}
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+          <div className="flex gap-1 bg-base-200 rounded-lg p-1">
             {(['setup', 'usage', 'troubleshooting'] as const).map((category) => (
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
                 className={`flex-1 px-3 py-2 text-sm font-medium rounded-md capitalize transition-colors ${
                   activeCategory === category
-                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-base-100 text-base-content shadow-sm'
+                    : 'text-base-content/70 hover:text-base-content'
                 }`}
               >
                 {category}
@@ -267,24 +270,24 @@ export function BookmarkletInstructions({
         <div className="p-4">
           <div className="space-y-3">
             {filteredFAQs.map((faq, index) => (
-              <div key={`${activeCategory}-${index}`} className="border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div key={`${activeCategory}-${index}`} className="border border-base-300 rounded-lg">
                 <button
                   onClick={() => toggleFAQ(faq.question)}
-                  className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-base-200 transition-colors"
                 >
-                  <span className="font-medium text-gray-900 dark:text-white pr-4">
+                  <span className="font-medium text-base-content pr-4">
                     {faq.question}
                   </span>
                   {expandedFAQ === faq.question ? (
-                    <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                    <ChevronDown className="h-4 w-4 text-base-content/60 flex-shrink-0" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-base-content/60 flex-shrink-0" />
                   )}
                 </button>
                 
                 {expandedFAQ === faq.question && (
-                  <div className="px-4 pb-3 border-t border-gray-200 dark:border-gray-700">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 pt-3">
+                  <div className="px-4 pb-3 border-t border-base-300">
+                    <p className="text-sm text-base-content/70 pt-3">
                       {faq.answer}
                     </p>
                   </div>
@@ -296,36 +299,28 @@ export function BookmarkletInstructions({
       </div>
 
       {/* Tips & Best Practices */}
-      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 p-4">
-        <div className="flex items-start gap-3">
-          <Lightbulb className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
-              Pro Tips
-            </h3>
-            <ul className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
-              <li>• Keep your API key secure and don&apos;t share it with others</li>
-              <li>• The bookmarklet works on most websites, including news sites and blogs</li>
-              <li>• You can highlight multiple selections on the same page</li>
-              <li>• Your highlights are automatically organized by domain and date</li>
-              <li>• Use keyboard shortcuts: Select text and press Ctrl+D (Cmd+D) to quickly access bookmarks</li>
-            </ul>
-          </div>
+      <div role="alert" className="alert alert-soft">
+        <Lightbulb className="h-5 w-5 shrink-0 self-start" />
+        <div>
+          <h3 className="font-semibold mb-2">Pro Tips</h3>
+          <ul className="text-sm space-y-1">
+            <li>• Keep your API key secure and don&apos;t share it with others</li>
+            <li>• The bookmarklet works on most websites, including news sites and blogs</li>
+            <li>• You can highlight multiple selections on the same page</li>
+            <li>• Your highlights are automatically organized by domain and date</li>
+            <li>• Use keyboard shortcuts: Select text and press Ctrl+D (Cmd+D) to quickly access bookmarks</li>
+          </ul>
         </div>
       </div>
 
       {/* Security Notice */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-              Privacy & Security
-            </h3>
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              Your highlights are stored securely and are only accessible to you. The bookmarklet only captures the text you select and basic page information. We never access your browsing history or other personal data.
-            </p>
-          </div>
+      <div role="alert" className="alert alert-soft">
+        <Shield className="h-5 w-5 shrink-0 self-start" />
+        <div>
+          <h3 className="font-semibold mb-2">Privacy & Security</h3>
+          <p className="text-sm">
+            Your highlights are stored securely and are only accessible to you. The bookmarklet only captures the text you select and basic page information. We never access your browsing history or other personal data.
+          </p>
         </div>
       </div>
     </div>

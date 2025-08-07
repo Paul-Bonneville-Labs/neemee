@@ -58,7 +58,8 @@ export function LoginButton() {
       <AuthModal
         isOpen={showAuth}
         onClose={() => setShowAuth(false)}
-        defaultTab="anonymous" // or 'email', 'magic_link', 'social'
+        title="Sign In"
+        subtitle="Choose how you'd like to continue"
       />
     </>
   );
@@ -104,11 +105,10 @@ export function StatusBar() {
 ```tsx
 import { Auth } from '@/components/Auth';
 
-// Use specific tab
+// Use Auth component
 export function QuickSignIn() {
   return (
     <Auth 
-      defaultTab="anonymous"
       title="Quick Start"
       subtitle="Get started immediately"
       onClose={() => console.log('Auth completed')}

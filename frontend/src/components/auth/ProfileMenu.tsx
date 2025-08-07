@@ -3,14 +3,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { 
   User, 
-  Settings, 
   LogOut, 
-  ChevronDown, 
   UserPlus, 
-  Shield, 
   Github, 
   Chrome,
-  Loader2
+  Loader2,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../AuthProvider';
 
@@ -25,10 +23,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
   
   const { 
     user, 
-    isAnonymous, 
     signOut, 
-    signInWithProvider, 
-    linkAccount, 
     authState 
   } = useAuth();
 
@@ -55,12 +50,9 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
     setIsOpen(false);
   };
 
-  const handleLinkAccount = async (provider: 'github' | 'google') => {
-    if (isAnonymous) {
-      await linkAccount(provider);
-    } else {
-      await signInWithProvider(provider);
-    }
+  const handleLinkAccount = async () => {
+    // Note: Current auth system doesn't support provider linking
+    // This would need to be implemented in the auth system
     setIsOpen(false);
     setShowUpgradeOptions(false);
   };
@@ -71,54 +63,27 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
 
   return (
     <div className={`relative ${className}`} ref={menuRef}>
-      {/* Profile Button */}
+      {/* Profile Button - Just Avatar */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm
-                 bg-white dark:bg-gray-800 
-                 border border-gray-200 dark:border-gray-700
-                 text-gray-900 dark:text-gray-100
-                 hover:bg-gray-50 dark:hover:bg-gray-700
+        className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center overflow-hidden
+                 hover:ring-2 hover:ring-blue-500 hover:ring-offset-2
                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                 transition-colors duration-200"
+                 transition-all duration-200"
         disabled={isLoading}
       >
-        {/* Avatar */}
-        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center overflow-hidden">
-          {user.image ? (
-            <img
-              src={user.image}
-              alt={user.name || 'User'}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-          )}
-          {isAnonymous && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border border-white dark:border-gray-800" />
-          )}
-        </div>
-
-        {/* Name and Role */}
-        <div className="text-left min-w-0 flex-1">
-          <div className="font-medium truncate">
-            {user.name || 'Anonymous'}
-          </div>
-          <div className={`text-xs truncate ${
-            isAnonymous 
-              ? 'text-amber-600 dark:text-amber-400' 
-              : 'text-gray-500 dark:text-gray-400'
-          }`}>
-            {isAnonymous ? 'Temporary Session' : (user.role || 'User')}
-          </div>
-        </div>
-
-        <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
-          isOpen ? 'rotate-180' : ''
-        }`} />
+        {user.image ? (
+          <img
+            src={user.image}
+            alt={user.name || 'User'}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+        )}
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Popup Menu */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 
                       border border-gray-200 dark:border-gray-700 
@@ -136,7 +101,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                 ) : (
                   <User className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                 )}
-                {isAnonymous && (
+                {false && (
                   <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full border-2 border-white dark:border-gray-800" />
                 )}
               </div>
@@ -150,18 +115,18 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                   </div>
                 )}
                 <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                  isAnonymous
+                  false
                     ? 'bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200'
                     : 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200'
                 }`}>
-                  {isAnonymous ? 'Temporary' : 'Permanent'}
+                  {'Permanent'}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Anonymous User Upgrade Options */}
-          {isAnonymous && (
+          {false && (
             <div className="p-2 border-b border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setShowUpgradeOptions(!showUpgradeOptions)}
@@ -180,7 +145,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
               {showUpgradeOptions && (
                 <div className="mt-2 space-y-1">
                   <button
-                    onClick={() => handleLinkAccount('google')}
+                    onClick={() => handleLinkAccount()}
                     disabled={isLoading}
                     className="w-full flex items-center gap-3 px-3 py-2 text-left
                              text-gray-700 dark:text-gray-300 
@@ -197,7 +162,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                   </button>
                   
                   <button
-                    onClick={() => handleLinkAccount('github')}
+                    onClick={() => handleLinkAccount()}
                     disabled={isLoading}
                     className="w-full flex items-center gap-3 px-3 py-2 text-left
                              text-gray-700 dark:text-gray-300 
@@ -221,32 +186,6 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
             </div>
           )}
 
-          {/* Menu Items */}
-          <div className="p-2">
-            <button
-              className="w-full flex items-center gap-3 px-3 py-2 text-left
-                       text-gray-700 dark:text-gray-300 
-                       hover:bg-gray-100 dark:hover:bg-gray-700
-                       rounded-lg transition-colors duration-200"
-              onClick={() => setIsOpen(false)}
-            >
-              <Settings className="h-4 w-4" />
-              <span className="text-sm">Settings</span>
-            </button>
-
-            {!isAnonymous && (
-              <button
-                className="w-full flex items-center gap-3 px-3 py-2 text-left
-                         text-gray-700 dark:text-gray-300 
-                         hover:bg-gray-100 dark:hover:bg-gray-700
-                         rounded-lg transition-colors duration-200"
-                onClick={() => setIsOpen(false)}
-              >
-                <Shield className="h-4 w-4" />
-                <span className="text-sm">Privacy & Security</span>
-              </button>
-            )}
-          </div>
 
           {/* Sign Out */}
           <div className="p-2 border-t border-gray-200 dark:border-gray-700">
@@ -265,7 +204,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                 <LogOut className="h-4 w-4" />
               )}
               <span className="text-sm">
-                {isAnonymous ? 'End Session' : 'Sign Out'}
+                {'Sign Out'}
               </span>
             </button>
           </div>

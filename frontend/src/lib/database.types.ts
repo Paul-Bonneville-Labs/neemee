@@ -260,7 +260,7 @@ export type Database = {
         Row: {
           context: string | null
           created_at: string | null
-          highlight_id: string | null
+          note_id: string | null
           id: string
           relationship_type: string
           source_entity_id: string
@@ -271,7 +271,7 @@ export type Database = {
         Insert: {
           context?: string | null
           created_at?: string | null
-          highlight_id?: string | null
+          note_id?: string | null
           id?: string
           relationship_type: string
           source_entity_id: string
@@ -282,7 +282,7 @@ export type Database = {
         Update: {
           context?: string | null
           created_at?: string | null
-          highlight_id?: string | null
+          note_id?: string | null
           id?: string
           relationship_type?: string
           source_entity_id?: string
@@ -292,10 +292,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "entity_relationships_highlight_id_fkey"
-            columns: ["highlight_id"]
+            foreignKeyName: "entity_relationships_note_id_fkey"
+            columns: ["note_id"]
             isOneToOne: false
-            referencedRelation: "highlights"
+            referencedRelation: "notes"
             referencedColumns: ["id"]
           },
           {
@@ -558,45 +558,45 @@ export type Database = {
           },
         ]
       }
-      highlight_collections: {
+      note_collections: {
         Row: {
           collection_id: string
           created_at: string | null
-          highlight_id: string
+          note_id: string
         }
         Insert: {
           collection_id: string
           created_at?: string | null
-          highlight_id: string
+          note_id: string
         }
         Update: {
           collection_id?: string
           created_at?: string | null
-          highlight_id?: string
+          note_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "highlight_collections_collection_id_fkey"
+            foreignKeyName: "note_collections_collection_id_fkey"
             columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "collections"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "highlight_collections_highlight_id_fkey"
-            columns: ["highlight_id"]
+            foreignKeyName: "note_collections_note_id_fkey"
+            columns: ["note_id"]
             isOneToOne: false
-            referencedRelation: "highlights"
+            referencedRelation: "notes"
             referencedColumns: ["id"]
           },
         ]
       }
-      highlight_entities: {
+      note_entities: {
         Row: {
           context_position: number | null
           created_at: string | null
           entity_id: string
-          highlight_id: string
+          note_id: string
           id: string
           relevance_score: number | null
         }
@@ -604,7 +604,7 @@ export type Database = {
           context_position?: number | null
           created_at?: string | null
           entity_id: string
-          highlight_id: string
+          note_id: string
           id?: string
           relevance_score?: number | null
         }
@@ -612,37 +612,37 @@ export type Database = {
           context_position?: number | null
           created_at?: string | null
           entity_id?: string
-          highlight_id?: string
+          note_id?: string
           id?: string
           relevance_score?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "highlight_entities_entity_id_fkey"
+            foreignKeyName: "note_entities_entity_id_fkey"
             columns: ["entity_id"]
             isOneToOne: false
             referencedRelation: "entities"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "highlight_entities_highlight_id_fkey"
-            columns: ["highlight_id"]
+            foreignKeyName: "note_entities_note_id_fkey"
+            columns: ["note_id"]
             isOneToOne: false
-            referencedRelation: "highlights"
+            referencedRelation: "notes"
             referencedColumns: ["id"]
           },
         ]
       }
-      highlights: {
+      notes: {
         Row: {
           captured_at: string | null
-          content: string
+          page_title: string
           context_after: string | null
           context_before: string | null
           created_at: string | null
           domain: string
           entities: Json | null
-          highlighted_text: string
+          content: string
           id: string
           is_favorite: boolean | null
           markdown_content: string
@@ -650,23 +650,23 @@ export type Database = {
           processed_at: string | null
           reading_time_minutes: number | null
           search_vector: unknown | null
+          snippet: string | null
           status: string | null
           tags: string[] | null
-          title: string
           updated_at: string | null
-          url: string
+          page_url: string
           user_id: string
           word_count: number | null
         }
         Insert: {
           captured_at?: string | null
-          content: string
+          page_title: string
           context_after?: string | null
           context_before?: string | null
           created_at?: string | null
           domain: string
           entities?: Json | null
-          highlighted_text: string
+          content: string
           id?: string
           is_favorite?: boolean | null
           markdown_content: string
@@ -674,23 +674,23 @@ export type Database = {
           processed_at?: string | null
           reading_time_minutes?: number | null
           search_vector?: unknown | null
+          snippet?: string | null
           status?: string | null
           tags?: string[] | null
-          title: string
           updated_at?: string | null
-          url: string
+          page_url: string
           user_id: string
           word_count?: number | null
         }
         Update: {
           captured_at?: string | null
-          content?: string
+          page_title?: string
           context_after?: string | null
           context_before?: string | null
           created_at?: string | null
           domain?: string
           entities?: Json | null
-          highlighted_text?: string
+          content?: string
           id?: string
           is_favorite?: boolean | null
           markdown_content?: string
@@ -698,11 +698,11 @@ export type Database = {
           processed_at?: string | null
           reading_time_minutes?: number | null
           search_vector?: unknown | null
+          snippet?: string | null
           status?: string | null
           tags?: string[] | null
-          title?: string
           updated_at?: string | null
-          url?: string
+          page_url?: string
           user_id?: string
           word_count?: number | null
         }
@@ -925,7 +925,7 @@ export type Database = {
           completed_at: string | null
           created_at: string | null
           error_message: string | null
-          highlight_id: string | null
+          note_id: string | null
           id: string
           input_data: Json | null
           job_type: string
@@ -938,7 +938,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           error_message?: string | null
-          highlight_id?: string | null
+          note_id?: string | null
           id?: string
           input_data?: Json | null
           job_type: string
@@ -951,7 +951,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           error_message?: string | null
-          highlight_id?: string | null
+          note_id?: string | null
           id?: string
           input_data?: Json | null
           job_type?: string
@@ -962,10 +962,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "processing_jobs_highlight_id_fkey"
-            columns: ["highlight_id"]
+            foreignKeyName: "processing_jobs_note_id_fkey"
+            columns: ["note_id"]
             isOneToOne: false
-            referencedRelation: "highlights"
+            referencedRelation: "notes"
             referencedColumns: ["id"]
           },
         ]
@@ -1582,24 +1582,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      capture_highlight: {
+      capture_note: {
         Args: {
-          p_title: string
-          p_url: string
-          p_highlighted_text: string
-          p_content?: string
+          p_page_title: string
+          p_page_url: string
+          p_content: string
+          p_snippet?: string
           p_context_before?: string
           p_context_after?: string
           p_metadata?: Json
         }
         Returns: {
-          highlight_id: string
+          note_id: string
           success: boolean
           message: string
         }[]
       }
       create_entity_relationships: {
-        Args: { p_highlight_id: string; p_relationships: Json }
+        Args: { p_note_id: string; p_relationships: Json }
         Returns: number
       }
       create_user_api_key: {
@@ -1624,7 +1624,7 @@ export type Database = {
           api_key_id: string
         }[]
       }
-      get_user_highlights: {
+      get_user_notes: {
         Args: {
           p_limit?: number
           p_offset?: number
@@ -1634,9 +1634,9 @@ export type Database = {
         }
         Returns: {
           id: string
-          title: string
-          highlighted_text: string
-          url: string
+          page_title: string
+          content: string
+          page_url: string
           domain: string
           tags: string[]
           entities: Json
@@ -1651,17 +1651,17 @@ export type Database = {
       get_user_stats: {
         Args: Record<PropertyKey, never>
         Returns: {
-          total_highlights: number
+          total_notes: number
           total_entities: number
           total_domains: number
-          highlights_this_week: number
+          notes_this_week: number
           processing_queue: number
-          favorite_highlights: number
+          favorite_notes: number
         }[]
       }
-      mark_highlight_processed: {
+      mark_note_processed: {
         Args: {
-          p_highlight_id: string
+          p_note_id: string
           p_entities?: Json
           p_relationships?: Json
         }
@@ -1671,13 +1671,13 @@ export type Database = {
         Args: { p_api_key_id: string }
         Returns: boolean
       }
-      search_highlights: {
+      search_notes: {
         Args: { p_query: string; p_limit?: number; p_offset?: number }
         Returns: {
           id: string
-          title: string
-          highlighted_text: string
-          url: string
+          page_title: string
+          content: string
+          page_url: string
           domain: string
           tags: string[]
           entities: Json
@@ -1690,7 +1690,7 @@ export type Database = {
         Returns: Json
       }
       upsert_entities: {
-        Args: { p_highlight_id: string; p_entities: Json }
+        Args: { p_note_id: string; p_entities: Json }
         Returns: {
           entity_id: string
           entity_name: string

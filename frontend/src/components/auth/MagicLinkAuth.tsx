@@ -8,6 +8,7 @@ interface MagicLinkAuthProps {
   onSuccess?: () => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -108,10 +109,10 @@ export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
         <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto">
           <Mail className="h-6 w-6 text-blue-600 dark:text-blue-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h3 className="text-lg font-semibold">
           Magic Link Sign In
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm">
           Enter your email address and we&apos;ll send you a secure link to sign in instantly - no password required.
         </p>
       </div>
@@ -127,26 +128,21 @@ export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="magic-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Email Address
+          <label htmlFor="magic-email" className="label">
+            <span className="label-text">Email Address</span>
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" />
             <input
               id="magic-email"
               type="email"
               value={email}
               onChange={(e) => handleEmailChange(e.target.value)}
               disabled={isLoading}
-              className={`w-full pl-10 pr-3 py-2 border rounded-lg text-sm
-                        bg-white dark:bg-gray-800 
-                        text-gray-900 dark:text-gray-100 
-                        placeholder-gray-500 dark:placeholder-gray-400
-                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                        disabled:opacity-50 disabled:cursor-not-allowed
+              className={`input input-bordered w-full pl-10 pr-3
                         ${emailError || authState.error
-                          ? 'border-red-300 dark:border-red-700' 
-                          : 'border-gray-300 dark:border-gray-600'
+                          ? 'input-error' 
+                          : ''
                         }`}
               placeholder="Enter your email address"
               autoComplete="email"
@@ -157,12 +153,7 @@ export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
         <button
           type="submit"
           disabled={isLoading || !email}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 
-                   bg-blue-600 hover:bg-blue-700 focus:bg-blue-700
-                   text-white font-medium rounded-lg text-sm
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                   disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-colors duration-200"
+          className="btn btn-primary w-full gap-2"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -174,11 +165,11 @@ export function MagicLinkAuth({ onSuccess }: MagicLinkAuthProps) {
       </form>
 
       {/* Info */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+      <div className="bg-base-200 rounded-lg p-4">
+        <h4 className="text-sm font-medium mb-2">
           How it works:
         </h4>
-        <ol className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+        <ol className="text-xs space-y-1">
           <li>1. Enter your email address above</li>
           <li>2. Check your inbox for a secure sign-in link</li>
           <li>3. Click the link to instantly access your account</li>
