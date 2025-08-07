@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { BookmarkletInstaller } from '@/components/BookmarkletInstaller';
+import { ResetConfirmationModal } from '@/components/ResetConfirmationModal';
 // import { HighlightStats } from '@/components/HighlightStats'; // Temporarily disabled
 import { 
   Bookmark, 
-  Key, 
   AlertCircle,
   UserPlus,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  RotateCcw
 } from 'lucide-react';
 import { ApiResponse, UserApiKey, BookmarkletResponse, HighlightListResponse } from '@/types';
 
@@ -23,9 +24,11 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
   const { user } = useAuth();
   const [apiKey, setApiKey] = useState<UserApiKey | null>(null);
   const [bookmarklet, setBookmarklet] = useState<BookmarkletResponse | null>(null);
-  const [highlights, setHighlights] = useState<HighlightListResponse | null>(null);
+  const [, setHighlights] = useState<HighlightListResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -83,6 +86,37 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
     setApiKey(newApiKey);
     // Reload bookmarklet with new API key
     loadDashboardData();
+  };
+
+  const handleReset = async () => {
+    try {
+      setIsResetting(true);
+      
+      const response = await fetch('/api/user/api-key', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const result: ApiResponse = await response.json();
+
+      if (result.success) {
+        // Clear all state
+        setApiKey(null);
+        setBookmarklet(null);
+        setHighlights(null);
+        setShowResetModal(false);
+        
+        // Show success message (you could add a toast system here)
+        console.log('Bookmarklet setup reset successfully');
+      } else {
+        setError(result.error || 'Failed to reset bookmarklet setup');
+      }
+    } catch (err) {
+      console.error('Error resetting bookmarklet setup:', err);
+      setError('Network error occurred while resetting');
+    } finally {
+      setIsResetting(false);
+    }
   };
 
 
@@ -265,13 +299,43 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
         <div className="text-center p-6 bg-success/10 rounded-lg border border-success/20">
           <CheckCircle2 className="h-12 w-12 text-success mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-base-content mb-2">
-            You're all set!
+            You&apos;re all set!
           </h3>
           <p className="text-base-content/70">
             Your bookmarklet is ready to use. Visit any website and click it to capture highlights.
           </p>
         </div>
       )}
+
+      {/* Reset Section - Only show if API key exists */}
+      {apiKey && (
+        <div className="border-t border-base-300 pt-8">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-base-content mb-2">
+              Need to start over?
+            </h3>
+            <p className="text-base-content/70 mb-4 text-sm">
+              Reset your bookmarklet setup if you&apos;re experiencing issues or want to generate a new API key.
+            </p>
+            <button
+              onClick={() => setShowResetModal(true)}
+              className="btn btn-outline btn-error btn-sm"
+              disabled={isResetting}
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset Setup
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Confirmation Modal */}
+      <ResetConfirmationModal
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        onConfirm={handleReset}
+        isLoading={isResetting}
+      />
     </div>
   );
 }

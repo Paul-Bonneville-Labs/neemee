@@ -1,6 +1,6 @@
 'use client';
 
-import { ThemeToggle, ThemeSwitch, ThemeRadioGroup, ThemeToggleCompact } from '@/components/ThemeToggle';
+import { ThemeToggle, ThemeToggleCompact } from '@/components/ThemeToggle';
 import { useTheme } from '@/components/ThemeProvider';
 import Link from 'next/link';
 import { Sun, Moon, Monitor, ArrowLeft } from 'lucide-react';
@@ -63,7 +63,7 @@ export default function ThemeDemoPage() {
               <p className="text-sm text-base-content/70 mb-4">
                 DaisyUI toggle switch (Light/Dark only)
               </p>
-              <ThemeSwitch />
+              <ThemeToggleCompact />
             </div>
           </div>
 
@@ -73,7 +73,7 @@ export default function ThemeDemoPage() {
               <p className="text-sm text-base-content/70 mb-4">
                 Traditional radio buttons with icons
               </p>
-              <ThemeRadioGroup />
+              <ThemeToggle />
             </div>
           </div>
         </div>

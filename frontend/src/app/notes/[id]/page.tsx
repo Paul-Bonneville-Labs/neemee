@@ -258,6 +258,17 @@ export default function NoteDetailsPage() {
             </div>
 
             <div className="flex items-center gap-3">
+              <button 
+                onClick={() => {
+                  console.log('Back button clicked');
+                  router.push('/');
+                }}
+                className="btn btn-ghost"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Library
+              </button>
+              
               <button
                 onClick={handleSave}
                 disabled={!hasUnsavedChanges || isSaving}
@@ -282,19 +293,6 @@ export default function NoteDetailsPage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
-          {/* Back to Library Button */}
-          <div>
-            <button 
-              onClick={() => {
-                console.log('Back button clicked');
-                router.push('/');
-              }}
-              className="btn btn-ghost btn-sm"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Library
-            </button>
-          </div>
           {/* Original Snippet Section */}
           {formData.snippet && (
             <div>

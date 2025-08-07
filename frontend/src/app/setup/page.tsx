@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { BookmarkletDashboard } from '@/components/BookmarkletDashboard';
-import { ArrowLeft } from 'lucide-react';
 import { Sidebar, HamburgerButton } from '@/components/Sidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ProfileMenu } from '@/components/auth/ProfileMenu';

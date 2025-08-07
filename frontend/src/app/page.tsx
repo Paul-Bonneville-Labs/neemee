@@ -6,7 +6,7 @@ import { Auth } from '@/components/Auth';
 import { ProfileMenu } from '@/components/auth/ProfileMenu';
 import { Sidebar, HamburgerButton } from '@/components/Sidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Note, NotesLibraryResponse, ApiResponse } from '@/types';
+import { Note, NotesLibraryResponse, ApiResponse, UserApiKey } from '@/types';
 import { Search, Plus, Grid, List, Clock, Globe, Edit3, Zap, Network, Copy } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -52,11 +52,28 @@ export default function LibraryPage() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [apiKey, setApiKey] = useState<UserApiKey | null>(null);
 
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Load saved view mode preference
+  useEffect(() => {
+    if (mounted) {
+      const savedViewMode = localStorage.getItem('library-view-mode') as 'grid' | 'list';
+      if (savedViewMode && ['grid', 'list'].includes(savedViewMode)) {
+        setViewMode(savedViewMode);
+      }
+    }
+  }, [mounted]);
+
+  // Handle view mode changes with localStorage persistence
+  const handleViewModeChange = (newViewMode: 'grid' | 'list') => {
+    setViewMode(newViewMode);
+    localStorage.setItem('library-view-mode', newViewMode);
+  };
 
   const loadNotes = useCallback(async () => {
     if (hasLoaded || !user) return;
@@ -98,12 +115,48 @@ export default function LibraryPage() {
     }
   }, [hasLoaded, user]);
 
-  // Load notes when user is authenticated
+  const loadApiKey = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch('/api/user/api-key', {
+        credentials: 'include',
+      });
+      const result: ApiResponse<UserApiKey> = await response.json();
+      
+      if (result.success && result.data) {
+        setApiKey(result.data);
+      } else {
+        // User doesn't have an API key yet (could be 404 or other error)
+        setApiKey(null);
+      }
+    } catch (err) {
+      console.error('Error loading API key:', err);
+      setApiKey(null);
+    }
+  }, [user]);
+
+  // Load notes and API key when user is authenticated
   useEffect(() => {
     if (user && mounted && !hasLoaded) {
       loadNotes();
     }
-  }, [user, mounted, hasLoaded, loadNotes]);
+    if (user && mounted) {
+      loadApiKey();
+    }
+  }, [user, mounted, hasLoaded, loadNotes, loadApiKey]);
+
+  // Refresh API key when page becomes visible (in case user reset on another tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user && mounted) {
+        loadApiKey();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user, mounted, loadApiKey]);
 
   // Filter notes based on search
   const filteredNotes = notes.filter(note => {
@@ -296,27 +349,29 @@ export default function LibraryPage() {
               {/* View Mode Toggle */}
               <div className="join">
                 <button
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => handleViewModeChange('grid')}
                   className={`join-item btn btn-sm ${viewMode === 'grid' ? 'btn-primary' : ''}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setViewMode('list')}
+                  onClick={() => handleViewModeChange('list')}
                   className={`join-item btn btn-sm ${viewMode === 'list' ? 'btn-primary' : ''}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Add Note Button */}
-              <button 
-                onClick={() => router.push('/setup')}
-                className="btn btn-primary"
-              >
-                <Plus className="w-4 h-4" />
-                Setup Bookmarklet
-              </button>
+              {/* Setup Bookmarklet Button - Only show if no API key */}
+              {!apiKey && (
+                <button 
+                  onClick={() => router.push('/setup')}
+                  className="btn btn-primary"
+                >
+                  <Plus className="w-4 h-4" />
+                  Setup Bookmarklet
+                </button>
+              )}
 
               {/* Theme Toggle */}
               <ThemeToggle />
@@ -348,16 +403,20 @@ export default function LibraryPage() {
             <p className="text-base-content/70 mb-4 text-center max-w-md">
               {searchTerm 
                 ? `No notes match "${searchTerm}". Try a different search term.`
-                : 'Start building your knowledge base by capturing your first note.'
+                : apiKey 
+                  ? 'Start capturing highlights from any website using your bookmarklet.'
+                  : 'Start building your knowledge base by capturing your first note.'
               }
             </p>
-            <button 
-              onClick={() => router.push('/setup')}
-              className="btn btn-primary"
-            >
-              <Plus className="w-4 h-4" />
-              Setup Bookmarklet
-            </button>
+            {!apiKey && (
+              <button 
+                onClick={() => router.push('/setup')}
+                className="btn btn-primary"
+              >
+                <Plus className="w-4 h-4" />
+                Setup Bookmarklet
+              </button>
+            )}
           </div>
         ) : (
           <>

@@ -177,3 +177,55 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response, { status: 500 });
   }
 }
+
+export async function DELETE() {
+  try {
+    // Check authentication
+    const session = await getSession();
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Check write permissions
+    const hasWritePermission = await hasPermission('write');
+    if (!hasWritePermission) {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    const supabase = await createClient();
+    
+    // Delete user's API key
+    const { error } = await supabase
+      .from('user_api_keys')
+      .delete()
+      .eq('userId', session.user.id);
+
+    if (error) {
+      console.error('Error deleting API key:', error);
+      return NextResponse.json(
+        { success: false, error: 'Failed to delete API key' },
+        { status: 500 }
+      );
+    }
+
+    const response: ApiResponse = {
+      success: true,
+      message: 'API key deleted successfully. Your bookmarklet setup has been reset.',
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error('Error deleting API key:', error);
+    const response: ApiResponse = {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete API key',
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
+}
