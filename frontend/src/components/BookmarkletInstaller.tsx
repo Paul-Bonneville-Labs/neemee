@@ -231,7 +231,7 @@ export function BookmarkletInstaller({ bookmarklet, isReady, className = '' }: B
             {browser.name === 'Chrome' && (
               <>
                 <p>• Make sure your bookmarks bar is visible (Ctrl+Shift+B)</p>
-                <p>• Right-click on bookmarks bar and select "Add page"</p>
+                <p>• Right-click on bookmarks bar and select &ldquo;Add page&rdquo;</p>
                 <p>• Copy the code above and paste it as the URL</p>
               </>
             )}

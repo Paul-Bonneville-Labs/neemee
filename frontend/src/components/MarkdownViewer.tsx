@@ -77,10 +77,10 @@ function MDXViewerComponent({ content, isLoading = false, className = '', editab
     };
   }, []);
 
-  // Update original content only when switching to a completely different highlight (via key prop change)
+  // Update original content when content changes
   useEffect(() => {
     setOriginalContent(content);
-  }, []); // Empty dependency array - only runs on mount
+  }, [content]);
 
   // Copy markdown content to clipboard
   const handleCopyMarkdown = async () => {

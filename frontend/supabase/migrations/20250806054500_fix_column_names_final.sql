@@ -49,13 +49,27 @@ BEGIN
         AND table_schema = 'public'
     ) THEN
         -- First copy any data from highlighted_text to content where content is null/empty
-        UPDATE notes 
-        SET content = COALESCE(NULLIF(content, ''), highlighted_text)
-        WHERE (content IS NULL OR content = '') AND highlighted_text IS NOT NULL;
+        -- Double-check columns still exist before UPDATE (defensive programming)
+        IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'notes' AND column_name = 'highlighted_text' AND table_schema = 'public'
+        ) AND EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'notes' AND column_name = 'content' AND table_schema = 'public'
+        ) THEN
+            UPDATE notes 
+            SET content = COALESCE(NULLIF(content, ''), highlighted_text)
+            WHERE (content IS NULL OR content = '') AND highlighted_text IS NOT NULL;
+        END IF;
         
-        -- Now drop the old column
-        ALTER TABLE notes DROP COLUMN highlighted_text;
-        RAISE NOTICE 'Removed highlighted_text column (data preserved in content)';
+        -- Now drop the old column (check again it exists)
+        IF EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'notes' AND column_name = 'highlighted_text' AND table_schema = 'public'
+        ) THEN
+            ALTER TABLE notes DROP COLUMN highlighted_text;
+            RAISE NOTICE 'Removed highlighted_text column (data preserved in content)';
+        END IF;
     END IF;
 
 END

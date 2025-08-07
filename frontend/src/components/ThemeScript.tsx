@@ -14,11 +14,11 @@ export function ThemeScript() {
         let resolvedTheme = 'nord';
         
         if (theme === 'system') {
-          resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'nord';
+          resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'business' : 'nord';
         } else if (theme === 'light') {
           resolvedTheme = 'nord';
         } else if (theme === 'dark') {
-          resolvedTheme = 'dark';
+          resolvedTheme = 'business';
         }
         
         document.documentElement.setAttribute('data-theme', resolvedTheme);

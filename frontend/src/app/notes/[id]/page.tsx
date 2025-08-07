@@ -302,11 +302,11 @@ export default function NoteDetailsPage() {
               <div className={`relative ${shouldShowFade ? 'overflow-hidden' : ''}`}>
                 <div 
                   ref={snippetRef}
-                  className={`text-xl leading-relaxed text-base-content ${
+                  className={`text-xl leading-relaxed text-base-content italic font-bold ${
                     shouldShowFade ? 'max-h-72 overflow-hidden' : ''
                   }`}
                 >
-                  {formData.snippet}
+                  &ldquo;{formData.snippet}&rdquo;
                 </div>
                 {/* Gradient fade-out overlay - only show when content is long */}
                 {shouldShowFade && (

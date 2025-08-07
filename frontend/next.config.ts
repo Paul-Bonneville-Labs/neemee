@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
   
   // Enable ESLint during development builds
   eslint: {
-    // Temporarily ignore ESLint during builds to allow site access
-    ignoreDuringBuilds: true,
+    // ESLint will run during builds and fail on violations
+    ignoreDuringBuilds: false,
   },
   
   // Enable TypeScript checking during development

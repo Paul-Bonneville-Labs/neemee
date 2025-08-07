@@ -18,7 +18,6 @@ interface NotesGridProps {
   notes: Note[];
   selectedNote?: string;
   onNoteSelect: (noteId: string) => void;
-  onDeleteNote?: (noteId: string) => void;
   onRefresh?: () => void;
   isLoading?: boolean;
   viewMode?: 'grid' | 'list';
@@ -32,7 +31,6 @@ export function NotesGrid({
   notes,
   selectedNote,
   onNoteSelect,
-  onDeleteNote, // eslint-disable-line @typescript-eslint/no-unused-vars
   onRefresh,
   isLoading = false,
   viewMode = 'grid',

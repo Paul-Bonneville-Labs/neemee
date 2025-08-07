@@ -1,18 +1,11 @@
 import { Database } from '@/lib/database.types';
 
-// Temporarily simplified types to avoid complex TypeScript errors during build
-// These can be restored once the database schema is stable
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-export type Tables<T extends string> = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-export type TablesInsert<T extends string> = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-export type TablesUpdate<T extends string> = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-export type Enums<T extends string> = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-export type CompositeTypes<T extends string> = any;
+// Type-safe aliases for database tables, inserts, updates, enums, and composite types
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
+export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
+export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T];
+export type CompositeTypes<T extends keyof Database['public']['CompositeTypes']> = Database['public']['CompositeTypes'][T];
 
 // Direct database type export
 export type { Database };

@@ -3,7 +3,7 @@
 import { ThemeToggle, ThemeToggleCompact } from '@/components/ThemeToggle';
 import { useTheme } from '@/components/ThemeProvider';
 import Link from 'next/link';
-import { Sun, Moon, Monitor, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ThemeDemoPage() {
   const { theme, resolvedTheme } = useTheme();
@@ -213,9 +213,9 @@ export default function ThemeDemoPage() {
           <div className="card-body">
             <h2 className="card-title">How to Test</h2>
             <div className="space-y-2">
-              <p>1. <strong>Light Mode:</strong> Select "Light" - all colors should use light theme palette</p>
-              <p>2. <strong>Dark Mode:</strong> Select "Dark" - all colors should use dark theme palette</p>
-              <p>3. <strong>System Mode:</strong> Select "System" - theme should follow your OS preference</p>
+              <p>1. <strong>Light Mode:</strong> Select &ldquo;Light&rdquo; - all colors should use light theme palette</p>
+              <p>2. <strong>Dark Mode:</strong> Select &ldquo;Dark&rdquo; - all colors should use dark theme palette</p>
+              <p>3. <strong>System Mode:</strong> Select &ldquo;System&rdquo; - theme should follow your OS preference</p>
               <p>4. <strong>System Test:</strong> Change your OS theme setting and see the page automatically update</p>
               <p>5. <strong>Persistence:</strong> Refresh the page - your selection should be remembered</p>
             </div>
