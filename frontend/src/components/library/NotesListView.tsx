@@ -97,7 +97,7 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
               <td className="w-56 align-top">
                 {note.page_url && (
                   <div className="flex items-center justify-between gap-3">
-                    <div className="tooltip tooltip-left tooltip-delayed z-50 flex items-center gap-1" data-tip={note.page_url || 'Unknown source'}>
+                    <div className="tooltip tooltip-left tooltip-delayed flex items-center gap-1" data-tip={note.page_url || 'Unknown source'}>
                       <img 
                         src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
                         alt="" 
@@ -117,7 +117,7 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
                     {/* Action buttons */}
                     <div className="flex items-center gap-0.5">
                       {/* Copy Button */}
-                      <div className="tooltip tooltip-top tooltip-delayed z-50" data-tip="Copy URL">
+                      <div className="tooltip tooltip-top tooltip-delayed" data-tip="Copy URL">
                         <button 
                           className="btn btn-ghost btn-xs p-1 h-6 w-6 min-h-6 opacity-60 hover:opacity-100 transition-opacity"
                           onClick={(e) => {
@@ -137,7 +137,7 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
                       </div>
                       
                       {/* External Link Button */}
-                      <div className="tooltip tooltip-top tooltip-delayed z-50" data-tip="Open in new tab">
+                      <div className="tooltip tooltip-top tooltip-delayed" data-tip="Open in new tab">
                         <button 
                           className="btn btn-ghost btn-xs p-1 h-6 w-6 min-h-6 opacity-60 hover:opacity-100 transition-opacity"
                           onClick={(e) => {
