@@ -316,78 +316,78 @@ export default function NoteDetailsPage() {
             </div>
           )}
 
-          {/* Editable Content */}
-          <div className="space-y-6">
-            {/* Page Title */}
-            <div>
-              <label htmlFor="page_title" className="block text-sm font-medium mb-2 text-base-content">
-                Page Title
-              </label>
-              <input
-                id="page_title"
-                type="text"
-                value={formData.page_title}
-                onChange={(e) => handleFormChange('page_title', e.target.value)}
-                className="input input-bordered w-full bg-base-200 focus:bg-base-100"
-                placeholder="Enter page title..."
+          {/* Main Content */}
+          <div>
+            <label htmlFor="content" className="block text-sm font-medium mb-2 text-base-content">
+              Content
+            </label>
+            <div className="bg-white rounded-lg p-4 border border-base-300">
+              <SimpleMarkdownEditor
+                initialContent={formData.content}
+                onChange={(content) => handleFormChange('content', content)}
               />
-            </div>
-
-            {/* Page URL */}
-            <div>
-              <label htmlFor="page_url" className="block text-sm font-medium mb-2 text-base-content">
-                Source URL
-              </label>
-              <div className="relative">
-                <input
-                  id="page_url"
-                  type="url"
-                  value={formData.page_url}
-                  onChange={(e) => handleFormChange('page_url', e.target.value)}
-                  className="input input-bordered w-full pr-10 bg-base-200 focus:bg-base-100"
-                  placeholder="https://example.com"
-                />
-                {formData.page_url && (
-                  <a
-                    href={formData.page_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/50 hover:text-base-content/70"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div>
-              <label htmlFor="content" className="block text-sm font-medium mb-2 text-base-content">
-                Content
-              </label>
-              <div className="bg-white rounded-lg p-4 border border-base-300">
-                <SimpleMarkdownEditor
-                  initialContent={formData.content}
-                  onChange={(content) => handleFormChange('content', content)}
-                />
-              </div>
             </div>
           </div>
 
-          {/* Metadata */}
-          <div className="pt-2">
-            <h3 className="text-lg font-semibold mb-4 text-base-content">Note Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Frontmatter Section */}
+          <div className="pt-4 border-t border-base-200">
+            <h3 className="text-lg font-semibold mb-4 text-base-content">Frontmatter</h3>
+            <div className="space-y-4">
+              {/* Page Title */}
               <div>
-                <div className="text-sm font-medium mb-2 text-base-content">Note ID</div>
-                <div className="px-4 py-3 bg-base-200 rounded-lg font-mono cursor-text text-base-content">
-                  {note.id}
+                <label htmlFor="page_title" className="block text-sm font-medium mb-2 text-base-content">
+                  Page Title
+                </label>
+                <input
+                  id="page_title"
+                  type="text"
+                  value={formData.page_title}
+                  onChange={(e) => handleFormChange('page_title', e.target.value)}
+                  className="input input-bordered w-full bg-base-200 focus:bg-base-100"
+                  placeholder="Enter page title..."
+                />
+              </div>
+
+              {/* Page URL */}
+              <div>
+                <label htmlFor="page_url" className="block text-sm font-medium mb-2 text-base-content">
+                  Source URL
+                </label>
+                <div className="relative">
+                  <input
+                    id="page_url"
+                    type="url"
+                    value={formData.page_url}
+                    onChange={(e) => handleFormChange('page_url', e.target.value)}
+                    className="input input-bordered w-full pr-10 bg-base-200 focus:bg-base-100"
+                    placeholder="https://example.com"
+                  />
+                  {formData.page_url && (
+                    <a
+                      href={formData.page_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/50 hover:text-base-content/70"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
-              <div>
-                <div className="text-sm font-medium mb-2 text-base-content">Created</div>
-                <div className="px-4 py-3 bg-base-200 rounded-lg cursor-text text-base-content">
-                  {formatDetailedDate(note.created_at)}
+
+              {/* Note Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm font-medium mb-2 text-base-content">Note ID</div>
+                  <div className="px-4 py-3 bg-base-200 rounded-lg font-mono cursor-text text-base-content">
+                    {note.id}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium mb-2 text-base-content">Created</div>
+                  <div className="px-4 py-3 bg-base-200 rounded-lg cursor-text text-base-content">
+                    {formatDetailedDate(note.created_at)}
+                  </div>
                 </div>
               </div>
             </div>
