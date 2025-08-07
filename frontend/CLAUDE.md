@@ -108,13 +108,12 @@ The project uses Google Cloud Run with buildpacks for automatic containerization
 
 The frontend uses Google Cloud Secrets Manager to securely store sensitive environment variables:
 
-- **`neemee-github-token`** ← GitHub Personal Access Token
 - **`neemee-supabase-url`** ← Supabase Project URL  
 - **`neemee-supabase-anon-key`** ← Supabase Anonymous Key
-- **`neemee-github-repo-owner`** ← GitHub Repository Owner
-- **`neemee-github-repo-name`** ← GitHub Repository Name
+- **`neemee-backend-api-url`** ← Backend API Service URL
+- **`neemee-backend-api-key`** ← Backend API Authentication Key
 
-For local development, continue using the `.env` file. In production, these secrets are automatically mounted as environment variables by Cloud Run.
+For local development, use `.env.local` file. In production, these secrets are automatically mounted as environment variables by Cloud Run.
 
 ### Prerequisites
 ```bash
@@ -145,11 +144,11 @@ gcloud run deploy neemee-frontend \
   --cpu 1 \
   --max-instances 100 \
   --allow-unauthenticated \
-  --set-secrets GITHUB_TOKEN=neemee-github-token:latest \
   --set-secrets NEXT_PUBLIC_SUPABASE_URL=neemee-supabase-url:latest \
   --set-secrets NEXT_PUBLIC_SUPABASE_ANON_KEY=neemee-supabase-anon-key:latest \
-  --set-secrets GITHUB_REPO_OWNER=neemee-github-repo-owner:latest \
-  --set-secrets GITHUB_REPO_NAME=neemee-github-repo-name:latest
+  --set-secrets BACKEND_API_URL=neemee-backend-api-url:latest \
+  --set-secrets BACKEND_API_KEY=neemee-backend-api-key:latest \
+  --set-env-vars NEXT_PUBLIC_BASE_URL=https://neemee.paulbonneville.com
 ```
 
 ## Development Notes
