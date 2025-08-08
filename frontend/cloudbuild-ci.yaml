@@ -35,5 +35,19 @@ options:
   machineType: 'E2_HIGHCPU_8'
   logging: CLOUD_LOGGING_ONLY
 
+# CI-only environment variables (dummy values for build validation)
+env:
+  - 'DATABASE_URL=postgresql://ci-dummy:dummy@localhost:5432/ci-test'
+  - 'AUTH_SECRET=ci-dummy-secret-for-build-validation-only'
+  - 'AUTH_GOOGLE_ID=ci-dummy-google-id'
+  - 'AUTH_GOOGLE_SECRET=ci-dummy-google-secret'
+  - 'AUTH_GITHUB_ID=ci-dummy-github-id'
+  - 'AUTH_GITHUB_SECRET=ci-dummy-github-secret'
+  - 'NEXTAUTH_URL=http://localhost:3000'
+  - 'NEXT_PUBLIC_BASE_URL=http://localhost:3000'
+  - 'BACKEND_API_URL=http://localhost:8000'
+  - 'BACKEND_API_KEY=ci-dummy-api-key'
+  - 'NODE_ENV=production'
+
 # Set timeout for the entire build
 timeout: '1200s'
