@@ -47,7 +47,7 @@ steps:
       - '--source=.'  # Use buildpacks instead of Docker
       - '--platform=managed'
       - '--region=us-central1'
-      - '--memory=1Gi'
+      - '--memory=512Mi'
       - '--cpu=1'
       - '--min-instances=0'
       - '--max-instances=10'
@@ -117,7 +117,7 @@ steps:
 timeout: '1200s'
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: E2_STANDARD_2
+  machineType: E2_HIGHCPU_8
   diskSizeGb: 100
 
 # Staging environment substitutions
