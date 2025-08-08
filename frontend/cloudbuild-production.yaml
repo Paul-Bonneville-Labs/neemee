@@ -1,0 +1,61 @@
+# Google Cloud Build configuration for Production Environment
+# Triggered by commits to main branch
+
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/neemee-frontend:$SHORT_SHA', '.']
+
+  # Push the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/neemee-frontend:$SHORT_SHA']
+
+  # Deploy to Cloud Run Production
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'neemee-frontend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/neemee-frontend:$SHORT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '3000'
+      - '--memory'
+      - '2Gi'
+      - '--cpu'
+      - '2'
+      - '--max-instances'
+      - '100'
+      - '--min-instances'
+      - '1'
+      - '--concurrency'
+      - '80'
+      - '--timeout'
+      - '300'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,NEXT_PUBLIC_BASE_URL=https://neemee.paulbonneville.com'
+      - '--set-secrets'
+      - 'DATABASE_URL=neemee-database-url:latest,AUTH_SECRET=neemee-auth-secret:latest,AUTH_GOOGLE_ID=neemee-google-oauth-id:latest,AUTH_GOOGLE_SECRET=neemee-google-oauth-secret:latest,AUTH_GITHUB_ID=neemee-github-oauth-id:latest,AUTH_GITHUB_SECRET=neemee-github-oauth-secret:latest,BACKEND_API_URL=neemee-backend-api-url:latest,BACKEND_API_KEY=neemee-backend-api-key:latest'
+
+# Store images for longer retention (production builds)
+images:
+  - 'gcr.io/$PROJECT_ID/neemee-frontend:$SHORT_SHA'
+
+# Build configuration
+timeout: '1800s'
+
+# Production build uses more resources
+options:
+  machineType: 'E2_STANDARD_4'
+  diskSizeGb: 100
+  
+# Substitutions for production environment
+substitutions:
+  _ENVIRONMENT: 'production'
+  _SERVICE_NAME: 'neemee-frontend'

@@ -1,0 +1,61 @@
+# Google Cloud Build configuration for Staging Environment
+# Triggered by commits to develop branch
+
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/neemee-frontend-staging:$SHORT_SHA', '.']
+
+  # Push the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/neemee-frontend-staging:$SHORT_SHA']
+
+  # Deploy to Cloud Run Staging
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'neemee-frontend-staging'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/neemee-frontend-staging:$SHORT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '3000'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '10'
+      - '--min-instances'
+      - '0'
+      - '--concurrency'
+      - '80'
+      - '--timeout'
+      - '300'
+      - '--set-env-vars'
+      - 'NODE_ENV=staging,NEXT_PUBLIC_BASE_URL=https://staging.neemee.paulbonneville.com'
+      - '--set-secrets'
+      - 'DATABASE_URL=neemee-staging-database-url:latest,AUTH_SECRET=neemee-staging-auth-secret:latest,AUTH_GOOGLE_ID=neemee-staging-google-id:latest,AUTH_GOOGLE_SECRET=neemee-staging-google-secret:latest,AUTH_GITHUB_ID=neemee-staging-github-id:latest,AUTH_GITHUB_SECRET=neemee-staging-github-secret:latest,BACKEND_API_URL=neemee-staging-backend-api-url:latest,BACKEND_API_KEY=neemee-staging-backend-api-key:latest'
+
+# Store images for 30 days (staging builds)
+images:
+  - 'gcr.io/$PROJECT_ID/neemee-frontend-staging:$SHORT_SHA'
+
+# Build configuration
+timeout: '1200s'
+
+# Staging build uses fewer resources
+options:
+  machineType: 'E2_STANDARD_2'
+  diskSizeGb: 100
+  
+# Substitutions for staging environment
+substitutions:
+  _ENVIRONMENT: 'staging'
+  _SERVICE_NAME: 'neemee-frontend-staging'

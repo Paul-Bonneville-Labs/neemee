@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { authenticateApiKey, validateUrl, validateHighlightText } from '@/lib/api-auth';
+import { authenticateApiKey, validateUrl, validateHighlightText } from '@/lib/api-auth.prisma';
+import { prisma } from '@/lib/prisma';
 import { NoteCaptureResponse } from '@/types';
 
 // CORS headers for bookmarklet requests
@@ -87,33 +87,21 @@ export async function POST(request: NextRequest) {
       ? `> ${sanitizedSnippet}\n\n${page_url.trim()}`
       : content.trim();
 
-    // Save note to database
-    const supabase = await createClient();
-    const { data: note, error } = await supabase
-      .from('notes')
-      .insert({
-        user_id: userId,
+    // Save note to database using Prisma
+    const note = await prisma.note.create({
+      data: {
+        userId: userId,
         content: formattedContent,
         snippet: sanitizedSnippet, // Store the original unmodified text if provided
-        page_title: sanitizedTitle || 'Untitled Page',
-        markdown_content: '', // Empty string - will be set by async extraction
-        page_url: page_url.trim(),
+        pageTitle: sanitizedTitle || 'Untitled Page',
+        markdownContent: '', // Empty string - will be set by async extraction
+        pageUrl: page_url.trim(),
         domain: new URL(page_url).hostname
-      })
-      .select('id')
-      .single();
-
-    if (error) {
-      console.error('Error saving note:', error);
-      const response: NoteCaptureResponse = {
-        success: false,
-        message: 'Failed to save note',
-      };
-      return NextResponse.json(response, { 
-        status: 500,
-        headers: corsHeaders 
-      });
-    }
+      },
+      select: {
+        id: true
+      }
+    });
 
     const response: NoteCaptureResponse = {
       success: true,

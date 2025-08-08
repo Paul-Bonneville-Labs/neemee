@@ -1,11 +1,8 @@
-'use client';
+"use client"
 
-import { createClient } from '@/lib/supabase/client';
-import { type User, type AuthError as SupabaseAuthError } from '@supabase/supabase-js';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { AuthUser, AuthSession } from '@/lib/auth';
-
-export type AuthMethod = 'magic_link';
+import React, { createContext, useContext, ReactNode } from 'react'
+import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut } from 'next-auth/react'
+import type { Session } from 'next-auth'
 
 export interface AuthError {
   message: string;
@@ -20,19 +17,18 @@ export interface AuthState {
 }
 
 interface AuthContextType {
-  user: AuthUser | null;
-  session: AuthSession | null;
+  user: Session['user'] | null;
+  session: Session | null;
   loading: boolean;
   authState: AuthState;
   
-  // Magic Link method
-  signInWithMagicLink: (email: string) => Promise<{ error?: AuthError }>;
-  
-  // Profile management
-  updateProfile: (updates: Partial<AuthUser>) => Promise<{ error?: AuthError }>;
+  // OAuth sign-in methods
+  signIn: (provider?: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signInWithGitHub: () => Promise<void>;
   
   // Sign out
-  signOut: () => Promise<{ error?: AuthError }>;
+  signOut: () => Promise<void>;
   
   // Utility methods
   clearError: () => void;
@@ -40,194 +36,48 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [session, setSession] = useState<AuthSession | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [authState, setAuthState] = useState<AuthState>({
-    isSigningIn: false,
-    isSigningOut: false,
-    isLoadingSession: true,
-    error: null
-  });
-  
-  const supabase = createClient();
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession()
+  const loading = status === 'loading'
 
-  const mapSupabaseUserToAuthUser = (supabaseUser: User): AuthUser => {
-    return {
-      id: supabaseUser.id,
-      name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email || null,
-      email: supabaseUser.email || null,
-      image: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture || null,
-      username: supabaseUser.user_metadata?.user_name || supabaseUser.user_metadata?.preferred_username || null,
-      role: 'reader',
-      permissions: {
-        read: true,
-        write: true,
-        admin: false,
-        delete: false
-      }
-    };
-  };
+  const signIn = async (provider: string = 'google') => {
+    await nextAuthSignIn(provider, { callbackUrl: '/' })
+  }
 
-  const handleAuthError = (error: SupabaseAuthError | Error | unknown): AuthError => {
-    const err = error as { message?: string; code?: string; status?: number };
-    return {
-      message: err?.message || 'An authentication error occurred',
-      code: err?.code || err?.status?.toString()
-    };
-  };
+  const signInWithGoogle = async () => {
+    await nextAuthSignIn('google', { callbackUrl: '/' })
+  }
 
-  const updateAuthState = (updates: Partial<AuthState>) => {
-    setAuthState(prev => ({ ...prev, ...updates }));
-  };
+  const signInWithGitHub = async () => {
+    await nextAuthSignIn('github', { callbackUrl: '/' })
+  }
 
-  useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        const authUser = mapSupabaseUserToAuthUser(session.user);
-        const authSession: AuthSession = {
-          user: authUser,
-          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        };
-        
-        setUser(authUser);
-        setSession(authSession);
-      } else {
-        setUser(null);
-        setSession(null);
-      }
-      
-      setLoading(false);
-      updateAuthState({ isLoadingSession: false });
-    };
-
-    getSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          const authUser = mapSupabaseUserToAuthUser(session.user);
-          const authSession: AuthSession = {
-            user: authUser,
-            expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-          };
-          
-          setUser(authUser);
-          setSession(authSession);
-        } else {
-          setUser(null);
-          setSession(null);
-        }
-        
-        setLoading(false);
-        updateAuthState({ 
-          isLoadingSession: false,
-          isSigningIn: false,
-          isSigningOut: false
-        });
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
-
-  // Magic Link method
-  const signInWithMagicLink = async (email: string) => {
-    updateAuthState({ isSigningIn: true, error: null });
-    
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
-        },
-      });
-      
-      if (error) {
-        const authError = handleAuthError(error);
-        updateAuthState({ isSigningIn: false, error: authError });
-        return { error: authError };
-      }
-      
-      updateAuthState({ isSigningIn: false });
-      return {};
-    } catch (error) {
-      const authError = handleAuthError(error);
-      updateAuthState({ isSigningIn: false, error: authError });
-      return { error: authError };
-    }
-  };
-
-
-  // Profile management
-  const updateProfile = async (updates: Partial<AuthUser>) => {
-    updateAuthState({ error: null });
-    
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: {
-          full_name: updates.name,
-          avatar_url: updates.image,
-          user_name: updates.username,
-        },
-      });
-      
-      if (error) {
-        const authError = handleAuthError(error);
-        updateAuthState({ error: authError });
-        return { error: authError };
-      }
-      
-      return {};
-    } catch (error) {
-      const authError = handleAuthError(error);
-      updateAuthState({ error: authError });
-      return { error: authError };
-    }
-  };
-
-  // Sign out
   const signOut = async () => {
-    updateAuthState({ isSigningOut: true, error: null });
-    
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        const authError = handleAuthError(error);
-        updateAuthState({ isSigningOut: false, error: authError });
-        return { error: authError };
-      }
-      
-      updateAuthState({ isSigningOut: false });
-      return {};
-    } catch (error) {
-      const authError = handleAuthError(error);
-      updateAuthState({ isSigningOut: false, error: authError });
-      return { error: authError };
-    }
-  };
+    await nextAuthSignOut({ callbackUrl: '/' })
+  }
 
-  // Utility methods
   const clearError = () => {
-    updateAuthState({ error: null });
-  };
+    // Error clearing logic if needed
+  }
 
-  const value = {
-    user,
+  const value: AuthContextType = {
+    user: session?.user || null,
     session,
     loading,
-    authState,
-    signInWithMagicLink,
-    updateProfile,
+    authState: {
+      isSigningIn: status === 'loading',
+      isSigningOut: false,
+      isLoadingSession: status === 'loading',
+      error: null
+    },
+    signIn,
+    signInWithGoogle,
+    signInWithGitHub,
     signOut,
     clearError,
-  };
+  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => {

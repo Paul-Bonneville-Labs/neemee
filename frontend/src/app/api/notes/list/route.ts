@@ -1,29 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession, hasPermission } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
-import { ApiResponse, NotesLibraryResponse } from '@/types';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
+import { ApiResponse, PrismaNotesLibraryResponse } from '@/types';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getSession();
-    if (!session || !session.user) {
+    // Check authentication using Auth.js
+    const session = await auth();
+    if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Check read permissions
-    const hasReadPermission = await hasPermission('read');
-    if (!hasReadPermission) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
-    const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     
     // Parse query parameters
@@ -36,57 +26,60 @@ export async function GET(request: NextRequest) {
     
     const offset = (page - 1) * limit;
 
-    // Build query - select using new field names
-    let query = supabase
-      .from('notes')
-      .select(`
-        id,
-        user_id,
-        content,
-        snippet,
-        page_url,
-        page_title,
-        markdown_content,
-        metadata,
-        created_at,
-        updated_at
-      `, { count: 'exact' })
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    // Build Prisma query filters
+    const where: { [key: string]: unknown } = {
+      userId: session.user.id
+    };
 
-    // Apply filters using new field names
+    // Add search filter
     if (search) {
-      query = query.or(`content.ilike.%${search}%,page_title.ilike.%${search}%,snippet.ilike.%${search}%`);
+      where.OR = [
+        { content: { contains: search, mode: 'insensitive' } },
+        { pageTitle: { contains: search, mode: 'insensitive' } },
+        { snippet: { contains: search, mode: 'insensitive' } }
+      ];
     }
 
+    // Add domain filter
     if (domain) {
-      query = query.like('page_url', `%${domain}%`);
+      where.pageUrl = { contains: domain };
     }
 
+    // Add date filters
     if (startDate) {
-      query = query.gte('created_at', startDate);
+      where.createdAt = { ...where.createdAt, gte: new Date(startDate) };
     }
-
     if (endDate) {
-      query = query.lte('created_at', endDate);
+      where.createdAt = { ...where.createdAt, lte: new Date(endDate) };
     }
 
-    const { data: notes, error, count } = await query;
+    // Execute Prisma queries concurrently for better performance
+    const [notes, totalCount] = await Promise.all([
+      prisma.note.findMany({
+        where,
+        select: {
+          id: true,
+          userId: true,
+          content: true,
+          snippet: true,
+          pageUrl: true,
+          pageTitle: true,
+          markdownContent: true,
+          metadata: true,
+          createdAt: true,
+          updatedAt: true
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit
+      }),
+      prisma.note.count({ where })
+    ]);
 
-    if (error) {
-      console.error('Error fetching notes:', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch notes' },
-        { status: 500 }
-      );
-    }
-
-    // No transformation needed as database fields now match interface
-    const responseData: NotesLibraryResponse = {
-      notes: notes || [],
+    const responseData: PrismaNotesLibraryResponse = {
+      notes,
       pagination: {
-        total: count || 0,
+        total: totalCount,
         page,
         limit
       }
@@ -95,16 +88,19 @@ export async function GET(request: NextRequest) {
     const response: ApiResponse = {
       success: true,
       data: responseData,
-      message: `Found ${notes?.length || 0} notes`,
+      message: `Found ${notes.length} notes`,
     };
 
     return NextResponse.json(response);
+
   } catch (error) {
-    console.error('Error listing notes:', error);
+    console.error('Error listing notes with Prisma:', error);
+    
     const response: ApiResponse = {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to list notes',
     };
+    
     return NextResponse.json(response, { status: 500 });
   }
 }
