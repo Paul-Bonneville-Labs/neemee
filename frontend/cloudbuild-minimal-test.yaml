@@ -1,0 +1,10 @@
+steps:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'echo'
+    args: ['Hello CI Pipeline']
+    id: 'Test-Step'
+
+options:
+  machineType: E2_STANDARD_2
+
+timeout: '300s'
