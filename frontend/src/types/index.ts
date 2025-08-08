@@ -102,7 +102,7 @@ export interface FrontmatterFormProps {
   isReadOnly?: boolean;
 }
 
-// Note management types (Supabase/legacy format with snake_case)
+// Note management types (legacy format with snake_case)
 export interface Note {
   id: string;
   user_id: string;
@@ -126,7 +126,7 @@ export interface PrismaNote {
   markdownContent?: string | null;
   createdAt: Date;
   updatedAt?: Date | null;
-  metadata?: any;
+  metadata?: unknown; // Use unknown to match Prisma JsonValue
 }
 
 export interface NoteCreateRequest {

@@ -46,11 +46,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Add date filters
-    if (startDate) {
-      where.createdAt = { ...where.createdAt, gte: new Date(startDate) };
-    }
-    if (endDate) {
-      where.createdAt = { ...where.createdAt, lte: new Date(endDate) };
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) {
+        (where.createdAt as { [key: string]: unknown }).gte = new Date(startDate);
+      }
+      if (endDate) {
+        (where.createdAt as { [key: string]: unknown }).lte = new Date(endDate);
+      }
     }
 
     // Execute Prisma queries concurrently for better performance

@@ -1,19 +1,46 @@
 #!/bin/bash
 
 # Deploy Neemee frontend to Google Cloud Run
-# This script automatically handles secrets creation/verification and deployment in one command
+# Supports staging and production environments with automatic secrets management
+# Usage: ./scripts/deploy.sh [staging|production]
 
 set -e
 
+# Environment configuration
+ENVIRONMENT=${1:-production}
 PROJECT_ID="paulbonneville-com"
-SERVICE_NAME="neemee-frontend"
 REGION="us-central1"
+
+case $ENVIRONMENT in
+    staging)
+        SERVICE_NAME="neemee-frontend-staging"
+        ENV_FILE=".env.staging"
+        SECRET_PREFIX="neemee-staging-"
+        BASE_URL="https://neemee-frontend-staging-860937201650.us-central1.run.app"
+        ;;
+    production)
+        SERVICE_NAME="neemee-frontend"
+        ENV_FILE=".env.production"
+        SECRET_PREFIX="neemee-"
+        BASE_URL="https://neemee.paulbonneville.com"
+        ;;
+    *)
+        echo "❌ Invalid environment. Usage: ./scripts/deploy.sh [staging|production]"
+        echo "   staging    - Deploy to staging environment"
+        echo "   production - Deploy to production environment (default)"
+        exit 1
+        ;;
+esac
 
 gcloud config set project $PROJECT_ID
 
-echo "🚀 Deploying Neemee frontend to Google Cloud Run (with automatic secrets management)..."
+echo "🚀 Deploying Neemee frontend to $ENVIRONMENT environment..."
+echo "   Service: $SERVICE_NAME"
+echo "   Environment file: $ENV_FILE"
+echo "   Secret prefix: $SECRET_PREFIX"
+echo ""
 
-# Function to check if a secret exists (using list instead of access to avoid triggering builds)
+# Function to check if a secret exists
 secret_exists() {
     gcloud secrets describe "$1" >/dev/null 2>&1
 }
@@ -39,34 +66,42 @@ create_or_update_secret() {
 }
 
 # Step 1: Automatic secrets setup
-echo "🔐 Step 1: Setting up/verifying Google Cloud Secrets..."
+echo "🔐 Step 1: Setting up/verifying Google Cloud Secrets for $ENVIRONMENT..."
 
-# Check if .env.production file exists
-if [ ! -f ".env.production" ]; then
-    echo "❌ .env.production file not found. Please create it with production values."
-    echo "   cp .env.example .env.production"
-    echo "   # Then edit .env.production with your production values"
+# Check if environment file exists
+if [ ! -f "$ENV_FILE" ]; then
+    echo "❌ $ENV_FILE file not found. Please create it with $ENVIRONMENT values."
+    echo "   cp .env.example $ENV_FILE"
+    echo "   # Then edit $ENV_FILE with your $ENVIRONMENT values"
     exit 1
 fi
 
-# Source the .env.production file to get current values
-source .env.production
+# Source the environment file to get current values
+source "$ENV_FILE"
 
-# Create/update all secrets
-create_or_update_secret "neemee-supabase-url" "$NEXT_PUBLIC_SUPABASE_URL"
-create_or_update_secret "neemee-supabase-anon-key" "$NEXT_PUBLIC_SUPABASE_ANON_KEY"
-create_or_update_secret "neemee-backend-api-url" "$BACKEND_API_URL"
-create_or_update_secret "neemee-backend-api-key" "$BACKEND_API_KEY"
+# Create/update all secrets with environment-specific naming
+create_or_update_secret "${SECRET_PREFIX}database-url" "$DATABASE_URL"
+create_or_update_secret "${SECRET_PREFIX}auth-secret" "$AUTH_SECRET"
+create_or_update_secret "${SECRET_PREFIX}google-oauth-id" "$AUTH_GOOGLE_ID"
+create_or_update_secret "${SECRET_PREFIX}google-oauth-secret" "$AUTH_GOOGLE_SECRET"
+create_or_update_secret "${SECRET_PREFIX}github-oauth-id" "$AUTH_GITHUB_ID"
+create_or_update_secret "${SECRET_PREFIX}github-oauth-secret" "$AUTH_GITHUB_SECRET"
+create_or_update_secret "${SECRET_PREFIX}backend-api-url" "$BACKEND_API_URL"
+create_or_update_secret "${SECRET_PREFIX}backend-api-key" "$BACKEND_API_KEY"
 
-# Step 2: Verify all secrets exist (using describe to avoid triggering builds)
+# Step 2: Verify all secrets exist
 echo ""
-echo "🔍 Step 2: Verifying all secrets exist..."
+echo "🔍 Step 2: Verifying all secrets exist for $ENVIRONMENT..."
 
 SECRETS=(
-  "neemee-supabase-url"
-  "neemee-supabase-anon-key"
-  "neemee-backend-api-url"
-  "neemee-backend-api-key"
+  "${SECRET_PREFIX}database-url"
+  "${SECRET_PREFIX}auth-secret"
+  "${SECRET_PREFIX}google-oauth-id"
+  "${SECRET_PREFIX}google-oauth-secret"
+  "${SECRET_PREFIX}github-oauth-id"
+  "${SECRET_PREFIX}github-oauth-secret"
+  "${SECRET_PREFIX}backend-api-url"
+  "${SECRET_PREFIX}backend-api-key"
 )
 
 secrets_ok=true
@@ -82,13 +117,13 @@ done
 
 if [ "$secrets_ok" != true ]; then
     echo ""
-    echo "❌ Some secrets are missing. Please check your configuration."
+    echo "❌ Some secrets are missing. Please check your $ENV_FILE configuration."
     exit 1
 fi
 
 # Step 3: Deploy to Cloud Run
 echo ""
-echo "📦 Step 3: Deploying to Google Cloud Run..."
+echo "📦 Step 3: Deploying to Google Cloud Run ($ENVIRONMENT)..."
 
 gcloud run deploy $SERVICE_NAME \
   --source . \
@@ -101,15 +136,20 @@ gcloud run deploy $SERVICE_NAME \
   --concurrency 80 \
   --timeout 300 \
   --allow-unauthenticated \
-  --set-secrets NEXT_PUBLIC_SUPABASE_URL=neemee-supabase-url:latest \
-  --set-secrets NEXT_PUBLIC_SUPABASE_ANON_KEY=neemee-supabase-anon-key:latest \
-  --set-secrets BACKEND_API_URL=neemee-backend-api-url:latest \
-  --set-secrets BACKEND_API_KEY=neemee-backend-api-key:latest \
-  --set-env-vars NODE_ENV=production \
-  --set-env-vars NEXT_PUBLIC_BASE_URL=https://neemee.paulbonneville.com
+  --set-secrets DATABASE_URL=${SECRET_PREFIX}database-url:latest \
+  --set-secrets AUTH_SECRET=${SECRET_PREFIX}auth-secret:latest \
+  --set-secrets AUTH_GOOGLE_ID=${SECRET_PREFIX}google-oauth-id:latest \
+  --set-secrets AUTH_GOOGLE_SECRET=${SECRET_PREFIX}google-oauth-secret:latest \
+  --set-secrets AUTH_GITHUB_ID=${SECRET_PREFIX}github-oauth-id:latest \
+  --set-secrets AUTH_GITHUB_SECRET=${SECRET_PREFIX}github-oauth-secret:latest \
+  --set-secrets BACKEND_API_URL=${SECRET_PREFIX}backend-api-url:latest \
+  --set-secrets BACKEND_API_KEY=${SECRET_PREFIX}backend-api-key:latest \
+  --set-env-vars NODE_ENV=$ENVIRONMENT \
+  --set-env-vars NEXT_PUBLIC_BASE_URL=$BASE_URL \
+  --set-env-vars NEXTAUTH_URL=$BASE_URL
 
 echo ""
-echo "🎉 Deployment completed successfully!"
+echo "🎉 $ENVIRONMENT deployment completed successfully!"
 echo ""
 echo "🌐 Your application is available at:"
 SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format="value(status.url)")
@@ -120,3 +160,8 @@ echo "  gcloud logs tail --follow --service $SERVICE_NAME --region $REGION"
 echo ""
 echo "🔧 Manage service with:"
 echo "  gcloud run services describe $SERVICE_NAME --region $REGION"
+echo ""
+echo "🔐 Secrets used in this deployment:"
+for secret in "${SECRETS[@]}"; do
+  echo "  $secret"
+done

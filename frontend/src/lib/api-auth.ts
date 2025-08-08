@@ -1,29 +1,42 @@
-import { createClient } from './supabase/server';
-import { getSession } from './auth';
+import { prisma } from './prisma';
+import { auth } from '@/auth';
+import crypto from 'crypto';
 
 /**
  * Authenticate user via API key for bookmarklet requests
  */
 export async function authenticateApiKey(apiKey: string): Promise<string | null> {
   try {
-    const supabase = await createClient();
+    // Hash the provided API key to compare with stored hash
+    const hashedKey = crypto.createHash('sha256').update(apiKey).digest('hex');
     
-    // Find user by API key in user_api_keys table
-    const { data: apiKeyRecord, error } = await supabase
-      .from('user_api_keys')
-      .select('userId')
-      .eq('apiKey', apiKey)
-      .single();
+    // Find API key with matching hash
+    const apiKeyRecord = await prisma.apiKey.findFirst({
+      where: {
+        keyHash: hashedKey,
+        isActive: true
+      },
+      select: {
+        userId: true
+      }
+    });
     
-    
-    if (error || !apiKeyRecord) {
-      console.error('API key authentication failed:', error);
-      return null;
+    if (apiKeyRecord) {
+      // Update last used timestamp
+      await prisma.apiKey.updateMany({
+        where: {
+          keyHash: hashedKey,
+          isActive: true
+        },
+        data: {
+          lastUsedAt: new Date()
+        }
+      });
     }
     
-    return apiKeyRecord.userId;
+    return apiKeyRecord?.userId || null;
   } catch (error) {
-    console.error('Error authenticating API key:', error);
+    console.error('API key authentication error:', error);
     return null;
   }
 }
@@ -89,7 +102,7 @@ export function validateHighlightText(text: string): { valid: boolean; error?: s
 export async function getAuthContext(request: Request): Promise<{ userId: string; authType: 'session' | 'api_key' } | null> {
   // First try session authentication
   try {
-    const session = await getSession();
+    const session = await auth();
     if (session?.user?.id) {
       return {
         userId: session.user.id,
@@ -97,6 +110,7 @@ export async function getAuthContext(request: Request): Promise<{ userId: string
       };
     }
   } catch {
+    // Session auth failed, continue to API key
   }
   
   // Try API key authentication

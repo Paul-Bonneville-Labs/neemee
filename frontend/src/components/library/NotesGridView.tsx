@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Clock, Globe, Copy, ExternalLink } from 'lucide-react';
 import { Note } from '@/types';
 
@@ -117,9 +118,11 @@ function NoteCard({ note, onToast }: { note: Note; onToast: (type: 'success' | '
           {/* Domain Row */}
           <div className="flex items-center justify-between gap-3">
             <div className="tooltip tooltip-top tooltip-delayed z-50 flex items-center gap-1" data-tip={note.page_url || 'Unknown source'}>
-              <img 
+              <Image 
                 src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
                 alt="" 
+                width={12}
+                height={12}
                 className="w-3 h-3 flex-shrink-0"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';

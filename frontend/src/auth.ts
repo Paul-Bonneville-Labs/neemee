@@ -31,7 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session
     },
     async jwt({ token, user }) {
-      if (user) {
+      if (user && user.id) {
         token.sub = user.id
       }
       return token
@@ -56,7 +56,7 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
+declare module "@auth/core/jwt" {
   interface JWT {
     sub: string
   }

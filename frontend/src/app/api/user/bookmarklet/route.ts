@@ -1,46 +1,43 @@
 import { NextResponse } from 'next/server';
-import { getSession, hasPermission } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 import { ApiResponse, BookmarkletResponse } from '@/types';
 
 export async function GET() {
   try {
     // Check authentication
-    const session = await getSession();
-    if (!session || !session.user) {
+    const session = await auth();
+    if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
-
-    // Check read permissions
-    const hasReadPermission = await hasPermission('read');
-    if (!hasReadPermission) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
-    const supabase = await createClient();
     
-    // Get user's API key from user_api_keys table
-    const { data: apiKeys, error } = await supabase
-      .from('user_api_keys')
-      .select('apiKey')
-      .eq('userId', session.user.id)
-      .order('createdAt', { ascending: false })
-      .limit(1);
+    // Get user's API key from ApiKey table
+    const apiKeys = await prisma.apiKey.findMany({
+      where: {
+        userId: session.user.id,
+        isActive: true
+      },
+      select: {
+        id: true,
+        keyPrefix: true,
+        name: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-    if (error || !apiKeys || apiKeys.length === 0) {
+    if (!apiKeys || apiKeys.length === 0) {
       return NextResponse.json(
         { success: false, error: 'API key not found. Please generate an API key first.' },
         { status: 404 }
       );
     }
 
-    const userApiKey = apiKeys[0].apiKey;
+    const userApiKey = `${apiKeys[0].keyPrefix}_${apiKeys[0].id}`;
 
     // Get the base URL from environment or request
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';

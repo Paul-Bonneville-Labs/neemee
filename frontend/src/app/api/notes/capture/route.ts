@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateApiKey, validateUrl, validateHighlightText } from '@/lib/api-auth.prisma';
+import { authenticateApiKey, validateUrl, validateHighlightText } from '@/lib/api-auth';
 import { prisma } from '@/lib/prisma';
 import { NoteCaptureResponse } from '@/types';
 

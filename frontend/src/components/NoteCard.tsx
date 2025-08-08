@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Note } from '@/types';
 import { ExternalLink, Globe, Clock } from 'lucide-react';
 
@@ -73,9 +74,11 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
             
             <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-1">
-                <img 
+                <Image 
                   src={getFaviconUrl(domain)} 
                   alt="" 
+                  width={12}
+                  height={12}
                   className="w-3 h-3 flex-shrink-0"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
@@ -132,9 +135,11 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
         {/* Source and Date */}
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1 truncate flex-1 mr-2">
-            <img 
+            <Image 
               src={getFaviconUrl(domain)} 
               alt="" 
+              width={12}
+              height={12}
               className="w-3 h-3 flex-shrink-0"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
