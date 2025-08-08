@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/components/AuthProvider';
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { Auth } from '@/components/Auth';
 import { Sidebar } from '@/components/Sidebar';
 import { UserApiKey, ApiResponse } from '@/types';
@@ -49,11 +49,13 @@ function LibraryPageContent() {
     setMounted(true);
   }, []);
 
-  // Check if this is a bookmarklet request (has capture parameters)
-  const isBookmarkletRequest = mounted && (
-    searchParams.get('text') || 
-    searchParams.get('url') || 
-    searchParams.get('key')
+  // Check if this is a bookmarklet request (requires all capture parameters)
+  const isBookmarkletRequest = useMemo(() => 
+    mounted && 
+    searchParams.has('text') && 
+    searchParams.has('url') && 
+    searchParams.has('key'),
+    [mounted, searchParams]
   );
 
   // Load saved view mode preference
