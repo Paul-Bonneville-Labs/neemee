@@ -26,10 +26,21 @@ This approach provides 80% of required functionality and reduces development tim
 ### Frontend (`/frontend/`)
 ```bash
 cd frontend
+
+# Environment Setup
+cp .env.example .env.local    # Create local development environment
+# Edit .env.local with your actual values
+
+# Development
 npm run dev          # Start development server with Turbopack
+npm run dev:lint     # Start development with real-time linting
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
+npm run check        # Run TypeScript + ESLint checks
+
+# Deployment
+./scripts/deploy.sh  # Deploy to Google Cloud Run with automatic secrets
 ```
 
 ### Backend (`/backend/`)
@@ -115,28 +126,30 @@ Web content is intelligently converted from HTML to Markdown maintaining structu
 - **Database**: Supabase (PostgreSQL) + Neo4j knowledge graph
 - **Monitoring**: GCP monitoring and logging
 
-## Development Phases
+## Development Status
 
-### Phase 1 (Current): Integration & Core Adaptation (2-3 weeks)
-- Integrate arrgh-collect frontend with arrgh-fastapi backend
-- Implement bookmarklet functionality
-- Setup Supabase authentication and database
-- Adapt existing components for highlight management
+### ✅ Phase 1 Complete: Integration & Core Implementation
+- ✅ **Frontend-Backend Integration**: Complete integration with unified deployment
+- ✅ **Bookmarklet System**: Full implementation with dynamic URL support
+- ✅ **Supabase Authentication**: Magic link and email/password auth
+- ✅ **Highlight Management**: Complete CRUD system with entity extraction
+- ✅ **Environment Management**: Simplified and secure configuration system
 
 ## Important Integration Notes
 
-### Frontend Adaptations Needed
-- Replace NextAuth with Supabase Auth
-- Replace GitHub API calls with Supabase client calls
-- Adapt FileList.tsx to HighlightList.tsx
-- Update terminology from "files" to "highlights"
+### Frontend Implementation Status ✅
+- ✅ **Complete**: Supabase Auth integration with magic links
+- ✅ **Complete**: Highlight management system (adapted from FileList.tsx)
+- ✅ **Complete**: Terminology updated throughout application
+- ✅ **Complete**: Bookmarklet system with dynamic URL generation
+- ✅ **Complete**: Environment management simplified and secured
 
-### Backend Adaptations Needed
-- Adapt newsletter processing for web highlight input
-- Add bookmarklet capture endpoints to existing router structure
-- Add user/API key management using existing patterns
-- Maintain existing OpenAI entity extraction pipeline
-- Add Supabase configuration to existing settings
+### Backend Integration Status
+- ✅ **Complete**: Web highlight processing and storage
+- ✅ **Complete**: Bookmarklet capture endpoints
+- ✅ **Complete**: User/API key management system
+- ✅ **Complete**: OpenAI entity extraction pipeline
+- ✅ **Complete**: Supabase configuration and database schema
 
 ## Data Flow
 
@@ -146,6 +159,35 @@ Web content is intelligently converted from HTML to Markdown maintaining structu
 4. **Graph**: Entities and relationships stored in Neo4j
 5. **Interface**: User manages highlights through Next.js dashboard
 6. **Export**: Data remains portable and AI-compatible
+
+## Recent Architecture Improvements
+
+### Environment Management Overhaul ✅
+- **Simplified Configuration**: Reduced environment variables by 80%
+- **Clean Structure**: `.env.example` (template), `.env.local` (dev), `.env.production` (prod reference)
+- **Secure Secrets**: Proper .gitignore, Google Cloud Secrets integration
+- **Dynamic URLs**: Fixed hardcoded localhost with `NEXT_PUBLIC_BASE_URL`
+
+### GitHub Integration Removal ✅
+- **Code Cleanup**: Removed 1,200+ lines of unused GitHub integration code
+- **Simplified Dependencies**: Eliminated @octokit/rest and related packages
+- **Streamlined API**: Removed GitHub-based file management API routes
+- **Focused Architecture**: Pure Supabase + Backend API integration
+
+### Deployment Simplification ✅
+- **Single Script**: Unified `./scripts/deploy.sh` for complete deployment
+- **Automatic Secrets**: Reads `.env.production` and syncs to Cloud Secrets
+- **Cloud Run Optimization**: Buildpacks, proper resource allocation, scaling
+- **Environment Consistency**: Same variables work across dev and production
+
+## Current System Status
+
+**✅ Production Ready**: Complete end-to-end highlight capture and management system
+- **Frontend**: Next.js app deployed on Cloud Run with Supabase auth
+- **Backend**: FastAPI service with OpenAI entity extraction and Neo4j graph
+- **Database**: Supabase for user data, Neo4j for knowledge graph
+- **Security**: Proper environment management and secret handling
+- **Performance**: Optimized Cloud Run deployment with auto-scaling
 
 ## Custom Commands Available
 

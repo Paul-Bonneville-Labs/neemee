@@ -13,9 +13,9 @@ gcloud config set project $PROJECT_ID
 
 echo "🚀 Deploying Neemee frontend to Google Cloud Run (with automatic secrets management)..."
 
-# Function to check if a secret exists
+# Function to check if a secret exists (using list instead of access to avoid triggering builds)
 secret_exists() {
-    gcloud secrets versions access latest --secret="$1" >/dev/null 2>&1
+    gcloud secrets describe "$1" >/dev/null 2>&1
 }
 
 # Function to create or update a secret
@@ -41,50 +41,48 @@ create_or_update_secret() {
 # Step 1: Automatic secrets setup
 echo "🔐 Step 1: Setting up/verifying Google Cloud Secrets..."
 
-# Check if .env file exists
-if [ ! -f ".env" ]; then
-    echo "❌ .env file not found. Please create it from .env.example first."
-    echo "   cp .env.example .env"
-    echo "   # Then edit .env with your actual values"
+# Check if .env.production file exists
+if [ ! -f ".env.production" ]; then
+    echo "❌ .env.production file not found. Please create it with production values."
+    echo "   cp .env.example .env.production"
+    echo "   # Then edit .env.production with your production values"
     exit 1
 fi
 
-# Source the .env file to get current values
-source .env
+# Source the .env.production file to get current values
+source .env.production
 
 # Create/update all secrets
-create_or_update_secret "neemee-github-token" "$GITHUB_TOKEN"
 create_or_update_secret "neemee-supabase-url" "$NEXT_PUBLIC_SUPABASE_URL"
 create_or_update_secret "neemee-supabase-anon-key" "$NEXT_PUBLIC_SUPABASE_ANON_KEY"
-create_or_update_secret "neemee-github-repo-owner" "$GITHUB_REPO_OWNER"
-create_or_update_secret "neemee-github-repo-name" "$GITHUB_REPO_NAME"
+create_or_update_secret "neemee-backend-api-url" "$BACKEND_API_URL"
+create_or_update_secret "neemee-backend-api-key" "$BACKEND_API_KEY"
 
-# Step 2: Verify all secrets are accessible
+# Step 2: Verify all secrets exist (using describe to avoid triggering builds)
 echo ""
-echo "🔍 Step 2: Verifying all secrets are accessible..."
+echo "🔍 Step 2: Verifying all secrets exist..."
 
 SECRETS=(
-  "neemee-github-token"
   "neemee-supabase-url"
   "neemee-supabase-anon-key"
-  "neemee-github-repo-owner"
-  "neemee-github-repo-name"
+  "neemee-backend-api-url"
+  "neemee-backend-api-key"
 )
 
 secrets_ok=true
 for secret in "${SECRETS[@]}"; do
   echo -n "  $secret: "
-  if secret_exists "$secret"; then
-    echo "✅ Available"
+  if gcloud secrets describe "$secret" >/dev/null 2>&1; then
+    echo "✅ Exists"
   else
-    echo "❌ Missing or inaccessible"
+    echo "❌ Missing"
     secrets_ok=false
   fi
 done
 
 if [ "$secrets_ok" != true ]; then
     echo ""
-    echo "❌ Some secrets are not accessible. Please check your configuration."
+    echo "❌ Some secrets are missing. Please check your configuration."
     exit 1
 fi
 
@@ -103,11 +101,10 @@ gcloud run deploy $SERVICE_NAME \
   --concurrency 80 \
   --timeout 300 \
   --allow-unauthenticated \
-  --set-secrets GITHUB_TOKEN=neemee-github-token:latest \
   --set-secrets NEXT_PUBLIC_SUPABASE_URL=neemee-supabase-url:latest \
   --set-secrets NEXT_PUBLIC_SUPABASE_ANON_KEY=neemee-supabase-anon-key:latest \
-  --set-secrets GITHUB_REPO_OWNER=neemee-github-repo-owner:latest \
-  --set-secrets GITHUB_REPO_NAME=neemee-github-repo-name:latest \
+  --set-secrets BACKEND_API_URL=neemee-backend-api-url:latest \
+  --set-secrets BACKEND_API_KEY=neemee-backend-api-key:latest \
   --set-env-vars NODE_ENV=production \
   --set-env-vars NEXT_PUBLIC_BASE_URL=https://neemee.paulbonneville.com
 
