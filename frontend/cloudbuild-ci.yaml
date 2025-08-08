@@ -46,7 +46,6 @@ options:
     - 'NEXT_PUBLIC_BASE_URL=http://localhost:3000'
     - 'BACKEND_API_URL=http://localhost:8000'
     - 'BACKEND_API_KEY=ci-dummy-api-key'
-    - 'NODE_ENV=production'
 
 # Set timeout for the entire build
 timeout: '1200s'
