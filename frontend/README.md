@@ -172,23 +172,25 @@ npm run dev:lint        # Development with live linting (recommended)
 
 ### 🤖 Automated CI/CD Pipeline
 
-**Git-Based Deployment Strategy:**
+**Hybrid CI/CD Strategy:**
 
-| Branch | Environment | Trigger | Purpose |
-|--------|-------------|---------|---------|
-| **`main`** | **Production** | Auto-deploy on push | Live production system |
-| **`develop`** | **Staging** | Auto-deploy on push | Testing and validation |
-| **Feature branches** | **CI Only** | Validation on PR | Code quality checks |
+| Branch/Event | Pipeline | Validation Steps | Purpose |
+|--------------|----------|------------------|---------|
+| **Pull Requests** | **GitHub Actions** | Jest Tests + Coverage | Test validation |
+| **Feature branches** | **Cloud Build CI** | TypeScript + ESLint + Build | Code quality checks |
+| **`develop`** | **Staging Deploy** | CI validation + deployment | Testing and validation |
+| **`main`** | **Production Deploy** | CI validation + deployment | Live production system |
 
 ### 🧪 Staging Deployment
 
 **Automatic deployment to staging:**
 
 1. **Push to `develop` branch** → Triggers automatic staging deployment
-2. **Quality checks** → TypeScript + ESLint validation
-3. **Build & Deploy** → Buildpacks + Cloud Run deployment
-4. **Smoke tests** → Automatic health checks
-5. **Notification** → Deployment status
+2. **Quality checks** → TypeScript + ESLint validation (Cloud Build CI)
+3. **Test validation** → Jest tests run via GitHub Actions on PR
+4. **Build & Deploy** → Buildpacks + Cloud Run deployment
+5. **Smoke tests** → Automatic health checks
+6. **Notification** → Deployment status
 
 **Staging Environment:**
 - **Frontend URL**: [https://neemee-frontend-staging-860937201650.us-central1.run.app](https://neemee-frontend-staging-860937201650.us-central1.run.app)
@@ -232,7 +234,11 @@ gcloud logs tail --follow --service=neemee-frontend-staging --region=us-central1
 ### 📋 CI/CD Pipeline Files
 
 ```bash
-cloudbuild-ci.yaml         # CI validation for all branches/PRs
+# GitHub Actions
+.github/workflows/test.yml  # Jest test validation for PRs
+
+# Cloud Build  
+cloudbuild-ci.yaml         # TypeScript + ESLint + Build validation
 cloudbuild-staging.yaml    # Staging deployment (develop branch)
 cloudbuild-production.yaml # Production deployment (main branch)
 ```
