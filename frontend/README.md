@@ -1,6 +1,6 @@
 # Neemee Frontend Application
 
-**Technology Stack**: Next.js 15 + React 19 + TypeScript  
+**Technology Stack**: Next.js 15 + React 19 + TypeScript with comprehensive testing  
 **Purpose**: Web application for highlight management and user dashboard with automated testing  
 **Deployment**: Google Cloud Run with automated CI/CD and secrets management
 
