@@ -196,3 +196,9 @@ gcloud run deploy neemee-frontend \
 - **Live URL**: https://neemee.paulbonneville.com (Custom domain)
 - **Cloud Run URL**: https://neemee-frontend-860937201650.us-central1.run.app
 - **Build Status**: Stable with latest enhancements deployed
+
+## Deployment Guidelines
+- When deploying the front end, always use the deployment script we've created
+
+## Claude Specific Guidance
+- When providing the user with a link to the production version of the front end, always use the map domain

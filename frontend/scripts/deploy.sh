@@ -13,9 +13,9 @@ gcloud config set project $PROJECT_ID
 
 echo "🚀 Deploying Neemee frontend to Google Cloud Run (with automatic secrets management)..."
 
-# Function to check if a secret exists
+# Function to check if a secret exists (using list instead of access to avoid triggering builds)
 secret_exists() {
-    gcloud secrets versions access latest --secret="$1" >/dev/null 2>&1
+    gcloud secrets describe "$1" >/dev/null 2>&1
 }
 
 # Function to create or update a secret
@@ -58,9 +58,9 @@ create_or_update_secret "neemee-supabase-anon-key" "$NEXT_PUBLIC_SUPABASE_ANON_K
 create_or_update_secret "neemee-backend-api-url" "$BACKEND_API_URL"
 create_or_update_secret "neemee-backend-api-key" "$BACKEND_API_KEY"
 
-# Step 2: Verify all secrets are accessible
+# Step 2: Verify all secrets exist (using describe to avoid triggering builds)
 echo ""
-echo "🔍 Step 2: Verifying all secrets are accessible..."
+echo "🔍 Step 2: Verifying all secrets exist..."
 
 SECRETS=(
   "neemee-supabase-url"
@@ -72,17 +72,17 @@ SECRETS=(
 secrets_ok=true
 for secret in "${SECRETS[@]}"; do
   echo -n "  $secret: "
-  if secret_exists "$secret"; then
-    echo "✅ Available"
+  if gcloud secrets describe "$secret" >/dev/null 2>&1; then
+    echo "✅ Exists"
   else
-    echo "❌ Missing or inaccessible"
+    echo "❌ Missing"
     secrets_ok=false
   fi
 done
 
 if [ "$secrets_ok" != true ]; then
     echo ""
-    echo "❌ Some secrets are not accessible. Please check your configuration."
+    echo "❌ Some secrets are missing. Please check your configuration."
     exit 1
 fi
 
