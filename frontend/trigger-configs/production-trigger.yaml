@@ -1,0 +1,11 @@
+name: neemee-frontend-production
+description: Automatic production deployment with safety checks
+disabled: false
+github:
+  owner: Paul-Bonneville-Labs
+  name: neemee
+  push:
+    branch: "^main$"
+filename: frontend/cloudbuild-production.yaml
+serviceAccount: projects/paulbonneville-com/serviceAccounts/860937201650@cloudbuild.gserviceaccount.com
+includeLogs: true

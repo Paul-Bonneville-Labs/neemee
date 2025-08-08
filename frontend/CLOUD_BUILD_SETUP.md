@@ -10,20 +10,74 @@ The following prerequisites have been completed:
 - [x] **IAM Permissions**: Cloud Build service account granted `run.admin` and `secretmanager.secretAccessor`
 - [x] **Build Configs**: Created `cloudbuild-ci.yaml`, `cloudbuild-staging.yaml`, `cloudbuild-production.yaml`
 
-## Step 1: Connect GitHub Repository
+## Step 1: Complete GitHub OAuth Connection
 
-1. **Open Google Cloud Console** → Navigate to [Cloud Build](https://console.cloud.google.com/cloud-build/triggers)
+The GitHub connection has been created for the Paul-Bonneville-Labs organization:
 
-2. **Connect Repository**:
-   - Click **"Connect Repository"**
-   - Select **"GitHub (Cloud Build GitHub App)"**
-   - Authorize Google Cloud Build to access your GitHub account
-   - Select repository: **`Paul-Bonneville-Labs/neemee`**
-   - Click **"Connect Repository"**
+1. **Complete OAuth Setup**:
+   - Visit: https://console.cloud.google.com/cloud-build/triggers
+   - Complete the GitHub OAuth connection for `paul-bonneville-labs-connection`
+   - **Important**: When authorizing, select the **Paul-Bonneville-Labs** organization
+   - Grant access to the `neemee` repository
 
-## Step 2: Create Cloud Build Triggers
+2. **Verify Connection**:
+   ```bash
+   gcloud builds connections describe paul-bonneville-labs-connection --region=us-central1
+   ```
 
-Create **3 triggers** with the following configurations:
+## Step 2: Create Cloud Build Triggers (Automated)
+
+**Option A: Automated Script (Recommended)**
+```bash
+# Run the automated setup script
+./setup-triggers.sh
+```
+
+**Option B: Manual gcloud Commands**
+```bash
+# Create repository connection
+gcloud builds repositories create neemee-repo \
+  --connection=paul-bonneville-labs-connection \
+  --region=us-central1 \
+  --remote-uri=https://github.com/Paul-Bonneville-Labs/neemee.git
+
+# Create CI trigger
+gcloud builds triggers create github \
+  --repository-name=neemee-repo \
+  --repository-owner=Paul-Bonneville-Labs \
+  --pull-request-pattern=".*" \
+  --build-config=frontend/cloudbuild-ci.yaml \
+  --name=neemee-frontend-ci \
+  --description="CI validation for all pull requests" \
+  --service-account="860937201650@cloudbuild.gserviceaccount.com" \
+  --region=us-central1
+
+# Create staging trigger  
+gcloud builds triggers create github \
+  --repository-name=neemee-repo \
+  --repository-owner=Paul-Bonneville-Labs \
+  --branch-pattern="^develop$" \
+  --build-config=frontend/cloudbuild-staging.yaml \
+  --name=neemee-frontend-staging \
+  --description="Automatic staging deployment" \
+  --service-account="860937201650@cloudbuild.gserviceaccount.com" \
+  --region=us-central1
+
+# Create production trigger
+gcloud builds triggers create github \
+  --repository-name=neemee-repo \
+  --repository-owner=Paul-Bonneville-Labs \
+  --branch-pattern="^main$" \
+  --build-config=frontend/cloudbuild-production.yaml \
+  --name=neemee-frontend-production \
+  --description="Automatic production deployment with safety checks" \
+  --service-account="860937201650@cloudbuild.gserviceaccount.com" \
+  --region=us-central1
+```
+
+### Manual Console Configuration (Alternative)
+
+If you prefer using the console, create **3 triggers** with the following configurations:
 
 ### 🔧 Trigger 1: CI Validation (Pull Requests)
 

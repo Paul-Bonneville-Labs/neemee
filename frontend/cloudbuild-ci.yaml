@@ -80,7 +80,7 @@ steps:
 # Build options for CI
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: 'E2_STANDARD_2'  # Smaller machine for CI
+  machineType: E2_STANDARD_2  # Smaller machine for CI
   diskSizeGb: 50
 
 # CI build timeout (shorter than deployment)

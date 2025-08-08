@@ -221,7 +221,7 @@ steps:
 timeout: '1800s'
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: 'E2_STANDARD_4'  # Larger machine for production builds
+  machineType: E2_STANDARD_4  # Larger machine for production builds
   diskSizeGb: 100
 
 # Production environment substitutions

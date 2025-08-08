@@ -1,0 +1,13 @@
+{
+  "name": "neemee-frontend-ci",
+  "description": "CI validation for all pull requests",
+  "github": {
+    "owner": "Paul-Bonneville-Labs",
+    "name": "neemee",
+    "pullRequest": {
+      "branch": ".*"
+    }
+  },
+  "filename": "frontend/cloudbuild-ci.yaml",
+  "serviceAccount": "projects/paulbonneville-com/serviceAccounts/860937201650@cloudbuild.gserviceaccount.com"
+}
