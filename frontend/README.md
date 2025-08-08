@@ -191,10 +191,22 @@ npm run dev:lint        # Development with live linting (recommended)
 5. **Notification** → Deployment status
 
 **Staging Environment:**
-- **URL**: `https://neemee-frontend-staging-[PROJECT].us-central1.run.app`
+- **Frontend URL**: [https://neemee-frontend-staging-860937201650.us-central1.run.app](https://neemee-frontend-staging-860937201650.us-central1.run.app)
+- **Backend URL**: [https://neemee-backend-staging-860937201650.us-central1.run.app](https://neemee-backend-staging-860937201650.us-central1.run.app)
 - **Database**: `neemee-postgres-staging` Cloud SQL instance  
 - **Secrets**: `neemee-staging-*` secrets in Cloud Secrets Manager
 - **Deployment**: Automatic on `develop` branch pushes
+- **Purpose**: QA testing, integration validation, pre-production verification
+
+**Testing Staging:**
+```bash
+# Health checks
+curl -I https://neemee-frontend-staging-860937201650.us-central1.run.app
+curl -I https://neemee-backend-staging-860937201650.us-central1.run.app/health
+
+# View staging logs
+gcloud logs tail --follow --service=neemee-frontend-staging --region=us-central1
+```
 
 ### 🚀 Production Deployment
 
@@ -209,10 +221,12 @@ npm run dev:lint        # Development with live linting (recommended)
 7. **Final validation** → Production URL health checks
 
 **Production Environment:**
-- **URL**: `https://neemee.paulbonneville.com` (custom domain)
+- **Frontend URL**: [https://neemee.paulbonneville.com](https://neemee.paulbonneville.com) (custom domain)
+- **Backend URL**: [https://api.paulbonneville.com](https://api.paulbonneville.com) (custom domain)
+- **Cloud Run URL**: `https://neemee-frontend-860937201650.us-central1.run.app` (direct access)
 - **Database**: `neemee-postgres-prod` Cloud SQL instance
 - **Secrets**: `neemee-*` secrets in Cloud Secrets Manager
-- **Scaling**: Auto-scaling 1-100 instances (always-on)
+- **Scaling**: Auto-scaling 0-10 instances (cost-optimized)
 - **Rollback**: Automatic rollback on failed health checks
 
 ### 📋 CI/CD Pipeline Files
@@ -355,8 +369,52 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanage
 - **Auth.js v5 Migration**: Replaced Supabase with Auth.js and Prisma for better type safety
 - **OAuth Integration**: Google and GitHub authentication with proper session management
 - **Database Modernization**: Migrated to PostgreSQL with Prisma ORM
+- **Automated CI/CD Pipeline**: Replaced manual deployment scripts with Cloud Build triggers
 - **Clean Architecture**: Removed all Supabase dependencies and magic link references
 - **Better Developer Experience**: Improved linting workflow and environment setup
+- **Enhanced Documentation**: Comprehensive environment overview and troubleshooting guides
+
+### Integration Testing & Troubleshooting
+
+#### **End-to-End Testing Checklist**
+- [ ] **Authentication Flow**: Test Google/GitHub OAuth login
+- [ ] **Highlight Capture**: Use bookmarklet on external websites
+- [ ] **Backend Integration**: Verify API calls and entity extraction
+- [ ] **Database Operations**: Check PostgreSQL data persistence
+- [ ] **UI Responsiveness**: Test dashboard and editor functionality
+
+#### **Common Development Issues**
+- **Build Failures**: Check Node.js version (20.x required), clear `node_modules`, verify `.env.local`
+- **OAuth Issues**: Verify callback URLs match environment (`localhost:3000` for local)  
+- **Database Errors**: Run `npm run db:generate && npm run db:migrate`
+- **API Integration**: Check `BACKEND_API_URL` and `BACKEND_API_KEY` configuration
+
+#### **Environment-Specific Testing**
+```bash
+# Test local environment
+curl -I http://localhost:3000
+curl -I http://localhost:8000/health
+
+# Test staging environment  
+curl -I https://neemee-frontend-staging-860937201650.us-central1.run.app
+curl -I https://neemee-backend-staging-860937201650.us-central1.run.app/health
+
+# Test production environment
+curl -I https://neemee.paulbonneville.com
+curl -I https://api.paulbonneville.com/health
+```
+
+#### **Deployment Monitoring**
+```bash
+# Monitor Cloud Build deployments
+gcloud builds list --limit=10
+
+# View service logs
+gcloud logs tail --follow --service=neemee-frontend --region=us-central1
+
+# Check deployment status
+gcloud run services describe neemee-frontend --region=us-central1
+```
 
 ---
 *This frontend provides a complete web interface for Neemee's personal knowledge management system.*

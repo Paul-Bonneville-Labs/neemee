@@ -181,6 +181,21 @@ Web content is intelligently converted from HTML to Markdown maintaining structu
 - **Git-Based Workflows**: PR validation, develop→staging, main→production deployments
 - **Zero-Downtime Deployments**: Health checks and automatic rollbacks for production
 
+## Environment Overview & Access
+
+The Neemee system operates across **three environments** with automated CI/CD workflows:
+
+| Environment | Frontend URL | Backend URL | Database | Deploy Trigger |
+|-------------|--------------|-------------|----------|----------------|
+| **🏠 Local** | `http://localhost:3000` | `http://localhost:8000` | Local PostgreSQL + Neo4j | Manual (`npm run dev`) |
+| **🧪 Staging** | [neemee-frontend-staging](https://neemee-frontend-staging-860937201650.us-central1.run.app) | [neemee-backend-staging](https://neemee-backend-staging-860937201650.us-central1.run.app) | `neemee-postgres-staging` | Auto on `develop` push |
+| **🚀 Production** | [neemee.paulbonneville.com](https://neemee.paulbonneville.com) | [api.paulbonneville.com](https://api.paulbonneville.com) | `neemee-postgres-prod` | Auto on `main` push |
+
+### **Development Workflow**
+1. **Feature Development**: Create feature branch → Push triggers CI validation
+2. **Staging Testing**: Merge to `develop` → Auto-deploy with smoke tests
+3. **Production Release**: Merge to `main` → Zero-downtime deployment with health checks
+
 ## Current System Status
 
 **✅ Production Ready**: Complete end-to-end highlight capture and management system
@@ -307,6 +322,51 @@ The project now uses a **production-grade automated CI/CD pipeline** that replac
 - `frontend/cloudbuild-ci.yaml` - CI validation configuration
 - `frontend/cloudbuild-staging.yaml` - Staging deployment with buildpacks
 - `frontend/cloudbuild-production.yaml` - Production deployment with safety checks
+
+## Developer Onboarding & Troubleshooting
+
+### **New Developer Prerequisites**
+Before starting development, ensure you have:
+- **Node.js 20.x** and **Python 3.13** installed
+- **Google Cloud CLI** authenticated with project access
+- **OAuth Applications** configured (Google + GitHub)
+- **API Keys** obtained (OpenAI, Firecrawl)
+- **Database Access** to PostgreSQL and Neo4j
+
+### **Quick Development Setup**
+```bash
+# 1. Clone and setup frontend
+git clone https://github.com/Paul-Bonneville-Labs/neemee.git
+cd neemee/frontend && npm install && cp .env.example .env.local
+
+# 2. Setup backend (automated)
+cd ../backend && ./scripts/dev-setup.sh
+
+# 3. Start development servers
+npm run dev:lint          # Frontend with live linting
+./scripts/dev-server.sh   # Backend with hot reload
+```
+
+### **Integration Testing Checklist**
+- [ ] **Frontend loads** at `http://localhost:3000`
+- [ ] **Backend API responds** at `http://localhost:8000/health`
+- [ ] **OAuth authentication** works (Google/GitHub)
+- [ ] **Database connections** established (PostgreSQL + Neo4j)
+- [ ] **End-to-end highlight capture** via bookmarklet
+
+### **Common Issues & Solutions**
+- **Build failures**: Check Node.js 20.x, clear cache, verify environment
+- **OAuth errors**: Ensure callback URLs match `NEXTAUTH_URL`
+- **Database issues**: Run `npm run db:generate && npm run db:migrate`
+- **API integration**: Verify `BACKEND_API_URL` and `BACKEND_API_KEY`
+
+### **Environment-Specific Testing**
+```bash
+# Test all environments
+curl -I http://localhost:3000                                           # Local
+curl -I https://neemee-frontend-staging-860937201650.us-central1.run.app # Staging  
+curl -I https://neemee.paulbonneville.com                               # Production
+```
 
 ## Core Features
 
