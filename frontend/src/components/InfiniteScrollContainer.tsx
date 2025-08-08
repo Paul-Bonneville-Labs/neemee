@@ -23,7 +23,7 @@ export function InfiniteScrollContainer({
   className = ''
 }: InfiniteScrollContainerProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver>();
+  const observerRef = useRef<IntersectionObserver | undefined>(undefined);
 
   // Create intersection observer
   const createObserver = useCallback(() => {
@@ -65,11 +65,6 @@ export function InfiniteScrollContainer({
         observerRef.current.disconnect();
       }
     };
-  }, [createObserver]);
-
-  // Recreate observer when dependencies change
-  useEffect(() => {
-    createObserver();
   }, [createObserver]);
 
   return (
@@ -120,7 +115,7 @@ export function InfiniteScrollContainer({
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
             <p className="text-base-content/50 text-sm">
-              You've reached the end
+              You&apos;ve reached the end
             </p>
             <p className="text-base-content/30 text-xs mt-1">
               No more notes to load

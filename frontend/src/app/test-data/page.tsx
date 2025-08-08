@@ -18,11 +18,19 @@ export default function TestDataPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
+  // Load stats on component mount
+  React.useEffect(() => {
+    if (user) {
+      loadStats();
+    }
+  }, [user]);
+
   // Redirect if not authenticated
-  if (!loading && !user) {
-    router.push('/');
-    return null;
-  }
+  React.useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [loading, user, router]);
 
   const loadStats = async () => {
     try {
@@ -100,14 +108,8 @@ export default function TestDataPage() {
     }
   };
 
-  // Load stats on component mount
-  React.useEffect(() => {
-    if (user) {
-      loadStats();
-    }
-  }, [user]);
-
-  if (loading) {
+  // Show loading spinner during authentication
+  if (loading || (!loading && !user)) {
     return (
       <div className="min-h-screen bg-base-100 flex items-center justify-center">
         <div className="text-center">

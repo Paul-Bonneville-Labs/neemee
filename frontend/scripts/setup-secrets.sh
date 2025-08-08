@@ -10,30 +10,19 @@ gcloud config set project $PROJECT_ID
 
 echo "🔐 Setting up Google Cloud Secrets for Neemee frontend..."
 
-# Read current values from .env file
-if [ ! -f ".env" ]; then
-    echo "❌ .env file not found. Please create it from .env.example first."
+# Read current values from .env.production file
+if [ ! -f ".env.production" ]; then
+    echo "❌ .env.production file not found. Please create it with production values."
+    echo "   cp .env.example .env.production"
+    echo "   # Then edit .env.production with your production values"
     exit 1
 fi
 
-# Source the .env file to get current values
-source .env
+# Source the .env.production file to get current values
+source .env.production
 
 # Create secrets for sensitive variables
 echo "📝 Creating secrets..."
-
-# GitHub Token (sensitive)
-if [ -n "$GITHUB_TOKEN" ]; then
-    echo -n "  neemee-github-token: "
-    if echo "$GITHUB_TOKEN" | gcloud secrets create neemee-github-token --data-file=- 2>/dev/null; then
-        echo "✅ Created"
-    else
-        echo "🔄 Updating existing secret"
-        echo "$GITHUB_TOKEN" | gcloud secrets versions add neemee-github-token --data-file=-
-    fi
-else
-    echo "⚠️  GITHUB_TOKEN not found in .env file"
-fi
 
 # Supabase URL (public but good to centralize)
 if [ -n "$NEXT_PUBLIC_SUPABASE_URL" ]; then
@@ -45,7 +34,7 @@ if [ -n "$NEXT_PUBLIC_SUPABASE_URL" ]; then
         echo "$NEXT_PUBLIC_SUPABASE_URL" | gcloud secrets versions add neemee-supabase-url --data-file=-
     fi
 else
-    echo "⚠️  NEXT_PUBLIC_SUPABASE_URL not found in .env file"
+    echo "⚠️  NEXT_PUBLIC_SUPABASE_URL not found in .env.production file"
 fi
 
 # Supabase Anonymous Key (public but good to centralize)
@@ -58,32 +47,33 @@ if [ -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
         echo "$NEXT_PUBLIC_SUPABASE_ANON_KEY" | gcloud secrets versions add neemee-supabase-anon-key --data-file=-
     fi
 else
-    echo "⚠️  NEXT_PUBLIC_SUPABASE_ANON_KEY not found in .env file"
+    echo "⚠️  NEXT_PUBLIC_SUPABASE_ANON_KEY not found in .env.production file"
 fi
 
-# GitHub Repository Configuration
-if [ -n "$GITHUB_REPO_OWNER" ]; then
-    echo -n "  neemee-github-repo-owner: "
-    if echo "$GITHUB_REPO_OWNER" | gcloud secrets create neemee-github-repo-owner --data-file=- 2>/dev/null; then
+# Backend API URL
+if [ -n "$BACKEND_API_URL" ]; then
+    echo -n "  neemee-backend-api-url: "
+    if echo "$BACKEND_API_URL" | gcloud secrets create neemee-backend-api-url --data-file=- 2>/dev/null; then
         echo "✅ Created"
     else
         echo "🔄 Updating existing secret"
-        echo "$GITHUB_REPO_OWNER" | gcloud secrets versions add neemee-github-repo-owner --data-file=-
+        echo "$BACKEND_API_URL" | gcloud secrets versions add neemee-backend-api-url --data-file=-
     fi
 else
-    echo "⚠️  GITHUB_REPO_OWNER not found in .env file"
+    echo "⚠️  BACKEND_API_URL not found in .env.production file"
 fi
 
-if [ -n "$GITHUB_REPO_NAME" ]; then
-    echo -n "  neemee-github-repo-name: "
-    if echo "$GITHUB_REPO_NAME" | gcloud secrets create neemee-github-repo-name --data-file=- 2>/dev/null; then
+# Backend API Key (sensitive)
+if [ -n "$BACKEND_API_KEY" ]; then
+    echo -n "  neemee-backend-api-key: "
+    if echo "$BACKEND_API_KEY" | gcloud secrets create neemee-backend-api-key --data-file=- 2>/dev/null; then
         echo "✅ Created"
     else
         echo "🔄 Updating existing secret"
-        echo "$GITHUB_REPO_NAME" | gcloud secrets versions add neemee-github-repo-name --data-file=-
+        echo "$BACKEND_API_KEY" | gcloud secrets versions add neemee-backend-api-key --data-file=-
     fi
 else
-    echo "⚠️  GITHUB_REPO_NAME not found in .env file"
+    echo "⚠️  BACKEND_API_KEY not found in .env.production file"
 fi
 
 echo ""
@@ -93,4 +83,4 @@ echo "🔍 You can verify the secrets with:"
 echo "  gcloud secrets list --filter='name:neemee-'"
 echo ""
 echo "🚀 Ready to deploy with secrets using:"
-echo "  ./scripts/deploy-with-secrets.sh"
+echo "  ./scripts/deploy.sh"

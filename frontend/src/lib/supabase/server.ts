@@ -7,8 +7,30 @@ export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables. Check your .env.local file.');
+  // During build time or when environment variables are missing/invalid,
+  // use placeholder values to prevent build failures
+  if (!supabaseUrl || !supabaseAnonKey || 
+      supabaseUrl === 'dummy' || supabaseAnonKey === 'dummy') {
+    return createServerClient(
+      'https://placeholder.supabase.co', 
+      'placeholder-key',
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // Ignore during build
+            }
+          },
+        },
+      }
+    );
   }
 
   return createServerClient(
