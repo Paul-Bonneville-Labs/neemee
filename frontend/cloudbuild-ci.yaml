@@ -3,6 +3,18 @@
 # Purpose: Validate code quality, run tests, ensure buildability
 
 steps:
+  # Step 0: Set working directory to frontend
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "📂 Setting working directory to frontend..."
+        pwd
+        ls -la
+        echo "Contents of frontend/:"
+        ls -la frontend/ || echo "Frontend directory not found"
+    id: 'Setup-Directory'
   # Step 1: Install dependencies with caching
   - name: 'node:20'
     entrypoint: 'bash'
@@ -10,6 +22,7 @@ steps:
       - '-c'
       - |
         echo "📦 Installing dependencies with npm ci..."
+        cd frontend
         npm ci --prefer-offline --no-audit
         echo "✅ Dependencies installed successfully"
     id: 'Install-Dependencies'
@@ -21,6 +34,7 @@ steps:
       - '-c'
       - |
         echo "🔄 Generating Prisma client..."
+        cd frontend
         npx prisma generate
         echo "✅ Prisma client generated"
     id: 'Generate-Prisma-Client'
@@ -32,6 +46,7 @@ steps:
       - '-c'
       - |
         echo "🔍 Running TypeScript type checking..."
+        cd frontend
         npm run type-check
         echo "✅ TypeScript validation passed"
     id: 'TypeScript-Check'
@@ -43,6 +58,7 @@ steps:
       - '-c'
       - |
         echo "🔍 Running ESLint..."
+        cd frontend
         npm run lint
         echo "✅ ESLint validation passed"
     id: 'ESLint-Check'
@@ -54,6 +70,7 @@ steps:
       - '-c'
       - |
         echo "🏗️ Validating Next.js build..."
+        cd frontend
         # Create minimal .env for build validation
         echo "DATABASE_URL=postgresql://user:pass@localhost:5432/test" > .env.local
         echo "AUTH_SECRET=test-secret-for-ci-build-validation" >> .env.local
@@ -73,6 +90,7 @@ steps:
       - '-c'
       - |
         echo "🔒 Running security audit..."
+        cd frontend
         npm audit --audit-level=high
         echo "✅ Security audit passed"
     id: 'Security-Audit'
