@@ -1,0 +1,93 @@
+# Google Cloud Build - Continuous Integration
+# Triggered by: All pull requests and feature branches
+# Purpose: Validate code quality, run tests, ensure buildability
+
+steps:
+  # Step 1: Install dependencies with caching
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "📦 Installing dependencies with npm ci..."
+        npm ci --prefer-offline --no-audit
+        echo "✅ Dependencies installed successfully"
+    id: 'Install-Dependencies'
+    
+  # Step 2: Generate Prisma client
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔄 Generating Prisma client..."
+        npx prisma generate
+        echo "✅ Prisma client generated"
+    id: 'Generate-Prisma-Client'
+
+  # Step 3: Run TypeScript type checking
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔍 Running TypeScript type checking..."
+        npm run type-check
+        echo "✅ TypeScript validation passed"
+    id: 'TypeScript-Check'
+
+  # Step 4: Run ESLint
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔍 Running ESLint..."
+        npm run lint
+        echo "✅ ESLint validation passed"
+    id: 'ESLint-Check'
+
+  # Step 5: Build application (validation only)
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🏗️ Validating Next.js build..."
+        # Create minimal .env for build validation
+        echo "DATABASE_URL=postgresql://user:pass@localhost:5432/test" > .env.local
+        echo "AUTH_SECRET=test-secret-for-ci-build-validation" >> .env.local
+        echo "NEXT_PUBLIC_BASE_URL=http://localhost:3000" >> .env.local
+        echo "NODE_ENV=production" >> .env.local
+        
+        npm run build
+        echo "✅ Next.js build validation passed"
+    id: 'Build-Validation'
+    env:
+      - 'NODE_ENV=production'
+
+  # Step 6: Security audit
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔒 Running security audit..."
+        npm audit --audit-level=high
+        echo "✅ Security audit passed"
+    id: 'Security-Audit'
+
+# Build options for CI
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_STANDARD_2'  # Smaller machine for CI
+  diskSizeGb: 50
+
+# CI build timeout (shorter than deployment)
+timeout: '900s'
+
+# Tags for identification
+tags:
+  - 'ci-validation'
+  - 'neemee-frontend'
+  - 'quality-check'

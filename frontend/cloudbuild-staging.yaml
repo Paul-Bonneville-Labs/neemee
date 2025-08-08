@@ -1,61 +1,133 @@
-# Google Cloud Build configuration for Staging Environment
-# Triggered by commits to develop branch
+# Google Cloud Build - Staging Deployment
+# Triggered by: commits to 'develop' branch
+# Purpose: Deploy to staging environment using buildpacks
 
 steps:
-  # Build the container image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/neemee-frontend-staging:$SHORT_SHA', '.']
+  # Step 1: Install dependencies with caching
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "📦 Installing dependencies for staging build..."
+        npm ci --prefer-offline --no-audit
+        echo "✅ Dependencies installed"
+    id: 'Install-Dependencies'
+    
+  # Step 2: Generate Prisma client
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔄 Generating Prisma client..."
+        npx prisma generate
+        echo "✅ Prisma client generated"
+    id: 'Generate-Prisma-Client'
 
-  # Push the container image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/neemee-frontend-staging:$SHORT_SHA']
+  # Step 3: Quality checks (fast fail for staging)
+  - name: 'node:20'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔍 Running quality checks..."
+        npm run type-check
+        npm run lint
+        echo "✅ Quality checks passed"
+    id: 'Quality-Checks'
 
-  # Deploy to Cloud Run Staging
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  # Step 4: Deploy to Cloud Run using buildpacks
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     entrypoint: 'gcloud'
     args:
       - 'run'
       - 'deploy'
       - 'neemee-frontend-staging'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/neemee-frontend-staging:$SHORT_SHA'
-      - '--region'
-      - 'us-central1'
-      - '--platform'
-      - 'managed'
+      - '--source=.'  # Use buildpacks instead of Docker
+      - '--platform=managed'
+      - '--region=us-central1'
+      - '--memory=1Gi'
+      - '--cpu=1'
+      - '--min-instances=0'
+      - '--max-instances=10'
+      - '--concurrency=80'
+      - '--timeout=300'
       - '--allow-unauthenticated'
-      - '--port'
-      - '3000'
-      - '--memory'
-      - '1Gi'
-      - '--cpu'
-      - '1'
-      - '--max-instances'
-      - '10'
-      - '--min-instances'
-      - '0'
-      - '--concurrency'
-      - '80'
-      - '--timeout'
-      - '300'
-      - '--set-env-vars'
-      - 'NODE_ENV=staging,NEXT_PUBLIC_BASE_URL=https://staging.neemee.paulbonneville.com'
-      - '--set-secrets'
-      - 'DATABASE_URL=neemee-staging-database-url:latest,AUTH_SECRET=neemee-staging-auth-secret:latest,AUTH_GOOGLE_ID=neemee-staging-google-id:latest,AUTH_GOOGLE_SECRET=neemee-staging-google-secret:latest,AUTH_GITHUB_ID=neemee-staging-github-id:latest,AUTH_GITHUB_SECRET=neemee-staging-github-secret:latest,BACKEND_API_URL=neemee-staging-backend-api-url:latest,BACKEND_API_KEY=neemee-staging-backend-api-key:latest'
+      # Environment variables
+      - '--set-env-vars=NODE_ENV=staging'
+      - '--set-env-vars=NEXT_PUBLIC_BASE_URL=https://neemee-frontend-staging-860937201650.us-central1.run.app'
+      - '--set-env-vars=NEXTAUTH_URL=https://neemee-frontend-staging-860937201650.us-central1.run.app'
+      # Staging secrets (Auth.js v5 + Prisma)
+      - '--set-secrets=DATABASE_URL=neemee-staging-database-url:latest'
+      - '--set-secrets=AUTH_SECRET=neemee-staging-auth-secret:latest'
+      - '--set-secrets=AUTH_GOOGLE_ID=neemee-staging-google-oauth-id:latest'
+      - '--set-secrets=AUTH_GOOGLE_SECRET=neemee-staging-google-oauth-secret:latest'
+      - '--set-secrets=AUTH_GITHUB_ID=neemee-staging-github-oauth-id:latest'
+      - '--set-secrets=AUTH_GITHUB_SECRET=neemee-staging-github-oauth-secret:latest'
+      - '--set-secrets=BACKEND_API_URL=neemee-staging-backend-api-url:latest'
+      - '--set-secrets=BACKEND_API_KEY=neemee-staging-backend-api-key:latest'
+      # Deployment metadata
+      - '--labels=environment=staging,managed-by=cloud-build,commit-sha=$COMMIT_SHA,build-id=$BUILD_ID'
+      - '--quiet'
+    id: 'Deploy-to-Staging'
 
-# Store images for 30 days (staging builds)
-images:
-  - 'gcr.io/$PROJECT_ID/neemee-frontend-staging:$SHORT_SHA'
+  # Step 5: Run staging smoke tests
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🧪 Running staging smoke tests..."
+        SERVICE_URL=$(gcloud run services describe neemee-frontend-staging --region=us-central1 --format="value(status.url)")
+        
+        echo "Testing staging deployment at: $SERVICE_URL"
+        
+        # Test 1: Health check with retry
+        echo "🔍 Health check..."
+        for i in {1..3}; do
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL" || echo "000")
+          if [ "$response" = "200" ]; then
+            echo "✅ Health check passed (HTTP $response)"
+            break
+          else
+            if [ "$i" = "3" ]; then
+              echo "❌ Health check failed after 3 attempts (HTTP $response)"
+              exit 1
+            else
+              echo "⏳ Health check failed, retrying in 15 seconds..."
+              sleep 15
+            fi
+          fi
+        done
+        
+        # Test 2: Basic page content
+        if curl -s "$SERVICE_URL" | grep -q "neemee\|Neemee"; then
+          echo "✅ Page content validation passed"
+        else
+          echo "❌ Page content validation failed"
+          exit 1
+        fi
+        
+        echo "🎉 Staging deployment successful!"
+        echo "🌐 Staging URL: $SERVICE_URL"
+    id: 'Staging-Smoke-Tests'
 
 # Build configuration
 timeout: '1200s'
-
-# Staging build uses fewer resources
 options:
+  logging: CLOUD_LOGGING_ONLY
   machineType: 'E2_STANDARD_2'
   diskSizeGb: 100
-  
-# Substitutions for staging environment
+
+# Staging environment substitutions
 substitutions:
   _ENVIRONMENT: 'staging'
   _SERVICE_NAME: 'neemee-frontend-staging'
+
+# Tags for identification
+tags:
+  - 'staging-deployment'
+  - 'neemee-frontend'
+  - 'automated-deployment'
+  - 'buildpacks'

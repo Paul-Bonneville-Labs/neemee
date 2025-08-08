@@ -142,7 +142,7 @@ src/
 
 ## Deployment
 
-This application supports three environments: **Local Development**, **Staging**, and **Production**. Each has its own configuration and deployment process.
+This application uses **automated CI/CD pipelines** with Google Cloud Build for reliable, consistent deployments. Manual deployment scripts have been replaced with automated triggers.
 
 ### 🏠 Local Development
 
@@ -156,18 +156,12 @@ npm install
 cp .env.example .env.local
 # Edit .env.local with your development values
 
-# 3. Set up local database (if using local PostgreSQL)
-# Option A: Use local PostgreSQL
-createdb neemee_development
-npm run db:migrate
-
-# Option B: Connect to Cloud SQL staging database
-./scripts/setup-staging-db.sh  # Creates staging database
-# Update DATABASE_URL in .env.local to staging connection
+# 3. Set up database
+npm run db:generate     # Generate Prisma client
+npm run db:migrate      # Run migrations
 
 # 4. Start development server
-npm run dev              # Standard development
-npm run dev:lint         # Development with live linting (recommended)
+npm run dev:lint        # Development with live linting (recommended)
 ```
 
 **Local Environment Requirements:**
@@ -176,77 +170,145 @@ npm run dev:lint         # Development with live linting (recommended)
 - Auth.js OAuth applications (Google, GitHub)
 - Backend API running locally or pointing to staging
 
-### 🧪 Staging Environment
+### 🤖 Automated CI/CD Pipeline
 
-Staging provides production-like testing with separate database and secrets:
+**Git-Based Deployment Strategy:**
 
-```bash
-# 1. Set up staging infrastructure
-./scripts/setup-staging-db.sh     # Creates Cloud SQL staging instance
+| Branch | Environment | Trigger | Purpose |
+|--------|-------------|---------|---------|
+| **`main`** | **Production** | Auto-deploy on push | Live production system |
+| **`develop`** | **Staging** | Auto-deploy on push | Testing and validation |
+| **Feature branches** | **CI Only** | Validation on PR | Code quality checks |
 
-# 2. Configure staging environment
-cp .env.example .env.staging
-# Edit .env.staging with staging-specific values
+### 🧪 Staging Deployment
 
-# 3. Deploy to staging
-./scripts/deploy.sh staging       # Deploys to staging environment
-```
+**Automatic deployment to staging:**
 
-**Staging Environment Features:**
-- **Database**: `neemee-postgres-staging` Cloud SQL instance
+1. **Push to `develop` branch** → Triggers automatic staging deployment
+2. **Quality checks** → TypeScript + ESLint validation
+3. **Build & Deploy** → Buildpacks + Cloud Run deployment
+4. **Smoke tests** → Automatic health checks
+5. **Notification** → Deployment status
+
+**Staging Environment:**
 - **URL**: `https://neemee-frontend-staging-[PROJECT].us-central1.run.app`
-- **Secrets**: Separate staging secrets in Cloud Secrets Manager
-- **OAuth**: Separate staging OAuth applications
-- **Backend**: Connected to staging backend API
+- **Database**: `neemee-postgres-staging` Cloud SQL instance  
+- **Secrets**: `neemee-staging-*` secrets in Cloud Secrets Manager
+- **Deployment**: Automatic on `develop` branch pushes
 
-### 🚀 Production Environment
+### 🚀 Production Deployment
 
-Production deployment with full security and performance optimizations:
+**Automatic deployment to production with safety checks:**
+
+1. **Push to `main` branch** → Triggers automatic production deployment
+2. **Comprehensive validation** → TypeScript + ESLint + Security audit
+3. **Build validation** → Test Next.js production build
+4. **Zero-downtime deployment** → Deploy with `--no-traffic` initially
+5. **Health checks** → Comprehensive testing on candidate revision
+6. **Traffic switch** → Gradual rollout with automatic rollback on failure
+7. **Final validation** → Production URL health checks
+
+**Production Environment:**
+- **URL**: `https://neemee.paulbonneville.com` (custom domain)
+- **Database**: `neemee-postgres-prod` Cloud SQL instance
+- **Secrets**: `neemee-*` secrets in Cloud Secrets Manager
+- **Scaling**: Auto-scaling 1-100 instances (always-on)
+- **Rollback**: Automatic rollback on failed health checks
+
+### 📋 CI/CD Pipeline Files
 
 ```bash
-# 1. Configure production environment  
-cp .env.example .env.production
-# Edit .env.production with production values
-
-# 2. Deploy to production
-./scripts/deploy.sh production    # Deploys to production environment
+cloudbuild-ci.yaml         # CI validation for all branches/PRs
+cloudbuild-staging.yaml    # Staging deployment (develop branch)
+cloudbuild-production.yaml # Production deployment (main branch)
 ```
 
-**Production Environment Features:**
-- **Database**: `neemee-postgres-prod` Cloud SQL instance  
-- **URL**: `https://neemee.paulbonneville.com` (custom domain)
-- **Secrets**: Production secrets in Cloud Secrets Manager
-- **OAuth**: Production OAuth applications with verified domains
-- **Scaling**: Auto-scaling 0-100 instances based on traffic
-- **SSL**: Automatic HTTPS with managed certificates
+### 🔧 Setting Up Cloud Build Triggers
 
-### 🔧 Environment Configuration Comparison
+**Required one-time setup:**
+
+```bash
+# 1. Enable APIs
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable run.googleapis.com
+gcloud services enable secretmanager.googleapis.com
+
+# 2. Grant Cloud Build permissions
+PROJECT_NUM=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+CLOUD_BUILD_SA="${PROJECT_NUM}@cloudbuild.gserviceaccount.com"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${CLOUD_BUILD_SA}" \
+  --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${CLOUD_BUILD_SA}" \
+  --role="roles/secretmanager.secretAccessor"
+
+# 3. Create Cloud Build triggers
+# CI Trigger: All branches → cloudbuild-ci.yaml
+# Staging Trigger: develop branch → cloudbuild-staging.yaml  
+# Production Trigger: main branch → cloudbuild-production.yaml
+```
+
+**Cloud Build Trigger Configuration:**
+
+| Trigger Name | Event | Branch | Config File | Description |
+|--------------|-------|--------|-------------|-------------|
+| `neemee-frontend-ci` | Pull Request | `.*` | `cloudbuild-ci.yaml` | Code validation for all PRs |
+| `neemee-frontend-staging` | Push to branch | `^develop$` | `cloudbuild-staging.yaml` | Staging deployment |
+| `neemee-frontend-production` | Push to branch | `^main$` | `cloudbuild-production.yaml` | Production deployment |
+
+### 🔧 Environment Configuration
 
 | Aspect | Local | Staging | Production |
 |--------|-------|---------|------------|
-| **Database** | Local PostgreSQL or Staging Cloud SQL | `neemee-postgres-staging` | `neemee-postgres-prod` |
-| **Environment File** | `.env.local` | `.env.staging` | `.env.production` |
-| **Secrets** | Local file | `neemee-staging-*` secrets | `neemee-*` secrets |
+| **Database** | Local PostgreSQL | `neemee-postgres-staging` | `neemee-postgres-prod` |
+| **Secrets** | `.env.local` file | `neemee-staging-*` secrets | `neemee-*` secrets |
 | **OAuth Apps** | Development apps | Staging apps | Production apps |
-| **Backend URL** | `http://localhost:8000` | Staging backend URL | Production backend URL |
-| **Base URL** | `http://localhost:3000` | Staging Cloud Run URL | `https://neemee.paulbonneville.com` |
+| **Deployment** | Manual (`npm run dev`) | Auto (`develop` branch) | Auto (`main` branch) |
+| **URL** | `http://localhost:3000` | Staging Cloud Run URL | `https://neemee.paulbonneville.com` |
 | **SSL/HTTPS** | HTTP (local) | HTTPS (managed) | HTTPS (managed) |
 
-### Google Cloud Run Deployment Details
-
-All environments use Google Cloud Run with buildpacks (no Dockerfile needed):
+### 📊 Monitoring Deployments
 
 ```bash
-# Deploy with automatic secrets management
-./scripts/deploy.sh [environment]  # environment: staging or production (default)
+# View Cloud Build history
+gcloud builds list --limit=10
+
+# View specific build logs
+gcloud builds log $BUILD_ID
+
+# View Cloud Run deployments
+gcloud run services list --region=us-central1
+
+# View service logs
+gcloud logs tail --follow --service=neemee-frontend --region=us-central1
 ```
 
-**The deployment process:**
-1. **Environment Detection**: Reads appropriate `.env.[environment]` file
-2. **Secrets Sync**: Creates/updates Google Cloud Secrets from environment file  
-3. **Build**: Uses Cloud Build with buildpacks for automatic containerization
-4. **Deploy**: Deploys to Cloud Run with secrets mounted as environment variables
-5. **Verification**: Confirms deployment success and provides service URLs
+### 🚨 Deployment Rollback
+
+**Automatic rollback** occurs if production health checks fail. **Manual rollback:**
+
+```bash
+# List recent revisions
+gcloud run revisions list --service=neemee-frontend --region=us-central1
+
+# Rollback to specific revision  
+gcloud run services update-traffic neemee-frontend \
+  --to-revisions=[REVISION-NAME]=100 \
+  --region=us-central1
+```
+
+### ✅ Benefits of Automated Pipeline
+
+- **✅ Reliability**: No local environment dependencies or human errors
+- **✅ Consistency**: Same build process every time  
+- **✅ Speed**: Parallel builds with optimized caching
+- **✅ Safety**: Automatic health checks and rollbacks
+- **✅ Visibility**: Complete deployment history and logging
+- **✅ Security**: Secrets managed entirely in Google Cloud
+- **✅ Zero-downtime**: Blue-green deployments with traffic switching
 
 ### Cloud Secrets Management
 

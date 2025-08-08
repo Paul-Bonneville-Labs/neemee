@@ -1,3 +1,14 @@
+# DEPRECATED: This file has been replaced by separate CI/CD configurations
+# 
+# NEW APPROACH:
+# - cloudbuild-ci.yaml         - CI validation for all branches/PRs
+# - cloudbuild-staging.yaml    - Automated staging deployments (develop branch)  
+# - cloudbuild-production.yaml - Automated production deployments (main branch)
+#
+# This file remains for historical reference only.
+# The new approach eliminates Docker complexity by using buildpacks directly.
+
+# Original configuration (kept for reference):
 steps:
   # Step 1: Get secrets and set as build-time environment variables
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
