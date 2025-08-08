@@ -4,7 +4,4 @@ steps:
     args: ['Hello CI Pipeline']
     id: 'Test-Step'
 
-options:
-  machineType: E2_STANDARD_2
-
 timeout: '300s'
