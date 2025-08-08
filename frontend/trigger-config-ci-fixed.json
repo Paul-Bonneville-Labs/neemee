@@ -8,6 +8,5 @@
     },
     "repositoryType": "GITHUB"
   },
-  "filename": "frontend/cloudbuild-ci.yaml",
-  "serviceAccount": "projects/paulbonneville-com/serviceAccounts/860937201650@cloudbuild.gserviceaccount.com"
+  "filename": "frontend/cloudbuild-ci.yaml"
 }
