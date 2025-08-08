@@ -71,7 +71,7 @@ neemee/
 
 ### **Documentation** (`/docs/`)
 - **PRD**: Product Requirements Document and functional specifications
-- **Setup Guides**: Supabase configuration and integration details
+- **Setup Guides**: Database configuration and CI/CD pipeline setup
 - **Architecture**: System design and technical documentation
 
 ## Core Features
@@ -104,7 +104,7 @@ This approach provides 80% of required functionality and reduces development tim
 
 - **Infrastructure**: Google Cloud Platform for both frontend and backend
 - **Containers**: Docker deployment to Cloud Run
-- **Database**: Supabase (PostgreSQL) + Neo4j knowledge graph
+- **Database**: Google Cloud SQL PostgreSQL with Prisma ORM + Neo4j knowledge graph
 - **Monitoring**: Unified GCP monitoring and logging
 
 ## Getting Started
@@ -135,7 +135,7 @@ The following custom commands are available via Claude Code for development work
 Focus: Integration & Core Adaptation (2-3 weeks)
 - ✅ Integrate arrgh-collect frontend with arrgh-fastapi backend
 - ✅ Implement bookmarklet functionality
-- ✅ Setup Supabase authentication and database
+- ✅ Setup Auth.js v5 authentication and Prisma database
 - ✅ Adapt existing components for highlight management
 - ✅ Deploy backend with AI processing pipeline to Google Cloud Run
 - ✅ Configure secrets management and production environment
