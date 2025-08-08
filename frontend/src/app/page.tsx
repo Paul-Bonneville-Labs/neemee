@@ -1,12 +1,12 @@
 'use client';
 
 import { useAuth } from '@/components/AuthProvider';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { Auth } from '@/components/Auth';
 import { Sidebar } from '@/components/Sidebar';
 import { UserApiKey, ApiResponse } from '@/types';
 import { Edit3, Zap, Network } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToasts, ToastContainer } from '@/components/Toast';
 import { LibraryHeader } from '@/components/library/LibraryHeader';
 import { EmptyLibraryState } from '@/components/library/EmptyLibraryState';
@@ -14,11 +14,13 @@ import { NotesGridView } from '@/components/library/NotesGridView';
 import { NotesListView } from '@/components/library/NotesListView';
 import { InfiniteScrollContainer, NotesGridSkeleton, NotesListSkeleton } from '@/components/InfiniteScrollContainer';
 import { usePaginatedNotes } from '@/hooks/usePaginatedNotes';
+import { BookmarkletLoginPage } from '@/components/BookmarkletLoginPage';
 import appConfig from '../../config.json';
 
-export default function LibraryPage() {
+function LibraryPageContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toasts, dismissToast, showSuccess, showError } = useToasts();
@@ -46,6 +48,15 @@ export default function LibraryPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Check if this is a bookmarklet request (requires all capture parameters)
+  const isBookmarkletRequest = useMemo(() => 
+    mounted && 
+    searchParams.has('text') && 
+    searchParams.has('url') && 
+    searchParams.has('key'),
+    [mounted, searchParams]
+  );
 
   // Load saved view mode preference
   useEffect(() => {
@@ -133,6 +144,11 @@ export default function LibraryPage() {
         </div>
       </div>
     );
+  }
+
+  // Show bookmarklet login page for unauthenticated bookmarklet requests
+  if (!user && isBookmarkletRequest) {
+    return <BookmarkletLoginPage />;
   }
 
   // Show landing page for unauthenticated users
@@ -359,5 +375,22 @@ export default function LibraryPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function LibraryPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <LibraryPageContent />
+    </Suspense>
   );
 }
