@@ -51,7 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null
   });
   
-  const supabase = createClient();
+  // Use singleton pattern for Supabase client to prevent recreation
+  const [supabase] = useState(() => createClient());
 
   const mapSupabaseUserToAuthUser = (supabaseUser: User): AuthUser => {
     return {
@@ -139,6 +140,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateAuthState({ isSigningIn: true, error: null });
     
     try {
+      // Debug: Log client configuration
+      console.log('Supabase client URL:', supabase.supabaseUrl);
+      console.log('Environment NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
@@ -147,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) {
+        console.error('Supabase signInWithOtp error:', error);
         const authError = handleAuthError(error);
         updateAuthState({ isSigningIn: false, error: authError });
         return { error: authError };
@@ -155,6 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       updateAuthState({ isSigningIn: false });
       return {};
     } catch (error) {
+      console.error('signInWithMagicLink catch error:', error);
       const authError = handleAuthError(error);
       updateAuthState({ isSigningIn: false, error: authError });
       return { error: authError };
