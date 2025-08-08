@@ -2,7 +2,7 @@
 
 **Technology Stack**: Next.js 15 + React 19 + TypeScript  
 **Purpose**: Web application for highlight management and user dashboard with automated testing  
-**Deployment**: Google Cloud Run with automatic secrets management
+**Deployment**: Google Cloud Run with automated CI/CD and secrets management
 
 ## Quick Start
 
