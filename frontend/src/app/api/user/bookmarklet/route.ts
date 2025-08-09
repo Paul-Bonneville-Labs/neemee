@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { ApiResponse, BookmarkletResponse } from '@/types';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     // Check authentication
     const session = await auth();

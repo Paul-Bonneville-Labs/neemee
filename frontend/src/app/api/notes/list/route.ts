@@ -88,8 +88,16 @@ export async function GET(request: NextRequest) {
     ]);
 
 
+    // Transform Prisma result to match frontend Note interface
+    const transformedNotes = notes.map(note => ({
+      ...note,
+      createdAt: note.createdAt.toISOString(),
+      updatedAt: note.updatedAt?.toISOString() || null,
+      capturedAt: note.capturedAt?.toISOString() || null,
+    }));
+
     const responseData: NotesLibraryResponse = {
-      notes,
+      notes: transformedNotes,
       pagination: {
         total: totalCount,
         page,

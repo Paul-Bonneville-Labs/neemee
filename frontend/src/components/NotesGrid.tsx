@@ -50,8 +50,8 @@ export function NotesGrid({
       const searchableText = [
         note.content || '',
         note.snippet || '',
-        note.page_title || '',
-        note.page_url || ''
+        note.pageTitle || '',
+        note.pageUrl || ''
       ].join(' ').toLowerCase();
       
       if (!searchableText.includes(searchTerm.toLowerCase())) {
@@ -62,7 +62,7 @@ export function NotesGrid({
     // Date filter
     if (dateFilter === 'all') return true;
 
-    const createdDate = new Date(note.created_at);
+    const createdDate = new Date(note.createdAt);
     const now = new Date();
     const dayInMs = 24 * 60 * 60 * 1000;
 
@@ -82,12 +82,12 @@ export function NotesGrid({
   const sortedNotes = [...filteredNotes].sort((a, b) => {
     switch (sortBy) {
       case 'recent':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       case 'oldest':
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       case 'alphabetical':
-        const titleA = (a.page_title || 'Untitled').toLowerCase();
-        const titleB = (b.page_title || 'Untitled').toLowerCase();
+        const titleA = (a.pageTitle || 'Untitled').toLowerCase();
+        const titleB = (b.pageTitle || 'Untitled').toLowerCase();
         return titleA.localeCompare(titleB);
       default:
         return 0;
