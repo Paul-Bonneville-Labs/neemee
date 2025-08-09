@@ -113,23 +113,36 @@ export async function POST(request: NextRequest) {
       : content.trim();
 
     // Save note to database using Prisma
-    const note = await prisma.note.create({
-      data: {
-        content: formattedContent,
-        snippet: sanitizedSnippet, // Store the original unmodified text if provided
-        pageTitle: sanitizedTitle || 'Untitled Page',
-        markdownContent: '', // Empty string - will be set by async extraction
-        pageUrl: page_url ? page_url.trim() : '',
-        domain: page_url ? new URL(page_url).hostname : '',
-        capturedAt: new Date(), // Set the capture timestamp
-        user: {
-          connect: { id: userId }
+    let note;
+    try {
+      note = await prisma.note.create({
+        data: {
+          content: formattedContent,
+          snippet: sanitizedSnippet, // Store the original unmodified text if provided
+          pageTitle: sanitizedTitle || 'Untitled Page',
+          markdownContent: '', // Empty string - will be set by async extraction
+          pageUrl: page_url ? page_url.trim() : '',
+          domain: page_url ? new URL(page_url).hostname : '',
+          capturedAt: new Date(), // Set the capture timestamp
+          user: {
+            connect: { id: userId }
+          }
+        },
+        select: {
+          id: true
         }
-      },
-      select: {
-        id: true
-      }
-    });
+      });
+    } catch (dbError) {
+      console.error('Database error creating note:', dbError);
+      const response: NoteCaptureResponse = {
+        success: false,
+        message: 'Failed to save note to database',
+      };
+      return NextResponse.json(response, { 
+        status: 500,
+        headers: corsHeaders 
+      });
+    }
 
     const response: NoteCaptureResponse = {
       success: true,

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 
 // Global variable to store the Prisma Client instance
 const globalForPrisma = globalThis as unknown as {
@@ -55,7 +55,7 @@ export async function disconnectFromDatabase(): Promise<void> {
 export async function checkDatabaseHealth(): Promise<{ status: string; timestamp: Date; error?: string }> {
   try {
     // Simple query to check database connectivity
-    await prisma.$queryRaw`SELECT 1`
+    await prisma.$queryRaw(Prisma.sql`SELECT 1`)
     return {
       status: 'healthy',
       timestamp: new Date()

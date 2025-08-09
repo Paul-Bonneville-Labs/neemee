@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { buildNoteSearchFilters } from '@/lib/api-auth';
 import { ApiResponse, NotesLibraryResponse } from '@/types';
 
 export async function GET(request: NextRequest) {
@@ -32,35 +33,14 @@ export async function GET(request: NextRequest) {
     
     const offset = (page - 1) * limit;
 
-    // Build Prisma query filters
-    const where: { [key: string]: unknown } = {
-      userId: session.user.id
-    };
-
-    // Add search filter
-    if (search) {
-      where.OR = [
-        { content: { contains: search, mode: 'insensitive' } },
-        { pageTitle: { contains: search, mode: 'insensitive' } },
-        { snippet: { contains: search, mode: 'insensitive' } }
-      ];
-    }
-
-    // Add domain filter
-    if (domain) {
-      where.pageUrl = { contains: domain };
-    }
-
-    // Add date filters
-    if (startDate || endDate) {
-      where.createdAt = {};
-      if (startDate) {
-        (where.createdAt as { [key: string]: unknown }).gte = new Date(startDate);
-      }
-      if (endDate) {
-        (where.createdAt as { [key: string]: unknown }).lte = new Date(endDate);
-      }
-    }
+    // Build Prisma query filters using reusable helper
+    const where = buildNoteSearchFilters({
+      userId: session.user.id,
+      search,
+      domain,
+      startDate,
+      endDate
+    });
 
     // Execute Prisma queries concurrently for better performance
     const [notes, totalCount] = await Promise.all([

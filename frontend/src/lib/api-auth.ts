@@ -98,6 +98,50 @@ export function validateHighlightText(text: string): { valid: boolean; error?: s
 }
 
 /**
+ * Build search filters for Prisma note queries
+ */
+export function buildNoteSearchFilters(params: {
+  userId: string;
+  search?: string;
+  domain?: string;
+  startDate?: string;
+  endDate?: string;
+}): { [key: string]: unknown } {
+  const { userId, search, domain, startDate, endDate } = params;
+  
+  const where: { [key: string]: unknown } = {
+    userId
+  };
+
+  // Add search filter
+  if (search) {
+    where.OR = [
+      { content: { contains: search, mode: 'insensitive' } },
+      { pageTitle: { contains: search, mode: 'insensitive' } },
+      { snippet: { contains: search, mode: 'insensitive' } }
+    ];
+  }
+
+  // Add domain filter
+  if (domain) {
+    where.pageUrl = { contains: domain };
+  }
+
+  // Add date filters
+  if (startDate || endDate) {
+    where.createdAt = {};
+    if (startDate) {
+      (where.createdAt as { [key: string]: unknown }).gte = new Date(startDate);
+    }
+    if (endDate) {
+      (where.createdAt as { [key: string]: unknown }).lte = new Date(endDate);
+    }
+  }
+
+  return where;
+}
+
+/**
  * Get authentication context from request - either session or API key
  */
 export async function getAuthContext(request: Request): Promise<{ userId: string; authType: 'session' | 'api_key' } | null> {

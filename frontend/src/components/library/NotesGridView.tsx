@@ -120,7 +120,7 @@ function NoteCard({ note, onToast }: { note: Note; onToast: (type: 'success' | '
               <div className="tooltip tooltip-top tooltip-delayed z-50 flex items-center gap-1" data-tip={note.pageUrl || 'Unknown source'}>
                 <Image 
                   src={getFaviconUrl(note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source')} 
-                  alt="" 
+                  alt={`Favicon for ${note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source'}`} 
                   width={12}
                   height={12}
                   className="w-3 h-3 flex-shrink-0"
