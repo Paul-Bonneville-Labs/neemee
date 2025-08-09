@@ -74,6 +74,6 @@ fi
 
 echo ""
 echo "🎉 Development environment is ready!"
-echo "🔗 Database: postgresql://neemee_user:local_dev_password@localhost:5432/neemee"
+echo "🔗 Database: postgresql://neemee_user:local_dev_password@localhost:5433/neemee"
 echo "🌐 Starting development server..."
 echo ""

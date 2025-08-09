@@ -31,6 +31,18 @@ export async function POST(request: NextRequest) {
       const session = await auth();
       if (session?.user?.id) {
         userId = session.user.id;
+        
+        // Ensure user exists in database (for JWT strategy with PrismaAdapter)
+        await prisma.user.upsert({
+          where: { id: userId },
+          update: {}, // No updates needed if user exists
+          create: {
+            id: userId,
+            email: session.user.email!,
+            name: session.user.name || null,
+            image: session.user.image || null,
+          }
+        });
       } else {
         throw new Error('No session');
       }
@@ -109,7 +121,8 @@ export async function POST(request: NextRequest) {
         pageTitle: sanitizedTitle || 'Untitled Page',
         markdownContent: '', // Empty string - will be set by async extraction
         pageUrl: page_url.trim(),
-        domain: new URL(page_url).hostname
+        domain: new URL(page_url).hostname,
+        capturedAt: new Date(), // Set the capture timestamp
       },
       select: {
         id: true

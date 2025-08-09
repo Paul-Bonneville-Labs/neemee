@@ -9,9 +9,10 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma = globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    errorFormat: 'pretty',
     datasources: {
       db: {
-        url: process.env.DATABASE_URL
+        url: process.env.DATABASE_URL || 'postgresql://neemee_user:local_dev_password@localhost:5433/neemee'
       }
     }
   })
@@ -20,16 +21,13 @@ export const prisma = globalForPrisma.prisma ??
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 // Graceful shutdown handler - only in Node.js runtime (not edge)
-if (typeof process !== 'undefined' && process.on) {
-  process.on('SIGINT', async () => {
+if (typeof process !== 'undefined' && process.on && process.env.NODE_ENV !== 'production') {
+  const handleShutdown = async () => {
     await prisma.$disconnect()
-    process.exit(0)
-  })
-
-  process.on('SIGTERM', async () => {
-    await prisma.$disconnect()
-    process.exit(0)
-  })
+  }
+  
+  process.on('SIGINT', handleShutdown)
+  process.on('SIGTERM', handleShutdown)
 }
 
 // Database connection utility functions

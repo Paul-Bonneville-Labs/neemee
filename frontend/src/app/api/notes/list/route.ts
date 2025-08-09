@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { ApiResponse, PrismaNotesLibraryResponse } from '@/types';
+import { ApiResponse, NotesLibraryResponse } from '@/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -75,6 +75,8 @@ export async function GET(request: NextRequest) {
           pageTitle: true,
           markdownContent: true,
           metadata: true,
+          domain: true,
+          capturedAt: true,
           createdAt: true,
           updatedAt: true
         },
@@ -85,7 +87,8 @@ export async function GET(request: NextRequest) {
       prisma.note.count({ where })
     ]);
 
-    const responseData: PrismaNotesLibraryResponse = {
+
+    const responseData: NotesLibraryResponse = {
       notes,
       pagination: {
         total: totalCount,

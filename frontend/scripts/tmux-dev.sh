@@ -40,7 +40,7 @@ tmux split-window -t $SESSION_NAME:dev -v
 
 # Pane 1 (bottom-left): Database info and logs
 tmux send-keys -t $SESSION_NAME:dev.1 "echo '🐘 PostgreSQL Database'" C-m
-tmux send-keys -t $SESSION_NAME:dev.1 "echo '   Connection: postgresql://neemee_user:local_dev_password@localhost:5432/neemee'" C-m
+tmux send-keys -t $SESSION_NAME:dev.1 "echo '   Connection: postgresql://neemee_user:local_dev_password@localhost:5433/neemee'" C-m
 tmux send-keys -t $SESSION_NAME:dev.1 "echo '   Logs: docker logs -f neemee-local-postgres'" C-m
 tmux send-keys -t $SESSION_NAME:dev.1 "echo '   CLI: docker exec -it neemee-local-postgres psql -U neemee_user -d neemee'" C-m
 tmux send-keys -t $SESSION_NAME:dev.1 "echo ''" C-m
