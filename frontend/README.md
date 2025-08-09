@@ -7,16 +7,31 @@
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
-npm install
+# 1. Clone and navigate to frontend
+git clone https://github.com/Paul-Bonneville-Labs/neemee.git
+cd neemee/frontend
 
-# 2. Set up environment
-cp .env.example .env.local
-# Edit .env.local with your actual values
+# 2. Choose your development experience:
 
-# 3. Start development server
-npm run dev
+# 🚀 Full Development Environment (Recommended)
+npm run dev:all
+# Launches: App + Database + Prisma Studio + Linting + TypeScript
+
+# ⚡ Quick Start (Minimal)
+npm run dev:core  
+# Launches: App + Database only
+
+# 🖥️ Tmux Power User Setup
+npm run dev:tmux
+# Creates persistent split-pane development session
 ```
+
+**All commands automatically handle**:
+- ✅ Docker PostgreSQL database startup
+- ✅ Dependencies installation/updates
+- ✅ Prisma client generation
+- ✅ Database migrations
+- ✅ Service coordination and monitoring
 
 ## Environment Setup
 
@@ -146,29 +161,107 @@ This application uses **automated CI/CD pipelines** with Google Cloud Build for 
 
 ### 🏠 Local Development
 
-For local development with hot reload and debugging:
+Choose between **Docker (recommended)** or **Cloud SQL** for local development:
+
+#### **Option 1: Docker Database (Recommended)**
+**Benefits**: True isolation, no internet required, safe for testing migrations
 
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Set up local environment
-cp .env.example .env.local
-# Edit .env.local with your development values
+# 2. Set up Docker database
+npm run db:local:start  # Starts PostgreSQL container
 
-# 3. Set up database
+# 3. Configure environment
+cp .env.local.docker .env.local
+# Edit .env.local with your OAuth credentials
+
+# 4. Set up database schema
 npm run db:generate     # Generate Prisma client
 npm run db:migrate      # Run migrations
 
-# 4. Start development server
-npm run dev:lint        # Development with live linting (recommended)
+# 5. Start development server
+npm run dev:local:lint  # Starts database + development with live linting
+```
+
+#### **Option 2: Cloud SQL Database (Legacy)**
+**Use case**: When you need shared data or backend integration
+
+```bash
+# 1. Install dependencies and start Cloud SQL proxy
+npm install
+./cloud_sql_proxy -instances=paulbonneville-com:us-central1:neemee-postgres-poc=tcp:5433 &
+
+# 2. Use existing .env.local configuration (current setup)
+# 3. Continue with existing workflow
 ```
 
 **Local Environment Requirements:**
 - Node.js 20.x
-- PostgreSQL database (local or Cloud SQL staging)
+- Docker (for recommended setup) OR Google Cloud CLI (for Cloud SQL)
 - Auth.js OAuth applications (Google, GitHub)
 - Backend API running locally or pointing to staging
+
+#### **Development Launcher Commands**
+```bash
+# 🚀 Multi-Service Launchers (Recommended)
+npm run dev:all         # Full environment: App + Database + Studio + Linting + TypeScript
+npm run dev:core        # Essential only: App + Database  
+npm run dev:db          # Database tools: PostgreSQL + Prisma Studio
+npm run dev:tmux        # Tmux session: Split-pane development environment
+
+# 🔧 Single Service Commands
+npm run dev             # App only: Complete setup + Next.js server
+npm run dev:lint        # App + linting: Development server with real-time linting
+npm run studio          # Database GUI: Prisma Studio with setup
+npm run dev:tools       # Code quality: Linting + TypeScript watch mode
+
+# 🗄️ Database Management
+npm run db:local:start  # Start PostgreSQL container only
+npm run db:local:stop   # Stop container (data preserved)
+npm run db:local:reset  # Reset to clean state (data deleted)
+
+# ⚙️ Utilities
+npm run dev:setup       # Run setup without starting any servers
+```
+
+#### **🎯 Recommended Development Workflows**
+
+**For Full Development:**
+```bash
+npm run dev:all
+# Launches: Next.js + PostgreSQL + Prisma Studio + ESLint + TypeScript
+# Perfect for: Feature development, debugging, database work
+```
+
+**For Quick Development:**
+```bash
+npm run dev:core  
+# Launches: Next.js + PostgreSQL only
+# Perfect for: UI work, quick testing, minimal resource usage
+```
+
+**For Database Work:**
+```bash
+npm run dev:db
+# Launches: PostgreSQL + Prisma Studio
+# Perfect for: Schema changes, data inspection, migrations
+```
+
+**For Advanced Users (Tmux):**
+```bash
+npm run dev:tmux
+# Creates persistent tmux session with 4 split panes
+# Perfect for: Long development sessions, service monitoring
+```
+
+#### **🖥️ Service URLs & Access**
+When running development commands, services will be available at:
+- **🌐 Next.js App**: http://localhost:3000
+- **🔍 Prisma Studio**: http://localhost:5555  
+- **🐘 PostgreSQL**: localhost:5432 (neemee_user/local_dev_password)
+- **📊 Direct DB**: `docker exec -it neemee-local-postgres psql -U neemee_user -d neemee`
 
 ### 🤖 Automated CI/CD Pipeline
 

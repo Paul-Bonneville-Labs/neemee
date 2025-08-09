@@ -1,0 +1,33 @@
+# Docker Compose for Local Frontend Development
+# Provides isolated PostgreSQL database for Auth.js and Prisma operations
+# Usage: docker-compose -f docker-compose.local.yml up -d
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: neemee-local-postgres
+    restart: unless-stopped
+    environment:
+      # Database configuration
+      POSTGRES_DB: neemee
+      POSTGRES_USER: neemee_user
+      POSTGRES_PASSWORD: local_dev_password
+      # Performance tuning for local development
+      POSTGRES_SHARED_PRELOAD_LIBRARIES: 'pg_stat_statements'
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persistent data storage
+      - postgres_data:/var/lib/postgresql/data
+      # Initialization scripts
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neemee_user -d neemee"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  postgres_data:
+    name: neemee_local_postgres_data
