@@ -17,7 +17,8 @@ export async function authenticateApiKey(apiKey: string): Promise<string | null>
         isActive: true
       },
       select: {
-        userId: true
+        userId: true,
+        keyPrefix: true
       }
     });
     

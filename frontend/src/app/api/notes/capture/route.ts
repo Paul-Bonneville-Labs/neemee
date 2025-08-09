@@ -23,29 +23,42 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { content, snippet, page_url, page_title, api_key } = body;
 
-    // Validate API key
-    if (!api_key || typeof api_key !== 'string') {
-      const response: NoteCaptureResponse = {
-        success: false,
-        message: 'Missing or invalid API key',
-      };
-      return NextResponse.json(response, { 
-        status: 401,
-        headers: corsHeaders 
-      });
-    }
+    let userId: string;
 
-    // Authenticate user via API key
-    const userId = await authenticateApiKey(api_key);
-    if (!userId) {
-      const response: NoteCaptureResponse = {
-        success: false,
-        message: 'Invalid API key',
-      };
-      return NextResponse.json(response, { 
-        status: 401,
-        headers: corsHeaders 
-      });
+    // Try session authentication first (for bookmarklet via capture page)
+    try {
+      const { auth } = await import('@/auth');
+      const session = await auth();
+      if (session?.user?.id) {
+        userId = session.user.id;
+      } else {
+        throw new Error('No session');
+      }
+    } catch {
+      // Fallback to API key authentication (for direct API calls)
+      if (!api_key || typeof api_key !== 'string') {
+        const response: NoteCaptureResponse = {
+          success: false,
+          message: 'Authentication required. Please log in or provide a valid API key.',
+        };
+        return NextResponse.json(response, { 
+          status: 401,
+          headers: corsHeaders 
+        });
+      }
+
+      const authenticatedUserId = await authenticateApiKey(api_key);
+      if (!authenticatedUserId) {
+        const response: NoteCaptureResponse = {
+          success: false,
+          message: 'Invalid API key',
+        };
+        return NextResponse.json(response, { 
+          status: 401,
+          headers: corsHeaders 
+        });
+      }
+      userId = authenticatedUserId;
     }
 
     // Validate content (use existing validation logic adapted for content)

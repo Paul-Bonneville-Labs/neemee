@@ -380,6 +380,81 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanage
 - **Better Developer Experience**: Improved linting workflow and environment setup
 - **Enhanced Documentation**: Comprehensive environment overview and troubleshooting guides
 
+## **Frontend Testing Plan - All Environments**
+
+### **🏠 Local Development Testing**
+
+#### Prerequisites Setup:
+```bash
+cd frontend
+cp .env.example .env.local
+# Edit .env.local with your values (see .env.example for required variables)
+npm install
+npm run db:generate  # Generate Prisma client
+```
+
+#### Local Testing Commands:
+```bash
+# Start development server with live linting (recommended)
+npm run dev:lint
+
+# Alternative: Basic development server
+npm run dev
+
+# Quality checks before committing
+npm run check        # TypeScript + ESLint
+npm run build        # Production build test
+```
+
+#### Local Testing Checklist:
+- [ ] App loads at `http://localhost:3000`
+- [ ] Authentication works (Google/GitHub OAuth)
+- [ ] Database connection established (Prisma)
+- [ ] MDX Editor functions properly
+- [ ] All TypeScript/ESLint checks pass
+
+### **🧪 Staging Environment Testing**
+
+#### Deploy to Staging:
+```bash
+# 1. Create develop branch (if it doesn't exist yet)
+git checkout -b develop
+git push -u origin develop
+
+# 2. Create PR from current feature branch to develop
+# This will trigger staging deployment via cloudbuild-staging.yaml
+```
+
+#### Staging Testing:
+- **URL**: https://neemee-frontend-staging-860937201650.us-central1.run.app
+- **Automatic deployment**: Triggered by pushes to `develop` branch
+- **Smoke tests**: Automated health checks and content validation
+
+### **🚀 Production Testing**
+
+#### Deploy to Production:
+```bash
+# After staging validation, merge develop to main
+git checkout main
+git merge develop
+git push origin main
+# This triggers production deployment via cloudbuild-production.yaml
+```
+
+#### Production Testing:
+- **URL**: https://neemee.paulbonneville.com
+- **Automatic deployment**: Triggered by pushes to `main` branch
+- **Health checks**: Built-in Cloud Run health monitoring
+
+### **Testing Workflow Steps:**
+
+1. **Start Local Development**: Run `npm run dev:lint` and test functionality
+2. **Create Develop Branch**: `git checkout -b develop && git push -u origin develop`
+3. **Deploy to Staging**: Create PR from feature branch → develop (auto-deploys)
+4. **Test Staging**: Verify functionality at staging URL
+5. **Deploy to Production**: Merge develop → main (auto-deploys)
+6. **Validate Production**: Confirm production deployment works
+
 ### Integration Testing & Troubleshooting
 
 #### **End-to-End Testing Checklist**

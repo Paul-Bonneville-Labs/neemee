@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { ApiResponse, BookmarkletResponse } from '@/types';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     // Check authentication
     const session = await auth();
@@ -14,38 +14,27 @@ export async function GET() {
       );
     }
     
-    // Get user's API key from ApiKey table
-    const apiKeys = await prisma.apiKey.findMany({
+    // Check if user has an active API key (needed for the capture endpoint)
+    const apiKeyRecord = await prisma.apiKey.findFirst({
       where: {
         userId: session.user.id,
         isActive: true
-      },
-      select: {
-        id: true,
-        keyPrefix: true,
-        name: true
-      },
-      orderBy: {
-        createdAt: 'desc'
       }
     });
 
-    if (!apiKeys || apiKeys.length === 0) {
+    if (!apiKeyRecord) {
       return NextResponse.json(
-        { success: false, error: 'API key not found. Please generate an API key first.' },
+        { success: false, error: 'No active API key found. Please generate an API key first.' },
         { status: 404 }
       );
     }
 
-    const userApiKey = `${apiKeys[0].keyPrefix}_${apiKeys[0].id}`;
-
     // Get the base URL from environment or request
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // Generate bookmarklet JavaScript code using void wrapper to bypass CSP
+    // Generate bookmarklet JavaScript code that redirects to capture page
     const jsCode = `void(function(){
-var API_KEY = '${userApiKey}';
-var API_URL = '${baseUrl}/api/highlights/capture';
+var CAPTURE_URL = '${baseUrl}/capture';
 
 function getSelectedText() {
   if (window.getSelection) {
@@ -56,7 +45,7 @@ function getSelectedText() {
   return '';
 }
 
-function showNotification(message, isError, clickableUrl) {
+function showNotification(message, isError) {
   var notification = document.createElement('div');
   notification.style.position = 'fixed';
   notification.style.top = '20px';
@@ -72,65 +61,51 @@ function showNotification(message, isError, clickableUrl) {
   notification.style.zIndex = '10000';
   notification.style.maxWidth = '300px';
   notification.style.wordWrap = 'break-word';
-  notification.style.cursor = clickableUrl ? 'pointer' : 'default';
   
-  if (clickableUrl) {
-    notification.innerHTML = message + '<br><small style="text-decoration: underline; margin-top: 8px; display: block;">Click here to save highlight</small>';
-    notification.onclick = function() {
-      window.open(clickableUrl, '_blank');
-    };
-  } else {
-    notification.textContent = message;
-  }
-  
+  notification.textContent = message;
   document.body.appendChild(notification);
   
   setTimeout(function() {
     if (notification.parentNode) {
       notification.parentNode.removeChild(notification);
     }
-  }, clickableUrl ? 8000 : 4000); // Longer timeout for clickable notifications
+  }, 4000);
 }
 
 function captureHighlight() {
   var selectedText = getSelectedText().trim();
   
   if (!selectedText) {
-    showNotification('Please select some text to highlight', true, null);
+    showNotification('Please select some text to highlight', true);
     return;
   }
   
   if (selectedText.length > 10000) {
-    showNotification('Selected text is too long (max 10,000 characters)', true, null);
+    showNotification('Selected text is too long (max 10,000 characters)', true);
     return;
   }
   
   try {
-    // Use window.open with data URI to bypass CSP form-action restrictions
-    var baseUrl = API_URL.replace('/api/highlights/capture', '');
-    var captureUrl = baseUrl + '/capture';
-    
-    // Create URL with parameters (for text, url, title, key)
+    // Create URL with parameters for the capture page
     var urlParams = new URLSearchParams();
     urlParams.set('text', selectedText);
     urlParams.set('url', window.location.href);
     urlParams.set('title', document.title);
-    urlParams.set('key', API_KEY);
     
-    var finalUrl = captureUrl + '?' + urlParams.toString();
+    var finalUrl = CAPTURE_URL + '?' + urlParams.toString();
     
-    // Open capture page in new window
-    var newWindow = window.open(finalUrl, '_blank', 'width=600,height=800,scrollbars=yes,resizable=yes');
+    // Open capture page in new window/tab
+    var newWindow = window.open(finalUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
     
     if (newWindow) {
-      showNotification('Highlight capture opened in new window', false, null);
+      showNotification('Opening capture window...', false);
     } else {
-      showNotification('Could not open capture window. Please check popup blockers.', true, null);
+      showNotification('Could not open capture window. Please check popup blockers.', true);
     }
     
   } catch (error) {
     console.error('Error capturing highlight:', error);
-    showNotification('Error capturing highlight data', true, null);
+    showNotification('Error capturing highlight data', true);
   }
 }
 
@@ -154,7 +129,7 @@ To use:
 2. Click the "Post to Neemee" bookmark
 3. The selected text will be saved to your Neemee account
 
-Note: Make sure you're logged in and have a valid API key before using the bookmarklet.
+The bookmarklet code above already contains your personal API key and is ready to use!
     `.trim();
 
     const responseData: BookmarkletResponse = {

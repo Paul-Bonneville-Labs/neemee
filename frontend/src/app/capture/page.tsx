@@ -22,10 +22,8 @@ export default function CapturePage() {
         const text = urlParams.get('text');
         const url = urlParams.get('url');
         const title = urlParams.get('title');
-        const apiKey = urlParams.get('key');
-        
 
-        if (!text || !url || !apiKey) {
+        if (!text || !url) {
           setStatus('error');
           setMessage('Missing required data. Please try the bookmarklet again.');
           return;
@@ -51,19 +49,18 @@ export default function CapturePage() {
         }, 30000); // 30 second timeout
 
         try {
-          // Save the note via API with timeout
+          // Save the note via API with session authentication
           const response = await fetch('/api/notes/capture', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-API-Key': apiKey,
             },
+            credentials: 'include', // Use session authentication
             body: JSON.stringify({
               content: text,
               snippet: text,
               page_url: url,
               page_title: title,
-              api_key: apiKey,
             }),
             signal: controller.signal
           });
@@ -212,8 +209,8 @@ export default function CapturePage() {
                 // Navigate directly to the specific note
                 window.open(`/notes/${noteId}`, '_blank');
               } else {
-                // Fallback to general dashboard
-                window.open('/dashboard', '_blank');
+                // Fallback to general library
+                window.open('/library', '_blank');
               }
               // Close the capture page after opening the highlight
               window.close();
@@ -221,10 +218,10 @@ export default function CapturePage() {
             className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             {status === 'timeout' 
-              ? 'Check Dashboard' 
+              ? 'Check Library' 
               : noteId 
               ? 'View Highlight' 
-              : 'View Dashboard'}
+              : 'View Library'}
           </button>
         </div>
       </div>

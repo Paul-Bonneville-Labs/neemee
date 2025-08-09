@@ -7,6 +7,12 @@ export async function GET(request: NextRequest) {
   try {
     // Check authentication using Auth.js
     const session = await auth();
+    console.log('API Session Debug:', {
+      hasSession: !!session,
+      user: session?.user,
+      userId: session?.user?.id
+    });
+    
     if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

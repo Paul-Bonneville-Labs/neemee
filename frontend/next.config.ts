@@ -7,6 +7,24 @@ const nextConfig: NextConfig = {
   // Ensure proper handling of async operations in server components  
   serverExternalPackages: [],
   
+  // Configure image domains for external images
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+  
   // Enable ESLint during development builds
   eslint: {
     // ESLint will run during builds and fail on violations

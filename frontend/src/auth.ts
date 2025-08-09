@@ -24,6 +24,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Always redirect to /library after successful authentication
+      if (url.startsWith("/")) return `${baseUrl}/library`
+      // If it's a relative URL, make it absolute and redirect to library
+      else if (new URL(url).origin === baseUrl) return `${baseUrl}/library`
+      return `${baseUrl}/library`
+    },
     async session({ session, token }) {
       if (token.sub) {
         session.user.id = token.sub

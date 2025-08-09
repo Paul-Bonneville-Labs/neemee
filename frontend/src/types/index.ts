@@ -193,6 +193,7 @@ export interface UserApiKey {
   api_key: string;
   api_key_created_at: string;
   created_at: string;
+  fullKey?: string; // Only available when creating/regenerating
 }
 
 export interface BookmarkletResponse {
