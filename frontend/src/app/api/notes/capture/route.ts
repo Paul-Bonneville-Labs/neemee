@@ -121,12 +121,17 @@ export async function POST(request: NextRequest) {
           snippet: sanitizedSnippet, // Store the original unmodified text if provided
           pageTitle: sanitizedTitle || 'Untitled Page',
           markdownContent: '', // Empty string - will be set by async extraction
-          pageUrl: page_url ? page_url.trim() : '',
-          domain: page_url ? new URL(page_url).hostname : '',
+          pageUrl: page_url ? page_url.trim() : null,
+          domain: (() => {
+            if (!page_url) return null;
+            try {
+              return new URL(page_url).hostname;
+            } catch {
+              return null;
+            }
+          })(),
           capturedAt: new Date(), // Set the capture timestamp
-          user: {
-            connect: { id: userId }
-          }
+          userId: userId
         },
         select: {
           id: true

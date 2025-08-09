@@ -89,7 +89,7 @@ function NoteCard({ note, onToast }: { note: Note; onToast: (type: 'success' | '
             const finalText = lastSpaceIndex > 0 ? truncated.substring(0, lastSpaceIndex) : truncated;
             
             return finalText + '...';
-          })()}&rdquo;
+          })()}
         </p>
         
         <div className="text-left mt-1">
