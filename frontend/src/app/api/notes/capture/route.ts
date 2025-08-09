@@ -86,11 +86,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Validate page URL
-    if (!page_url || typeof page_url !== 'string' || !validateUrl(page_url)) {
+    // Validate page URL (allow null for manually created notes)
+    if (page_url !== null && (!page_url || typeof page_url !== 'string' || !validateUrl(page_url))) {
       const response: NoteCaptureResponse = {
         success: false,
-        message: 'Invalid or missing page URL',
+        message: 'Invalid page URL',
       };
       return NextResponse.json(response, { 
         status: 400,
@@ -108,21 +108,23 @@ export async function POST(request: NextRequest) {
       : null;
 
     // Format content as markdown quote with URL if it's a snippet from a webpage
-    const formattedContent = sanitizedSnippet 
+    const formattedContent = sanitizedSnippet && page_url
       ? `> ${sanitizedSnippet}\n\n${page_url.trim()}`
       : content.trim();
 
     // Save note to database using Prisma
     const note = await prisma.note.create({
       data: {
-        userId: userId,
         content: formattedContent,
         snippet: sanitizedSnippet, // Store the original unmodified text if provided
         pageTitle: sanitizedTitle || 'Untitled Page',
         markdownContent: '', // Empty string - will be set by async extraction
-        pageUrl: page_url.trim(),
-        domain: new URL(page_url).hostname,
+        pageUrl: page_url ? page_url.trim() : '',
+        domain: page_url ? new URL(page_url).hostname : '',
         capturedAt: new Date(), // Set the capture timestamp
+        user: {
+          connect: { id: userId }
+        }
       },
       select: {
         id: true
