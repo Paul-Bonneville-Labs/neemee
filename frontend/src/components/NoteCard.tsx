@@ -1,7 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { Note } from '@/types';
 import { ExternalLink, Globe, Clock } from 'lucide-react';
+import { formatHighlightDate, isRecent as checkIsRecent } from '@/lib/dateUtils';
 
 interface NoteCardProps {
   note: Note;
@@ -15,41 +17,15 @@ function getFaviconUrl(domain: string): string {
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=16`;
 }
 
-// Utility function to format relative time
-function formatRelativeTime(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-  const diffWeek = Math.floor(diffDay / 7);
-  const diffMonth = Math.floor(diffDay / 30);
-  const diffYear = Math.floor(diffDay / 365);
-
-  if (diffSec < 60) return 'Just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHour < 24) return `${diffHour}h ago`;
-  if (diffDay < 7) return `${diffDay}d ago`;
-  if (diffWeek < 4) return `${diffWeek}w ago`;
-  if (diffMonth < 12) return `${diffMonth}mo ago`;
-  return `${diffYear}y ago`;
-}
 
 export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: NoteCardProps) {
-  // Get displayable content
+  // Use EXACT same approach as detail page - direct field access
   const content = note.snippet || note.content || 'No content';
-  const title = note.page_title || 'Untitled';
-  const domain = note.page_url ? (() => {
-    try {
-      return new URL(note.page_url).hostname;
-    } catch {
-      return 'Unknown source';
-    }
-  })() : 'Unknown source';
+  const title = note.pageTitle || 'Untitled';
   
-  const createdDate = new Date(note.created_at);
-  const isRecent = Date.now() - createdDate.getTime() < 24 * 60 * 60 * 1000; // Last 24 hours
+  // Direct access like detail page: note.capturedAt || note.createdAt
+  const displayDate = note.capturedAt || note.createdAt;
+  const isRecent = displayDate ? checkIsRecent(displayDate) : false;
 
   if (viewMode === 'list') {
     return (
@@ -73,22 +49,33 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
             
             <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-1">
-                <img 
-                  src={getFaviconUrl(domain)} 
-                  alt="" 
-                  className="w-3 h-3 flex-shrink-0"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (nextElement) nextElement.style.display = 'inline';
-                  }}
-                />
-                <Globe className="w-3 h-3 hidden" />
-                <span className="truncate max-w-32">{domain}</span>
+                {note.domain ? (
+                  <>
+                    <Image 
+                      src={getFaviconUrl(note.domain)} 
+                      alt="" 
+                      width={12}
+                      height={12}
+                      className="w-3 h-3 flex-shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (nextElement) nextElement.style.display = 'inline';
+                      }}
+                    />
+                    <Globe className="w-3 h-3 hidden" />
+                    <span className="truncate max-w-32">{note.domain}</span>
+                  </>
+                ) : (
+                  <>
+                    <Globe className="w-3 h-3" />
+                    <span className="truncate max-w-32">Unknown source</span>
+                  </>
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                <span>{formatRelativeTime(createdDate)}</span>
+                <span>{displayDate ? formatHighlightDate(displayDate) : 'Unknown date'}</span>
                 {isRecent && (
                   <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded text-xs ml-1">
                     New
@@ -132,22 +119,33 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
         {/* Source and Date */}
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center gap-1 truncate flex-1 mr-2">
-            <img 
-              src={getFaviconUrl(domain)} 
-              alt="" 
-              className="w-3 h-3 flex-shrink-0"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                if (nextElement) nextElement.style.display = 'inline';
-              }}
-            />
-            <Globe className="w-3 h-3 flex-shrink-0 hidden" />
-            <span className="truncate">{domain}</span>
+            {note.domain ? (
+              <>
+                <Image 
+                  src={getFaviconUrl(note.domain)} 
+                  alt="" 
+                  width={12}
+                  height={12}
+                  className="w-3 h-3 flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (nextElement) nextElement.style.display = 'inline';
+                  }}
+                />
+                <Globe className="w-3 h-3 flex-shrink-0 hidden" />
+                <span className="truncate">{note.domain}</span>
+              </>
+            ) : (
+              <>
+                <Globe className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">Unknown source</span>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-1 whitespace-nowrap">
             <Clock className="w-3 h-3" />
-            <span>{formatRelativeTime(createdDate)}</span>
+            <span>{displayDate ? formatHighlightDate(displayDate) : 'Unknown date'}</span>
           </div>
         </div>
 

@@ -75,8 +75,8 @@ export function LibraryHeader({
               </button>
             </div>
 
-            {/* Setup Bookmarklet Button - Only show if no API key */}
-            {!apiKey && (
+            {/* Action Buttons */}
+            {!apiKey ? (
               <button 
                 onClick={onSetupClick}
                 className="btn btn-primary"
@@ -84,6 +84,14 @@ export function LibraryHeader({
                 <Plus className="w-4 h-4" />
                 Setup Bookmarklet
               </button>
+            ) : (
+              <Link
+                href="/library/new"
+                className="btn btn-primary"
+              >
+                <Plus className="w-4 h-4" />
+                New Note
+              </Link>
             )}
 
             {/* Theme Toggle */}

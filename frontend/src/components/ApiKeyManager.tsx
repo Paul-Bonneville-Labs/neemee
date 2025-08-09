@@ -75,7 +75,14 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
       const result: ApiResponse<UserApiKey> = await response.json();
 
       if (result.success && result.data) {
-        onUpdate(result.data);
+        // When creating a new API key, preserve the fullKey for bookmarklet generation
+        const apiKeyData = result.data as UserApiKey & { fullKey?: string };
+        const updatedApiKey: UserApiKey = {
+          ...apiKeyData,
+          api_key: apiKeyData.fullKey || apiKeyData.api_key, // Use fullKey as the displayed key
+          fullKey: apiKeyData.fullKey // Store fullKey for bookmarklet use
+        };
+        onUpdate(updatedApiKey);
       } else {
         setError(result.error || 'Failed to generate API key');
       }
@@ -105,7 +112,14 @@ export function ApiKeyManager({ apiKey, onUpdate, className = '' }: ApiKeyManage
       const result: ApiResponse<UserApiKey> = await response.json();
 
       if (result.success && result.data) {
-        onUpdate(result.data);
+        // When regenerating, preserve the fullKey for bookmarklet generation
+        const apiKeyData = result.data as UserApiKey & { fullKey?: string };
+        const updatedApiKey: UserApiKey = {
+          ...apiKeyData,
+          api_key: apiKeyData.fullKey || apiKeyData.api_key, // Use fullKey as the displayed key
+          fullKey: apiKeyData.fullKey // Store fullKey for bookmarklet use
+        };
+        onUpdate(updatedApiKey);
         setIsVisible(true); // Show the new key
       } else {
         setError(result.error || 'Failed to regenerate API key');

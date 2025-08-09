@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { 
   User, 
   LogOut, 
@@ -73,9 +74,11 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
         disabled={isLoading}
       >
         {user.image ? (
-          <img
+          <Image
             src={user.image}
             alt={user.name || 'User'}
+            width={32}
+            height={32}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -93,9 +96,11 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center overflow-hidden relative">
                 {user.image ? (
-                  <img
+                  <Image
                     src={user.image}
                     alt={user.name || 'User'}
+                    width={48}
+                    height={48}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -179,7 +184,7 @@ export function ProfileMenu({ className = '' }: ProfileMenuProps) {
                   </button>
                   
                   <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
-                    Or use Email & Password or Magic Link from the main auth screen
+                    Or use OAuth authentication from the main auth screen
                   </div>
                 </div>
               )}

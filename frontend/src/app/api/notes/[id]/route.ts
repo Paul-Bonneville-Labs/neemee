@@ -1,25 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession, hasPermission } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 import { ApiResponse } from '@/types';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check authentication
-    const session = await getSession();
-    if (!session || !session.user) {
+    // Check authentication using Auth.js
+    const session = await auth();
+    if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
-      );
-    }
-
-    // Check read permissions
-    const hasReadPermission = await hasPermission('read');
-    if (!hasReadPermission) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
       );
     }
 
@@ -33,46 +24,39 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
-    // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(id)) {
+    // Validate UUID format (assuming CUID format for Prisma)
+    if (id.length < 20) {
       return NextResponse.json(
         { success: false, error: 'Invalid note ID format' },
         { status: 400 }
       );
     }
 
-    const supabase = await createClient();
-    
-    // Get note with user authorization check
-    const { data: note, error } = await supabase
-      .from('notes')
-      .select(`
+    // Get note with user authorization check using Prisma
+    const note = await prisma.note.findFirst({
+      where: {
         id,
-        user_id,
-        content,
-        snippet,
-        page_url,
-        page_title,
-        markdown_content,
-        created_at,
-        updated_at
-      `)
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { success: false, error: 'Note not found' },
-          { status: 404 }
-        );
+        userId: session.user.id
+      },
+      select: {
+        id: true,
+        userId: true,
+        content: true,
+        snippet: true,
+        pageUrl: true,
+        pageTitle: true,
+        markdownContent: true,
+        domain: true,
+        capturedAt: true,
+        createdAt: true,
+        updatedAt: true
       }
-      console.error('Error fetching note:', error);
+    });
+
+    if (!note) {
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch note' },
-        { status: 500 }
+        { success: false, error: 'Note not found' },
+        { status: 404 }
       );
     }
 
@@ -95,21 +79,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check authentication
-    const session = await getSession();
-    if (!session || !session.user) {
+    // Check authentication using Auth.js
+    const session = await auth();
+    if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
-      );
-    }
-
-    // Check write permissions
-    const hasWritePermission = await hasPermission('write');
-    if (!hasWritePermission) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
       );
     }
 
@@ -123,18 +98,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
-    // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(id)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid note ID format' },
-        { status: 400 }
-      );
-    }
-
     // Parse request body
     const body = await request.json();
-    const { content, page_title, page_url } = body;
+    const { content, pageTitle, pageUrl } = body;
 
     // Validate required fields
     if (!content || typeof content !== 'string') {
@@ -145,27 +111,27 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Validate optional fields
-    if (page_title && typeof page_title !== 'string') {
+    if (pageTitle && typeof pageTitle !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'page_title must be a string' },
+        { success: false, error: 'pageTitle must be a string' },
         { status: 400 }
       );
     }
 
-    if (page_url && typeof page_url !== 'string') {
+    if (pageUrl && typeof pageUrl !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'page_url must be a string' },
+        { success: false, error: 'pageUrl must be a string' },
         { status: 400 }
       );
     }
 
     // Validate URL format if provided
-    if (page_url) {
+    if (pageUrl) {
       try {
-        new URL(page_url);
+        new URL(pageUrl);
       } catch {
         return NextResponse.json(
-          { success: false, error: 'page_url must be a valid URL' },
+          { success: false, error: 'pageUrl must be a valid URL' },
           { status: 400 }
         );
       }
@@ -173,8 +139,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Sanitize inputs
     const sanitizedContent = content.trim();
-    const sanitizedTitle = page_title?.trim() || null;
-    const sanitizedUrl = page_url?.trim();
+    const sanitizedTitle = pageTitle?.trim() || null;
+    const sanitizedUrl = pageUrl?.trim();
 
     // Validate lengths
     if (sanitizedContent.length === 0) {
@@ -193,25 +159,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (sanitizedTitle && sanitizedTitle.length > 500) {
       return NextResponse.json(
-        { success: false, error: 'page_title is too long (max 500 characters)' },
+        { success: false, error: 'pageTitle is too long (max 500 characters)' },
         { status: 400 }
       );
     }
 
-    const supabase = await createClient();
-    
     // Build update object
-    const updateData: Record<string, unknown> = {
+    const updateData: { [key: string]: unknown } = {
       content: sanitizedContent,
-      updated_at: new Date().toISOString()
+      updatedAt: new Date()
     };
 
     if (sanitizedTitle !== undefined) {
-      updateData.page_title = sanitizedTitle;
+      updateData.pageTitle = sanitizedTitle;
     }
 
     if (sanitizedUrl !== undefined) {
-      updateData.page_url = sanitizedUrl;
+      updateData.pageUrl = sanitizedUrl;
       
       // Update domain if URL changed
       if (sanitizedUrl && sanitizedUrl.trim()) {
@@ -224,38 +188,27 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Update note with user authorization check
-    const { data: note, error } = await supabase
-      .from('notes')
-      .update(updateData)
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .select(`
+    // Update note with user authorization check using Prisma
+    const note = await prisma.note.update({
+      where: {
         id,
-        user_id,
-        content,
-        snippet,
-        page_url,
-        page_title,
-        markdown_content,
-        created_at,
-        updated_at
-      `)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { success: false, error: 'Note not found or access denied' },
-          { status: 404 }
-        );
+        userId: session.user.id
+      },
+      data: updateData,
+      select: {
+        id: true,
+        userId: true,
+        content: true,
+        snippet: true,
+        pageUrl: true,
+        pageTitle: true,
+        markdownContent: true,
+        domain: true,
+        capturedAt: true,
+        createdAt: true,
+        updatedAt: true
       }
-      console.error('Error updating note:', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to update note' },
-        { status: 500 }
-      );
-    }
+    });
 
     const response: ApiResponse = {
       success: true,
@@ -264,7 +217,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     };
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json(
+        { success: false, error: 'Note not found or access denied' },
+        { status: 404 }
+      );
+    }
     console.error('Error updating note:', error);
     const response: ApiResponse = {
       success: false,
@@ -276,21 +235,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check authentication
-    const session = await getSession();
-    if (!session || !session.user) {
+    // Check authentication using Auth.js
+    const session = await auth();
+    if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
-      );
-    }
-
-    // Check delete permissions
-    const hasDeletePermission = await hasPermission('delete');
-    if (!hasDeletePermission) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
       );
     }
 
@@ -304,31 +254,13 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       );
     }
 
-    // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(id)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid note ID format' },
-        { status: 400 }
-      );
-    }
-
-    const supabase = await createClient();
-    
-    // Delete note with user authorization check
-    const { error } = await supabase
-      .from('notes')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', session.user.id);
-
-    if (error) {
-      console.error('Error deleting note:', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to delete note' },
-        { status: 500 }
-      );
-    }
+    // Delete note with user authorization check using Prisma
+    await prisma.note.delete({
+      where: {
+        id,
+        userId: session.user.id
+      }
+    });
 
     const response: ApiResponse = {
       success: true,
@@ -336,7 +268,13 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     };
 
     return NextResponse.json(response);
-  } catch (error) {
+  } catch (error: unknown) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json(
+        { success: false, error: 'Note not found or access denied' },
+        { status: 404 }
+      );
+    }
     console.error('Error deleting note:', error);
     const response: ApiResponse = {
       success: false,

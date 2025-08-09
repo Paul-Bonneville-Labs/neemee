@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Globe, Copy, ExternalLink } from 'lucide-react';
 import { Note } from '@/types';
 
@@ -57,21 +58,21 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
             >
               {/* Time Column */}
               <td className="text-sm whitespace-nowrap align-top">
-                <div 
+              <div 
                   className="tooltip tooltip-right tooltip-delayed"
-                  data-tip={`${new Date(note.created_at).toLocaleDateString('en-US', { 
+                  data-tip={`${new Date(note.createdAt).toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 
                     month: 'long', 
                     day: 'numeric'
-                  })}\n${new Date(note.created_at).toLocaleTimeString('en-US', { 
+                  })}\n${new Date(note.createdAt).toLocaleTimeString('en-US', { 
                     hour: 'numeric', 
                     minute: '2-digit',
                     timeZoneName: 'short'
                   })}`}
                 >
                   <time className="text-base-content/70 text-xs">
-                    {formatRelativeTime(new Date(note.created_at))}
+                    {formatRelativeTime(new Date(note.createdAt))}
                   </time>
                 </div>
               </td>
@@ -80,9 +81,9 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
               <td className="max-w-0 w-full align-top">
                 <div className="space-y-1">
                   {/* Page Title */}
-                  {note.page_title && (
+                  {note.pageTitle && (
                     <div className="text-sm font-bold text-base-content whitespace-normal break-words">
-                      {note.page_title}
+                      {note.pageTitle}
                     </div>
                   )}
                   <div className="line-clamp-2">
@@ -95,12 +96,14 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
 
               {/* Source Column (Domain Only) */}
               <td className="w-56 align-top">
-                {note.page_url && (
+                {note.pageUrl && (
                   <div className="flex items-center justify-between gap-3">
-                    <div className="tooltip tooltip-left tooltip-delayed flex items-center gap-1" data-tip={note.page_url || 'Unknown source'}>
-                      <img 
-                        src={getFaviconUrl(note.page_url ? new URL(note.page_url).hostname : 'Unknown source')} 
+                    <div className="tooltip tooltip-left tooltip-delayed flex items-center gap-1" data-tip={note.pageUrl || 'Unknown source'}>
+                      <Image 
+                        src={getFaviconUrl(note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source')} 
                         alt="" 
+                        width={12}
+                        height={12}
                         className="w-3 h-3 flex-shrink-0"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -110,7 +113,7 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
                       />
                       <Globe className="w-3 h-3 flex-shrink-0 hidden" />
                       <span className="truncate text-base-content/70 text-xs">
-                        {note.page_url ? new URL(note.page_url).hostname : 'Unknown source'}
+                        {note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source'}
                       </span>
                     </div>
                     
@@ -122,8 +125,8 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
                           className="btn btn-ghost btn-xs p-1 h-6 w-6 min-h-6 opacity-60 hover:opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (note.page_url) {
-                              navigator.clipboard.writeText(note.page_url).then(() => {
+                            if (note.pageUrl) {
+                              navigator.clipboard.writeText(note.pageUrl).then(() => {
                                 onToast('success', 'URL copied to clipboard');
                               }).catch(err => {
                                 console.error('Failed to copy URL:', err);
@@ -142,8 +145,8 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
                           className="btn btn-ghost btn-xs p-1 h-6 w-6 min-h-6 opacity-60 hover:opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (note.page_url) {
-                              window.open(note.page_url, '_blank', 'noopener,noreferrer');
+                            if (note.pageUrl) {
+                              window.open(note.pageUrl, '_blank', 'noopener,noreferrer');
                             }
                           }}
                         >

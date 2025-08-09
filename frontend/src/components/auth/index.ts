@@ -4,13 +4,12 @@ export { AuthModal } from './AuthModal';
 export { ProfileMenu } from './ProfileMenu';
 export { AuthStatus, AuthStatusBadge, ConnectionStatus } from './AuthStatus';
 
-// Magic link auth component (primary authentication method)
-export { MagicLinkAuth } from './MagicLinkAuth';
+// OAuth sign-in component (primary authentication method)
+export { OAuthSignIn } from './OAuthSignIn';
 
 // Auth provider and types
 export { AuthProvider, useAuth } from '../AuthProvider';
 export type { 
-  AuthMethod, 
   AuthError, 
   AuthState 
 } from '../AuthProvider';

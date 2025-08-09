@@ -102,17 +102,20 @@ export interface FrontmatterFormProps {
   isReadOnly?: boolean;
 }
 
-// Note management types
+// Note management types (API returns JSON-serialized data with string dates)
 export interface Note {
   id: string;
-  user_id: string;
+  userId: string;
   content: string;
-  snippet?: string; // The original unmodified text as captured
-  page_url: string;
-  page_title?: string;
-  markdown_content?: string;
-  created_at: string;
-  updated_at?: string;
+  snippet?: string | null; // The original unmodified text as captured
+  pageUrl: string;
+  pageTitle?: string | null;
+  markdownContent?: string | null;
+  domain: string;
+  capturedAt?: string | null; // When the note was originally captured (ISO string)
+  createdAt: string; // ISO string from API
+  updatedAt?: string | null; // ISO string from API
+  metadata?: unknown; // Use unknown to match Prisma JsonValue
 }
 
 export interface NoteCreateRequest {
@@ -125,8 +128,8 @@ export interface NoteCreateRequest {
 
 export interface NoteUpdateRequest {
   content: string;
-  page_title?: string;
-  page_url?: string;
+  pageTitle?: string;
+  pageUrl?: string;
 }
 
 export interface NoteFormData {
@@ -170,6 +173,7 @@ export interface UserApiKey {
   api_key: string;
   api_key_created_at: string;
   created_at: string;
+  fullKey?: string; // Only available when creating/regenerating
 }
 
 export interface BookmarkletResponse {

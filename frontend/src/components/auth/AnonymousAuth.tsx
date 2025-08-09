@@ -73,7 +73,7 @@ export function AnonymousAuth({ onSuccess }: AnonymousAuthProps) {
 
         <div className="text-center">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Switch to Email & Password, Magic Link, or Social Login above to create a permanent account.
+            Switch to OAuth authentication above to create a permanent account.
           </p>
         </div>
       </div>

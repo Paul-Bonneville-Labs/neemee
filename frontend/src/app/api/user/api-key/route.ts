@@ -1,231 +1,134 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getSession, hasPermission } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
-import { generateApiKey } from '@/lib/api-auth';
-import { ApiResponse } from '@/types';
+import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
+import { ApiResponse, UserApiKey } from '@/types';
+import { randomBytes, createHash } from 'crypto';
 
+// GET - Retrieve user's API key
 export async function GET() {
   try {
     // Check authentication
-    const session = await getSession();
-    if (!session || !session.user) {
+    const session = await auth();
+    if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Check read permissions
-    const hasReadPermission = await hasPermission('read');
-    if (!hasReadPermission) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
+    // Find the user's active API key
+    const apiKey = await prisma.apiKey.findFirst({
+      where: {
+        userId: session.user.id,
+        isActive: true
+      },
+      select: {
+        id: true,
+        name: true,
+        keyPrefix: true,
+        lastUsedAt: true,
+        expiresAt: true,
+        createdAt: true,
+        permissions: true
+      }
+    });
 
-    const supabase = await createClient();
-    
-    // Get user's API key from the user_api_keys table
-    const { data: apiKeys, error } = await supabase
-      .from('user_api_keys')
-      .select('apiKey, createdAt, id, label')
-      .eq('userId', session.user.id)
-      .order('createdAt', { ascending: false })
-      .limit(1);
-
-    if (error) {
-      console.error('Error fetching API key:', error);
+    if (!apiKey) {
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch API key' },
-        { status: 500 }
-      );
-    }
-
-    if (!apiKeys || apiKeys.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No API key found. Please generate an API key first.' },
+        { success: false, error: 'No API key found' },
         { status: 404 }
       );
     }
 
-    const apiKey = apiKeys[0];
-    const response: ApiResponse = {
+    const response: ApiResponse<UserApiKey> = {
       success: true,
       data: {
         id: apiKey.id,
-        api_key: apiKey.apiKey,
-        api_key_created_at: apiKey.createdAt,
-        created_at: apiKey.createdAt,
-      },
-      message: 'API key retrieved successfully',
+        api_key: apiKey.keyPrefix, // Show prefix only for security
+        api_key_created_at: apiKey.createdAt.toISOString(),
+        created_at: apiKey.createdAt.toISOString()
+      }
     };
 
     return NextResponse.json(response);
+
   } catch (error) {
-    console.error('Error getting API key:', error);
+    console.error('Error retrieving API key:', error);
+    
     const response: ApiResponse = {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to get API key',
+      error: 'Failed to retrieve API key',
     };
+    
     return NextResponse.json(response, { status: 500 });
   }
 }
 
-export async function POST(request: NextRequest) {
+// POST - Create or regenerate API key
+export async function POST() {
   try {
     // Check authentication
-    const session = await getSession();
-    if (!session || !session.user) {
+    const session = await auth();
+    if (!session || !session.user?.id) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Check write permissions
-    const hasWritePermission = await hasPermission('write');
-    if (!hasWritePermission) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
+    // Generate new API key
+    const apiKeyValue = 'nmk_' + randomBytes(32).toString('hex');
+    const keyHash = createHash('sha256').update(apiKeyValue).digest('hex');
+    const keyPrefix = apiKeyValue.substring(0, 12); // Show first 12 chars as prefix
 
-    // Parse request body for regeneration confirmation
-    const body = await request.json().catch(() => ({}));
-    const { regenerate } = body;
-
-    const supabase = await createClient();
-    const newApiKey = generateApiKey();
-    
-    // Check if user already has API keys
-    const { data: existingKeys, error: keysError } = await supabase
-      .from('user_api_keys')
-      .select('id, apiKey')
-      .eq('userId', session.user.id)
-      .order('createdAt', { ascending: false })
-      .limit(1);
-
-    console.log('Existing keys check:', { existingKeys, keysError });
-    console.log('User ID:', session.user.id);
-
-    let result;
-    if (existingKeys && existingKeys.length > 0) {
-      // User already has an API key - require regeneration flag
-      if (!regenerate) {
-        return NextResponse.json(
-          { success: false, error: 'API key already exists. Set regenerate: true to create a new one.' },
-          { status: 409 }
-        );
+    // Deactivate existing API keys for this user
+    await prisma.apiKey.updateMany({
+      where: {
+        userId: session.user.id,
+        isActive: true
+      },
+      data: {
+        isActive: false
       }
-      
-      // Update existing API key
-      result = await supabase
-        .from('user_api_keys')
-        .update({
-          apiKey: newApiKey,
-          updatedAt: new Date().toISOString(),
-        })
-        .eq('id', existingKeys[0].id)
-        .select('id, apiKey, createdAt, label')
-        .single();
-    } else {
-      // Create new API key (id will be auto-generated by database)
-      result = await supabase
-        .from('user_api_keys')
-        .insert({
-          userId: session.user.id,
-          apiKey: newApiKey,
-          label: 'Default API Key',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        })
-        .select('id, apiKey, createdAt, label')
-        .single();
-    }
+    });
 
-    const { data: apiKeyData, error } = result;
+    // Create new API key
+    const newApiKey = await prisma.apiKey.create({
+      data: {
+        userId: session.user.id,
+        keyHash,
+        keyPrefix,
+        name: 'Default API Key',
+        permissions: {
+          capture: true,
+          read: true,
+          write: false
+        },
+        isActive: true
+      }
+    });
 
-    if (error) {
-      console.error('Error creating/updating API key:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      return NextResponse.json(
-        { success: false, error: `Failed to generate API key: ${error.message || error.code || 'Unknown error'}` },
-        { status: 500 }
-      );
-    }
-
-    const response: ApiResponse = {
+    const response: ApiResponse<UserApiKey & { fullKey: string }> = {
       success: true,
       data: {
-        id: apiKeyData.id,
-        api_key: apiKeyData.apiKey,
-        api_key_created_at: apiKeyData.createdAt,
-        created_at: apiKeyData.createdAt,
-      },
-      message: (existingKeys && existingKeys.length > 0) ? 'API key regenerated successfully' : 'API key created successfully',
-    };
-
-    return NextResponse.json(response, { status: (existingKeys && existingKeys.length > 0) ? 200 : 201 });
-  } catch (error) {
-    console.error('Error generating API key:', error);
-    const response: ApiResponse = {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to generate API key',
-    };
-    return NextResponse.json(response, { status: 500 });
-  }
-}
-
-export async function DELETE() {
-  try {
-    // Check authentication
-    const session = await getSession();
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Check write permissions
-    const hasWritePermission = await hasPermission('write');
-    if (!hasWritePermission) {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
-    const supabase = await createClient();
-    
-    // Delete user's API key
-    const { error } = await supabase
-      .from('user_api_keys')
-      .delete()
-      .eq('userId', session.user.id);
-
-    if (error) {
-      console.error('Error deleting API key:', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to delete API key' },
-        { status: 500 }
-      );
-    }
-
-    const response: ApiResponse = {
-      success: true,
-      message: 'API key deleted successfully. Your bookmarklet setup has been reset.',
+        id: newApiKey.id,
+        api_key: newApiKey.keyPrefix, // Show prefix only for security
+        api_key_created_at: newApiKey.createdAt.toISOString(),
+        created_at: newApiKey.createdAt.toISOString(),
+        fullKey: apiKeyValue // Only returned on creation/regeneration
+      }
     };
 
     return NextResponse.json(response);
+
   } catch (error) {
-    console.error('Error deleting API key:', error);
+    console.error('Error creating API key:', error);
+    
     const response: ApiResponse = {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete API key',
+      error: 'Failed to create API key',
     };
+    
     return NextResponse.json(response, { status: 500 });
   }
 }

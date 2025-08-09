@@ -18,8 +18,8 @@ export function useLibraryFilters({ notes, searchTerm }: LibraryFiltersProps) {
       const searchableText = [
         note.content || '',
         note.snippet || '',
-        note.page_title || '',
-        note.page_url || ''
+        note.pageTitle || '',
+        note.pageUrl || ''
       ].join(' ').toLowerCase();
       
       return searchableText.includes(searchTerm.toLowerCase());

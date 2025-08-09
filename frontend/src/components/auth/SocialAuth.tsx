@@ -17,7 +17,7 @@ export function SocialAuth({ onSuccess }: SocialAuthProps) {
       // Note: Social auth providers are not implemented in the current auth system
       // This would need to be implemented in the AuthProvider
       console.log('Social auth not implemented for provider:', provider);
-      alert('Social authentication is not yet implemented. Please use magic link authentication.');
+      alert('Social authentication is not yet implemented. Please use OAuth authentication.');
       
       // Call onSuccess for consistency (even though auth didn't actually happen)
       onSuccess?.();

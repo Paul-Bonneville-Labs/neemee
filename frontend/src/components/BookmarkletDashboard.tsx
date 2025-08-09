@@ -44,22 +44,28 @@ export function BookmarkletDashboard({ className = '' }: BookmarkletDashboardPro
       setIsLoading(true);
       setError(null);
       
-      // Load API key, bookmarklet, and recent highlights in parallel
-      const [apiKeyResponse, bookmarkletResponse, highlightsResponse] = await Promise.allSettled([
-        fetch('/api/user/api-key', { credentials: 'include' }),
-        fetch('/api/user/bookmarklet', { credentials: 'include' }),
-        fetch('/api/highlights/list?limit=10', { credentials: 'include' })
-      ]);
-
-      // Handle API key response
-      if (apiKeyResponse.status === 'fulfilled' && apiKeyResponse.value.ok) {
-        const apiResult: ApiResponse<UserApiKey> = await apiKeyResponse.value.json();
+      // First, load the API key to get the full key for bookmarklet generation
+      const apiKeyResponse = await fetch('/api/user/api-key', { credentials: 'include' });
+      let apiKeyData: UserApiKey | null = null;
+      
+      if (apiKeyResponse.ok) {
+        const apiResult: ApiResponse<UserApiKey> = await apiKeyResponse.json();
         if (apiResult.success && apiResult.data) {
-          setApiKey(apiResult.data);
+          apiKeyData = apiResult.data;
+          setApiKey(apiKeyData);
         }
       }
 
-      // Handle bookmarklet response  
+      // Now load bookmarklet and highlights in parallel 
+      // Bookmarklet generation only requires session authentication
+      const bookmarkletUrl = '/api/user/bookmarklet';
+        
+      const [bookmarkletResponse, highlightsResponse] = await Promise.allSettled([
+        fetch(bookmarkletUrl, { credentials: 'include' }),
+        fetch('/api/highlights/list?limit=10', { credentials: 'include' })
+      ]);
+
+      // Handle bookmarklet response
       if (bookmarkletResponse.status === 'fulfilled' && bookmarkletResponse.value.ok) {
         const bookmarkletResult: ApiResponse<BookmarkletResponse> = await bookmarkletResponse.value.json();
         if (bookmarkletResult.success && bookmarkletResult.data) {

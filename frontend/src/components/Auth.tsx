@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { MagicLinkAuth } from './auth/MagicLinkAuth';
+import { OAuthSignIn } from './auth/OAuthSignIn';
 
 interface AuthProps {
   onClose?: () => void;
@@ -29,9 +29,9 @@ export function Auth({
         </button>
       )}
 
-      {/* Magic Link Auth Content */}
+      {/* OAuth Sign In Content */}
       <div className="p-6">
-        <MagicLinkAuth onSuccess={onClose} />
+        <OAuthSignIn onSuccess={onClose} />
       </div>
 
       {/* Footer */}

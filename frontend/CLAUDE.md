@@ -108,8 +108,12 @@ The project uses Google Cloud Run with buildpacks for automatic containerization
 
 The frontend uses Google Cloud Secrets Manager to securely store sensitive environment variables:
 
-- **`neemee-supabase-url`** ← Supabase Project URL  
-- **`neemee-supabase-anon-key`** ← Supabase Anonymous Key
+- **`neemee-database-url`** ← PostgreSQL Connection String
+- **`neemee-auth-secret`** ← Auth.js Session Secret
+- **`neemee-google-oauth-id`** ← Google OAuth Client ID
+- **`neemee-google-oauth-secret`** ← Google OAuth Client Secret
+- **`neemee-github-oauth-id`** ← GitHub OAuth Client ID
+- **`neemee-github-oauth-secret`** ← GitHub OAuth Client Secret
 - **`neemee-backend-api-url`** ← Backend API Service URL
 - **`neemee-backend-api-key`** ← Backend API Authentication Key
 
@@ -144,8 +148,12 @@ gcloud run deploy neemee-frontend \
   --cpu 1 \
   --max-instances 100 \
   --allow-unauthenticated \
-  --set-secrets NEXT_PUBLIC_SUPABASE_URL=neemee-supabase-url:latest \
-  --set-secrets NEXT_PUBLIC_SUPABASE_ANON_KEY=neemee-supabase-anon-key:latest \
+  --set-secrets DATABASE_URL=neemee-database-url:latest \
+  --set-secrets AUTH_SECRET=neemee-auth-secret:latest \
+  --set-secrets AUTH_GOOGLE_ID=neemee-google-oauth-id:latest \
+  --set-secrets AUTH_GOOGLE_SECRET=neemee-google-oauth-secret:latest \
+  --set-secrets AUTH_GITHUB_ID=neemee-github-oauth-id:latest \
+  --set-secrets AUTH_GITHUB_SECRET=neemee-github-oauth-secret:latest \
   --set-secrets BACKEND_API_URL=neemee-backend-api-url:latest \
   --set-secrets BACKEND_API_KEY=neemee-backend-api-key:latest \
   --set-env-vars NEXT_PUBLIC_BASE_URL=https://neemee.paulbonneville.com
