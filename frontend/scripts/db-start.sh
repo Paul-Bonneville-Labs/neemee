@@ -30,11 +30,11 @@ until docker exec neemee-local-postgres pg_isready -U neemee_user -d neemee > /d
 done
 
 echo "✅ PostgreSQL database is ready!"
-echo "🔗 Connection string: postgresql://neemee_user:local_dev_password@localhost:5432/neemee"
+echo "🔗 Connection string: postgresql://neemee_user:local_dev_password@localhost:5433/neemee"
 echo "📊 View logs: docker logs neemee-local-postgres"
 echo "🛠️  Connect directly: docker exec -it neemee-local-postgres psql -U neemee_user -d neemee"
 echo ""
 echo "Next steps:"
-echo "1. Update your .env.local to use: DATABASE_URL=\"postgresql://neemee_user:local_dev_password@localhost:5432/neemee\""
+echo "1. Update your .env.local to use: DATABASE_URL=\"postgresql://neemee_user:local_dev_password@localhost:5433/neemee\""
 echo "2. Run: npm run db:generate && npm run db:migrate"
 echo "3. Start frontend: npm run dev"

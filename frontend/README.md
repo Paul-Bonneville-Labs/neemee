@@ -45,7 +45,7 @@ The frontend uses a clean environment structure:
 
 ```bash
 # Database Configuration
-DATABASE_URL=postgresql://username:password@localhost:5432/database
+DATABASE_URL=postgresql://username:password@localhost:5433/database
 
 # Auth.js Configuration
 AUTH_SECRET=your-auth-secret-here
@@ -260,7 +260,7 @@ npm run dev:tmux
 When running development commands, services will be available at:
 - **🌐 Next.js App**: http://localhost:3000
 - **🔍 Prisma Studio**: http://localhost:5555  
-- **🐘 PostgreSQL**: localhost:5432 (neemee_user/local_dev_password)
+- **🐘 PostgreSQL**: localhost:5433 (neemee_user/local_dev_password)
 - **📊 Direct DB**: `docker exec -it neemee-local-postgres psql -U neemee_user -d neemee`
 
 ### 🤖 Automated CI/CD Pipeline

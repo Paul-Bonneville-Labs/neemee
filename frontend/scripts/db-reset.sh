@@ -38,7 +38,7 @@ until docker exec neemee-local-postgres pg_isready -U neemee_user -d neemee > /d
 done
 
 echo "✅ Database reset complete!"
-echo "🔗 Connection string: postgresql://neemee_user:local_dev_password@localhost:5432/neemee"
+echo "🔗 Connection string: postgresql://neemee_user:local_dev_password@localhost:5433/neemee"
 echo ""
 echo "Next steps:"
 echo "1. Run: npm run db:generate && npm run db:migrate"
