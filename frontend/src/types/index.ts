@@ -102,30 +102,19 @@ export interface FrontmatterFormProps {
   isReadOnly?: boolean;
 }
 
-// Note management types (legacy format with snake_case)
+// Note management types (API returns JSON-serialized data with string dates)
 export interface Note {
-  id: string;
-  user_id: string;
-  content: string;
-  snippet?: string; // The original unmodified text as captured
-  page_url: string;
-  page_title?: string;
-  markdown_content?: string;
-  created_at: string;
-  updated_at?: string;
-}
-
-// Prisma-compatible Note type (camelCase fields)
-export interface PrismaNote {
   id: string;
   userId: string;
   content: string;
-  snippet?: string | null;
+  snippet?: string | null; // The original unmodified text as captured
   pageUrl: string;
   pageTitle?: string | null;
   markdownContent?: string | null;
-  createdAt: Date;
-  updatedAt?: Date | null;
+  domain: string;
+  capturedAt?: string | null; // When the note was originally captured (ISO string)
+  createdAt: string; // ISO string from API
+  updatedAt?: string | null; // ISO string from API
   metadata?: unknown; // Use unknown to match Prisma JsonValue
 }
 
@@ -139,8 +128,8 @@ export interface NoteCreateRequest {
 
 export interface NoteUpdateRequest {
   content: string;
-  page_title?: string;
-  page_url?: string;
+  pageTitle?: string;
+  pageUrl?: string;
 }
 
 export interface NoteFormData {
@@ -166,15 +155,6 @@ export interface NoteEditProps {
 
 export interface NotesLibraryResponse {
   notes: Note[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-  };
-}
-
-export interface PrismaNotesLibraryResponse {
-  notes: PrismaNote[];
   pagination: {
     total: number;
     page: number;

@@ -46,6 +46,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         pageUrl: true,
         pageTitle: true,
         markdownContent: true,
+        domain: true,
+        capturedAt: true,
         createdAt: true,
         updatedAt: true
       }
@@ -98,7 +100,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Parse request body
     const body = await request.json();
-    const { content, page_title, page_url } = body;
+    const { content, pageTitle, pageUrl } = body;
 
     // Validate required fields
     if (!content || typeof content !== 'string') {
@@ -109,27 +111,27 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Validate optional fields
-    if (page_title && typeof page_title !== 'string') {
+    if (pageTitle && typeof pageTitle !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'page_title must be a string' },
+        { success: false, error: 'pageTitle must be a string' },
         { status: 400 }
       );
     }
 
-    if (page_url && typeof page_url !== 'string') {
+    if (pageUrl && typeof pageUrl !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'page_url must be a string' },
+        { success: false, error: 'pageUrl must be a string' },
         { status: 400 }
       );
     }
 
     // Validate URL format if provided
-    if (page_url) {
+    if (pageUrl) {
       try {
-        new URL(page_url);
+        new URL(pageUrl);
       } catch {
         return NextResponse.json(
-          { success: false, error: 'page_url must be a valid URL' },
+          { success: false, error: 'pageUrl must be a valid URL' },
           { status: 400 }
         );
       }
@@ -137,8 +139,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Sanitize inputs
     const sanitizedContent = content.trim();
-    const sanitizedTitle = page_title?.trim() || null;
-    const sanitizedUrl = page_url?.trim();
+    const sanitizedTitle = pageTitle?.trim() || null;
+    const sanitizedUrl = pageUrl?.trim();
 
     // Validate lengths
     if (sanitizedContent.length === 0) {
@@ -157,7 +159,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (sanitizedTitle && sanitizedTitle.length > 500) {
       return NextResponse.json(
-        { success: false, error: 'page_title is too long (max 500 characters)' },
+        { success: false, error: 'pageTitle is too long (max 500 characters)' },
         { status: 400 }
       );
     }
@@ -201,6 +203,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         pageUrl: true,
         pageTitle: true,
         markdownContent: true,
+        domain: true,
+        capturedAt: true,
         createdAt: true,
         updatedAt: true
       }

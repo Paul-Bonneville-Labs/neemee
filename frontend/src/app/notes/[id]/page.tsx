@@ -67,9 +67,9 @@ export default function NoteDetailsPage() {
         setFormData({
           content: noteData.content || '',
           snippet: noteData.snippet || '',
-          page_title: noteData.page_title || '',
-          page_url: noteData.page_url || '',
-          markdown_content: noteData.markdown_content || ''
+          page_title: noteData.pageTitle || '',
+          page_url: noteData.pageUrl || '',
+          markdown_content: noteData.markdownContent || ''
         });
       } else {
         console.error('Failed to load note:', result.error);
@@ -119,8 +119,8 @@ export default function NoteDetailsPage() {
       
       const updateData: NoteUpdateRequest = {
         content: formData.content,
-        page_title: formData.page_title,
-        page_url: formData.page_url
+        pageTitle: formData.page_title,
+        pageUrl: formData.page_url
       };
       
       const response = await fetch(`/api/notes/${note.id}`, {
@@ -384,9 +384,9 @@ export default function NoteDetailsPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium mb-2 text-base-content">Created</div>
+                  <div className="text-sm font-medium mb-2 text-base-content">Captured</div>
                   <div className="px-4 py-3 bg-base-200 rounded-lg cursor-text text-base-content">
-                    {formatDetailedDate(note.created_at)}
+                    {formatDetailedDate(note.capturedAt || note.createdAt)}
                   </div>
                 </div>
               </div>
