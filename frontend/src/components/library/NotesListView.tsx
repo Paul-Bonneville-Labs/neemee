@@ -101,7 +101,7 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
                     <div className="tooltip tooltip-left tooltip-delayed flex items-center gap-1" data-tip={note.pageUrl || 'Unknown source'}>
                       <Image 
                         src={getFaviconUrl(note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source')} 
-                        alt="" 
+                        alt={`Favicon for ${note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source'}`} 
                         width={12}
                         height={12}
                         className="w-3 h-3 flex-shrink-0"

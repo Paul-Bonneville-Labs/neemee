@@ -26,6 +26,11 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
   // Direct access like detail page: note.capturedAt || note.createdAt
   const displayDate = note.capturedAt || note.createdAt;
   const isRecent = displayDate ? checkIsRecent(displayDate) : false;
+  
+  // Check if there's a valid URL to show footer - use database value directly
+  const hasUrl = note.pageUrl && 
+                 note.pageUrl.trim() !== '' && 
+                 (note.pageUrl.startsWith('http://') || note.pageUrl.startsWith('https://'));
 
   if (viewMode === 'list') {
     return (
@@ -47,48 +52,52 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
               </p>
             </div>
             
-            <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-              <div className="flex items-center gap-1">
-                {note.domain ? (
-                  <>
-                    <Image 
-                      src={getFaviconUrl(note.domain)} 
-                      alt="" 
-                      width={12}
-                      height={12}
-                      className="w-3 h-3 flex-shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (nextElement) nextElement.style.display = 'inline';
-                      }}
-                    />
-                    <Globe className="w-3 h-3 hidden" />
-                    <span className="truncate max-w-32">{note.domain}</span>
-                  </>
-                ) : (
-                  <>
-                    <Globe className="w-3 h-3" />
-                    <span className="truncate max-w-32">Unknown source</span>
-                  </>
-                )}
+            {hasUrl && (
+              <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  {note.domain ? (
+                    <>
+                      <Image 
+                        src={getFaviconUrl(note.domain)} 
+                        alt="" 
+                        width={12}
+                        height={12}
+                        className="w-3 h-3 flex-shrink-0"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (nextElement) nextElement.style.display = 'inline';
+                        }}
+                      />
+                      <Globe className="w-3 h-3 hidden" />
+                      <span className="truncate max-w-32">{note.domain}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-3 h-3" />
+                      <span className="truncate max-w-32">Unknown source</span>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{displayDate ? formatHighlightDate(displayDate) : 'Unknown date'}</span>
+                  {isRecent && (
+                    <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded text-xs ml-1">
+                      New
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                <span>{displayDate ? formatHighlightDate(displayDate) : 'Unknown date'}</span>
-                {isRecent && (
-                  <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded text-xs ml-1">
-                    New
-                  </span>
-                )}
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Action Indicator */}
-          <div className="flex-shrink-0 flex items-center">
-            <ExternalLink className="w-4 h-4 text-gray-400" />
-          </div>
+          {hasUrl && (
+            <div className="flex-shrink-0 flex items-center">
+              <ExternalLink className="w-4 h-4 text-gray-400" />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -117,37 +126,39 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
         </div>
 
         {/* Source and Date */}
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-1 truncate flex-1 mr-2">
-            {note.domain ? (
-              <>
-                <Image 
-                  src={getFaviconUrl(note.domain)} 
-                  alt="" 
-                  width={12}
-                  height={12}
-                  className="w-3 h-3 flex-shrink-0"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (nextElement) nextElement.style.display = 'inline';
-                  }}
-                />
-                <Globe className="w-3 h-3 flex-shrink-0 hidden" />
-                <span className="truncate">{note.domain}</span>
-              </>
-            ) : (
-              <>
-                <Globe className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">Unknown source</span>
-              </>
-            )}
+        {hasUrl && (
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1 truncate flex-1 mr-2">
+              {note.domain ? (
+                <>
+                  <Image 
+                    src={getFaviconUrl(note.domain)} 
+                    alt="" 
+                    width={12}
+                    height={12}
+                    className="w-3 h-3 flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (nextElement) nextElement.style.display = 'inline';
+                    }}
+                  />
+                  <Globe className="w-3 h-3 flex-shrink-0 hidden" />
+                  <span className="truncate">{note.domain}</span>
+                </>
+              ) : (
+                <>
+                  <Globe className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">Unknown source</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <Clock className="w-3 h-3" />
+              <span>{displayDate ? formatHighlightDate(displayDate) : 'Unknown date'}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1 whitespace-nowrap">
-            <Clock className="w-3 h-3" />
-            <span>{displayDate ? formatHighlightDate(displayDate) : 'Unknown date'}</span>
-          </div>
-        </div>
+        )}
 
         {/* Recent Badge */}
         {isRecent && (
@@ -160,14 +171,16 @@ export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: N
       </div>
 
       {/* Hover Indicator */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            Click to view details
-          </span>
-          <ExternalLink className="w-4 h-4 text-gray-400" />
+      {hasUrl && (
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Click to view details
+            </span>
+            <ExternalLink className="w-4 h-4 text-gray-400" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

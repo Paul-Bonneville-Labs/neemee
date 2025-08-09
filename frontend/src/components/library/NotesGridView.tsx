@@ -111,33 +111,32 @@ function NoteCard({ note, onToast }: { note: Note; onToast: (type: 'success' | '
         </div>
       </div>
 
-      {/* Card Footer - Metadata */}
-      <div className="card-footer px-4 py-2 bg-base-200 rounded-b-lg">
-        <div className="space-y-2 text-xs text-base-content/70">
-          
-          {/* Domain Row */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="tooltip tooltip-top tooltip-delayed z-50 flex items-center gap-1" data-tip={note.pageUrl || 'Unknown source'}>
-              <Image 
-                src={getFaviconUrl(note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source')} 
-                alt="" 
-                width={12}
-                height={12}
-                className="w-3 h-3 flex-shrink-0"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (nextElement) nextElement.style.display = 'inline';
-                }}
-              />
-              <Globe className="w-3 h-3 flex-shrink-0 hidden" />
-              <span className="truncate text-base-content/70">
-                {note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source'}
-              </span>
-            </div>
-            
-            {/* Action buttons */}
-            {note.pageUrl && (
+      {/* Card Footer - Metadata (only if pageUrl exists) */}
+      {note.pageUrl && (
+        <div className="card-footer px-4 py-2 bg-base-200 rounded-b-lg">
+          <div className="space-y-2 text-xs text-base-content/70">
+            {/* Domain Row */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="tooltip tooltip-top tooltip-delayed z-50 flex items-center gap-1" data-tip={note.pageUrl || 'Unknown source'}>
+                <Image 
+                  src={getFaviconUrl(note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source')} 
+                  alt={`Favicon for ${note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source'}`} 
+                  width={12}
+                  height={12}
+                  className="w-3 h-3 flex-shrink-0"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (nextElement) nextElement.style.display = 'inline';
+                  }}
+                />
+                <Globe className="w-3 h-3 flex-shrink-0 hidden" />
+                <span className="truncate text-base-content/70">
+                  {note.pageUrl ? new URL(note.pageUrl).hostname : 'Unknown source'}
+                </span>
+              </div>
+              
+              {/* Action buttons */}
               <div className="flex items-center gap-0.5">
                 {/* Copy Button */}
                 <div className="tooltip tooltip-top tooltip-delayed z-50" data-tip="Copy URL">
@@ -174,10 +173,10 @@ function NoteCard({ note, onToast }: { note: Note; onToast: (type: 'success' | '
                   </button>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

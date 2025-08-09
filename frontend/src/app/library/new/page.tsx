@@ -16,7 +16,6 @@ export default function NewNotePage() {
   const { toasts, dismissToast, showSuccess, showError } = useToasts();
   
   const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -38,7 +37,7 @@ export default function NewNotePage() {
     );
   }
 
-  const handleCancel = () => {
+  const handleBack = () => {
     router.push('/library');
   };
 
@@ -65,7 +64,7 @@ export default function NewNotePage() {
         body: JSON.stringify({
           content: content.trim(),
           page_title: title.trim(),
-          page_url: url.trim() || 'https://neemee.paulbonneville.com', // Default URL for manual notes
+          page_url: null, // No URL for manual notes
           snippet: null, // Manual notes don't have snippets
         }),
       });
@@ -112,11 +111,11 @@ export default function NewNotePage() {
 
             <div className="flex items-center gap-3">
               <button 
-                onClick={handleCancel}
-                className="btn btn-error"
+                onClick={handleBack}
+                className="btn btn-ghost"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Cancel
+                Back to Library
               </button>
               
               <button
@@ -138,7 +137,7 @@ export default function NewNotePage() {
           {/* Title */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Title *</span>
+              <span className="label-text font-medium">Title</span>
             </label>
             <input
               type="text"
@@ -149,25 +148,10 @@ export default function NewNotePage() {
             />
           </div>
 
-          {/* URL */}
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Source URL</span>
-              <span className="label-text-alt text-base-content/60">Optional</span>
-            </label>
-            <input
-              type="url"
-              placeholder="https://example.com/article"
-              className="input input-bordered w-full bg-base-200 focus:bg-base-300"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-          </div>
-
           {/* Content */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Content *</span>
+              <span className="label-text font-medium">Content</span>
             </label>
             <div className="bg-white rounded-lg border border-base-300">
               <SimpleMarkdownEditor
@@ -175,11 +159,6 @@ export default function NewNotePage() {
                 onChange={(newContent) => setContent(newContent)}
               />
             </div>
-            <label className="label">
-              <span className="label-text-alt text-base-content/60">
-                Rich text editor with Markdown support
-              </span>
-            </label>
           </div>
         </div>
       </main>
