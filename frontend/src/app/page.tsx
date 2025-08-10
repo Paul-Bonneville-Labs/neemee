@@ -30,7 +30,9 @@ function LandingPageContent() {
 
   // Redirect authenticated users to library
   useEffect(() => {
+    console.log('Home auth check:', { loading, user: !!user, mounted, isBookmarkletRequest });
     if (user && mounted && !isBookmarkletRequest) {
+      console.log('Redirecting to library from home');
       router.push('/library');
     }
   }, [user, mounted, isBookmarkletRequest, router]);

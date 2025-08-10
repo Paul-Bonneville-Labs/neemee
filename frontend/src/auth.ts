@@ -6,7 +6,12 @@ import { prisma } from "@/lib/prisma"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: { strategy: "database" },
+  events: {
+    async linkAccount({ user, account }) {
+      console.log("Account linked:", { userId: user.id, provider: account.provider })
+    },
+  },
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
@@ -25,23 +30,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // Always redirect to /library after successful authentication
-      if (url.startsWith("/")) return `${baseUrl}/library`
-      // If it's a relative URL, make it absolute and redirect to library
-      else if (new URL(url).origin === baseUrl) return `${baseUrl}/library`
+      // Allow callback URL to be respected, but default to library
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      else if (new URL(url).origin === baseUrl) return url
       return `${baseUrl}/library`
     },
-    async session({ session, token }) {
-      if (token.sub) {
-        session.user.id = token.sub
+    async signIn({ user, account, profile, email }) {
+      // Allow sign in and enable automatic account linking for same email addresses
+      if (account?.provider === "google") {
+        return true // Always allow Google sign-in, adapter will handle linking
       }
-      return session
-    },
-    async jwt({ token, user }) {
-      if (user && user.id) {
-        token.sub = user.id
-      }
-      return token
+      return true
     },
   },
   pages: {

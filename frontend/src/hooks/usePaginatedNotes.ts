@@ -5,6 +5,7 @@ export interface UsePaginatedNotesOptions {
   initialPageSize?: number;
   pageSize?: number;
   searchDebounceMs?: number;
+  shouldLoad?: boolean; // Whether to automatically load notes
 }
 
 export interface UsePaginatedNotesReturn {
@@ -32,7 +33,8 @@ export function usePaginatedNotes(options: UsePaginatedNotesOptions = {}): UsePa
   const {
     initialPageSize = 20,
     pageSize = 10,
-    searchDebounceMs = 300
+    searchDebounceMs = 300,
+    shouldLoad = true
   } = options;
 
   // Core state
@@ -154,21 +156,23 @@ export function usePaginatedNotes(options: UsePaginatedNotesOptions = {}): UsePa
     }
   }, [initialPageSize, pageSize]);
 
-  // Initial load
+  // Initial load - only if shouldLoad is true
   useEffect(() => {
-    if (!hasLoadedInitialRef.current) {
+    if (!hasLoadedInitialRef.current && shouldLoad) {
       hasLoadedInitialRef.current = true;
       loadNotes(1);
     }
-  }, [loadNotes]);
+  }, [loadNotes, shouldLoad]);
 
-  // Handle search changes
+  // Handle search changes - only if shouldLoad is true
   useEffect(() => {
+    if (!shouldLoad) return;
+    
     // Reset pagination and load with search
     setCurrentPage(1);
     setHasMore(true);
     loadNotes(1, true, debouncedSearchTerm);
-  }, [debouncedSearchTerm, loadNotes]);
+  }, [debouncedSearchTerm, loadNotes, shouldLoad]);
 
   // Load more function for infinite scroll
   const loadMore = useCallback(() => {

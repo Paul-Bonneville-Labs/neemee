@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')));
     const search = searchParams.get('search')?.trim();
     const domain = searchParams.get('domain')?.trim();
-    const startDate = searchParams.get('start_date');
-    const endDate = searchParams.get('end_date');
+    const startDate = searchParams.get('start_date') || undefined;
+    const endDate = searchParams.get('end_date') || undefined;
     
     const offset = (page - 1) * limit;
 
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
           content: true,
           snippet: true,
           pageUrl: true,
-          pageTitle: true,
+          noteTitle: true,
           markdownContent: true,
           metadata: true,
           domain: true,

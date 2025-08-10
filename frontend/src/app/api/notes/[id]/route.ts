@@ -44,7 +44,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         content: true,
         snippet: true,
         pageUrl: true,
-        pageTitle: true,
+        noteTitle: true,
         markdownContent: true,
         domain: true,
         capturedAt: true,
@@ -100,7 +100,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Parse request body
     const body = await request.json();
-    const { content, pageTitle, pageUrl } = body;
+    const { content, noteTitle, pageUrl } = body;
 
     // Validate required fields
     if (!content || typeof content !== 'string') {
@@ -111,9 +111,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Validate optional fields
-    if (pageTitle && typeof pageTitle !== 'string') {
+    if (noteTitle && typeof noteTitle !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'pageTitle must be a string' },
+        { success: false, error: 'noteTitle must be a string' },
         { status: 400 }
       );
     }
@@ -139,7 +139,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Sanitize inputs
     const sanitizedContent = content.trim();
-    const sanitizedTitle = pageTitle?.trim() || null;
+    const sanitizedTitle = noteTitle?.trim() || null;
     const sanitizedUrl = pageUrl?.trim();
 
     // Validate lengths
@@ -159,7 +159,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     if (sanitizedTitle && sanitizedTitle.length > 500) {
       return NextResponse.json(
-        { success: false, error: 'pageTitle is too long (max 500 characters)' },
+        { success: false, error: 'noteTitle is too long (max 500 characters)' },
         { status: 400 }
       );
     }
@@ -171,7 +171,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     };
 
     if (sanitizedTitle !== undefined) {
-      updateData.pageTitle = sanitizedTitle;
+      updateData.noteTitle = sanitizedTitle;
     }
 
     if (sanitizedUrl !== undefined) {
@@ -201,7 +201,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         content: true,
         snippet: true,
         pageUrl: true,
-        pageTitle: true,
+        noteTitle: true,
         markdownContent: true,
         domain: true,
         capturedAt: true,

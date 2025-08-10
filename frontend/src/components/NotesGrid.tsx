@@ -50,7 +50,7 @@ export function NotesGrid({
       const searchableText = [
         note.content || '',
         note.snippet || '',
-        note.pageTitle || '',
+        note.noteTitle || '',
         note.pageUrl || ''
       ].join(' ').toLowerCase();
       
@@ -86,8 +86,8 @@ export function NotesGrid({
       case 'oldest':
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       case 'alphabetical':
-        const titleA = (a.pageTitle || 'Untitled').toLowerCase();
-        const titleB = (b.pageTitle || 'Untitled').toLowerCase();
+        const titleA = (a.noteTitle || 'Untitled').toLowerCase();
+        const titleB = (b.noteTitle || 'Untitled').toLowerCase();
         return titleA.localeCompare(titleB);
       default:
         return 0;

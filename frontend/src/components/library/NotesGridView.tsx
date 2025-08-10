@@ -66,10 +66,10 @@ function NoteCard({ note, onToast }: { note: Note; onToast: (type: 'success' | '
     >
       {/* Card Body - Note preview content */}
       <div className="card-body pt-6 px-6 pb-4">
-        {/* Page Title */}
-        {note.pageTitle && (
+        {/* Note Title */}
+        {note.noteTitle && (
           <div className="text-base-content/60 text-xs font-medium mb-1 whitespace-normal break-words">
-            {note.pageTitle}
+            {note.noteTitle}
           </div>
         )}
         

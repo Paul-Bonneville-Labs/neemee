@@ -21,7 +21,7 @@ function getFaviconUrl(domain: string): string {
 export function NoteCard({ note, onClick, viewMode = 'grid', className = '' }: NoteCardProps) {
   // Use EXACT same approach as detail page - direct field access
   const content = note.snippet || note.content || 'No content';
-  const title = note.pageTitle || 'Untitled';
+  const title = note.noteTitle || 'Untitled';
   
   // Direct access like detail page: note.capturedAt || note.createdAt
   const displayDate = note.capturedAt || note.createdAt;

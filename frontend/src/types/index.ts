@@ -109,7 +109,7 @@ export interface Note {
   content: string;
   snippet?: string | null; // The original unmodified text as captured
   pageUrl: string;
-  pageTitle?: string | null;
+  noteTitle?: string | null;
   markdownContent?: string | null;
   domain: string;
   capturedAt?: string | null; // When the note was originally captured (ISO string)
@@ -128,7 +128,7 @@ export interface NoteCreateRequest {
 
 export interface NoteUpdateRequest {
   content: string;
-  pageTitle?: string;
+  noteTitle?: string;
   pageUrl?: string;
 }
 

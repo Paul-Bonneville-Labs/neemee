@@ -27,7 +27,7 @@ function ErrorContent() {
       case 'Callback':
         return 'Error in the OAuth callback handler route.'
       case 'OAuthAccountNotLinked':
-        return 'Another account with the same email address is already linked.'
+        return 'An account with this email already exists. Please sign in with your original method first, then you can link additional accounts in your settings.'
       case 'EmailSignin':
         return 'Error sending the email with the verification token.'
       case 'CredentialsSignin':
@@ -57,12 +57,26 @@ function ErrorContent() {
         </div>
         
         <div className="mt-8 space-y-4">
-          <Link
-            href="/auth/signin"
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Try Again
-          </Link>
+          {error === 'OAuthAccountNotLinked' ? (
+            <>
+              <Link
+                href="/auth/signin"
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Sign in with your existing account
+              </Link>
+              <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
+                After signing in, you can link additional providers in your account settings.
+              </p>
+            </>
+          ) : (
+            <Link
+              href="/auth/signin"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Try Again
+            </Link>
+          )}
           
           <Link
             href="/"
