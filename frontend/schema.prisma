@@ -81,8 +81,8 @@ model VerificationToken {
 model Note {
   id              String    @id @default(cuid())
   userId          String    @map("user_id")
-  pageTitle       String    @map("page_title")
-  pageUrl         String    @map("page_url")
+  noteTitle       String    @map("note_title")
+  pageUrl         String?   @map("page_url")
   content         String
   snippet         String?
   markdownContent String    @map("markdown_content")

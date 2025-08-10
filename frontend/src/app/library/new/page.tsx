@@ -63,7 +63,7 @@ export default function NewNotePage() {
         credentials: 'include',
         body: JSON.stringify({
           content: content.trim(),
-          page_title: title.trim(),
+          note_title: title.trim(),
           page_url: null, // No URL for manual notes
           snippet: null, // Manual notes don't have snippets
         }),
@@ -137,7 +137,7 @@ export default function NewNotePage() {
           {/* Title */}
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Title</span>
+              <span className="label-text font-medium">Note Title</span>
             </label>
             <input
               type="text"

@@ -41,15 +41,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loading = status === 'loading'
 
   const signIn = async (provider: string = 'google') => {
-    await nextAuthSignIn(provider, { callbackUrl: '/' })
+    await nextAuthSignIn(provider, { callbackUrl: '/library' })
   }
 
   const signInWithGoogle = async () => {
-    await nextAuthSignIn('google', { callbackUrl: '/' })
+    await nextAuthSignIn('google', { callbackUrl: '/library' })
   }
 
   const signInWithGitHub = async () => {
-    await nextAuthSignIn('github', { callbackUrl: '/' })
+    await nextAuthSignIn('github', { callbackUrl: '/library' })
   }
 
   const signOut = async () => {

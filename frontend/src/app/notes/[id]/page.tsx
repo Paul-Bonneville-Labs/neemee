@@ -31,7 +31,7 @@ export default function NoteDetailsPage() {
   const [formData, setFormData] = useState({
     content: '',
     snippet: '',
-    page_title: '',
+    note_title: '',
     page_url: '',
     markdown_content: ''
   });
@@ -67,7 +67,7 @@ export default function NoteDetailsPage() {
         setFormData({
           content: noteData.content || '',
           snippet: noteData.snippet || '',
-          page_title: noteData.pageTitle || '',
+          note_title: noteData.noteTitle || '',
           page_url: noteData.pageUrl || '',
           markdown_content: noteData.markdownContent || ''
         });
@@ -119,7 +119,7 @@ export default function NoteDetailsPage() {
       
       const updateData: NoteUpdateRequest = {
         content: formData.content,
-        pageTitle: formData.page_title,
+        noteTitle: formData.note_title,
         pageUrl: formData.page_url
       };
       
@@ -333,16 +333,16 @@ export default function NoteDetailsPage() {
           <div className="pt-4 border-t border-base-200">
             <h3 className="text-lg font-semibold mb-4 text-base-content">Frontmatter</h3>
             <div className="space-y-4">
-              {/* Page Title */}
+              {/* Note Title */}
               <div>
-                <label htmlFor="page_title" className="block text-sm font-medium mb-2 text-base-content">
-                  Page Title
+                <label htmlFor="note_title" className="block text-sm font-medium mb-2 text-base-content">
+                  Note Title
                 </label>
                 <input
-                  id="page_title"
+                  id="note_title"
                   type="text"
-                  value={formData.page_title}
-                  onChange={(e) => handleFormChange('page_title', e.target.value)}
+                  value={formData.note_title}
+                  onChange={(e) => handleFormChange('note_title', e.target.value)}
                   className="input input-bordered w-full bg-base-200 focus:bg-base-100"
                   placeholder="Enter page title..."
                 />

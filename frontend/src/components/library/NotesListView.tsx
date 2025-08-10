@@ -80,10 +80,10 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
               {/* Content Column */}
               <td className="max-w-0 w-full align-top">
                 <div className="space-y-1">
-                  {/* Page Title */}
-                  {note.pageTitle && (
+                  {/* Note Title */}
+                  {note.noteTitle && (
                     <div className="text-sm font-bold text-base-content whitespace-normal break-words">
-                      {note.pageTitle}
+                      {note.noteTitle}
                     </div>
                   )}
                   <div className="line-clamp-2">

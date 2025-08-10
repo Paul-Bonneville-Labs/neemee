@@ -60,7 +60,7 @@ export default function CapturePage() {
               content: text,
               snippet: text,
               page_url: url,
-              page_title: title,
+              note_title: title,
             }),
             signal: controller.signal
           });

@@ -117,7 +117,7 @@ export function buildNoteSearchFilters(params: {
   if (search) {
     where.OR = [
       { content: { contains: search, mode: 'insensitive' } },
-      { pageTitle: { contains: search, mode: 'insensitive' } },
+      { noteTitle: { contains: search, mode: 'insensitive' } },
       { snippet: { contains: search, mode: 'insensitive' } }
     ];
   }

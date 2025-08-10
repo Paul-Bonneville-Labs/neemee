@@ -20,15 +20,8 @@ export const prisma = globalForPrisma.prisma ??
 // In development, store the instance globally to prevent hot-reload issues
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
-// Graceful shutdown handler - only in Node.js runtime (not edge)
-if (typeof process !== 'undefined' && process.on && process.env.NODE_ENV !== 'production') {
-  const handleShutdown = async () => {
-    await prisma.$disconnect()
-  }
-  
-  process.on('SIGINT', handleShutdown)
-  process.on('SIGTERM', handleShutdown)
-}
+// Note: Graceful shutdown handlers are not supported in Edge Runtime
+// Edge Runtime automatically handles connection cleanup
 
 // Database connection utility functions
 export async function connectToDatabase(): Promise<boolean> {

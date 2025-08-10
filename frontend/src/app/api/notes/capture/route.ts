@@ -21,7 +21,7 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { content, snippet, page_url, page_title, api_key } = body;
+    const { content, snippet, page_url, note_title, api_key } = body;
 
     let userId: string;
 
@@ -99,8 +99,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate and sanitize optional fields
-    const sanitizedTitle = page_title && typeof page_title === 'string' 
-      ? page_title.substring(0, 500) 
+    const sanitizedTitle = note_title && typeof note_title === 'string' 
+      ? note_title.substring(0, 500) 
       : null;
 
     const sanitizedSnippet = snippet && typeof snippet === 'string'
@@ -119,19 +119,21 @@ export async function POST(request: NextRequest) {
         data: {
           content: formattedContent,
           snippet: sanitizedSnippet, // Store the original unmodified text if provided
-          pageTitle: sanitizedTitle || 'Untitled Page',
+          noteTitle: sanitizedTitle || 'Untitled Note',
           markdownContent: '', // Empty string - will be set by async extraction
           pageUrl: page_url ? page_url.trim() : null,
           domain: (() => {
-            if (!page_url) return null;
+            if (!page_url) return '';
             try {
               return new URL(page_url).hostname;
             } catch {
-              return null;
+              return '';
             }
           })(),
           capturedAt: new Date(), // Set the capture timestamp
-          userId: userId
+          user: {
+            connect: { id: userId }
+          }
         },
         select: {
           id: true

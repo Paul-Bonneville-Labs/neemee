@@ -22,7 +22,7 @@ function LibraryPageContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toasts, dismissToast, showSuccess, showError } = useToasts();
   
-  // Pagination state using our custom hook
+  // Pagination state using our custom hook - only load when user is authenticated
   const {
     notes,
     total,
@@ -35,7 +35,9 @@ function LibraryPageContent() {
     refresh,
     searchTerm,
     isSearching
-  } = usePaginatedNotes();
+  } = usePaginatedNotes({
+    shouldLoad: !!user && !loading // Only load notes when user is authenticated
+  });
   
   // View and API key state
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -57,7 +59,9 @@ function LibraryPageContent() {
 
   // Redirect unauthenticated users to home
   useEffect(() => {
+    console.log('Library auth check:', { loading, user: !!user, mounted, isBookmarkletRequest });
     if (!loading && !user && mounted && !isBookmarkletRequest) {
+      console.log('Redirecting to home from library');
       router.push('/');
     }
   }, [user, loading, mounted, isBookmarkletRequest, router]);
