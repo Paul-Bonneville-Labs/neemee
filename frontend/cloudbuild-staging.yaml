@@ -79,32 +79,34 @@ steps:
         echo "✅ Prisma client generated"
     id: 'Generate-Prisma-Client'
 
-  # Step 4: Fix LightningCSS native binary for Linux x64
+  # Step 4: Install LightningCSS platform-specific binary
   - name: 'node:20'
     dir: 'frontend'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "🔧 Fixing LightningCSS native binary for Linux x64..."
+        echo "🔧 Installing LightningCSS platform-specific binary for Linux x64..."
         
-        # Install build tools for native compilation
-        apt-get update && apt-get install -y build-essential python3
+        # Install the specific platform binary for LightningCSS
+        npm install @lightningcss/linux-x64-gnu --no-save
         
-        # Force reinstall lightningcss with native compilation
-        npm uninstall lightningcss
-        npm install lightningcss --build-from-source
-        
-        # Verify the binary exists
-        if [ -f "node_modules/lightningcss/lightningcss.linux-x64-gnu.node" ]; then
-          echo "✅ LightningCSS native binary found"
+        # Verify installation
+        if [ -f "node_modules/@lightningcss/linux-x64-gnu/lightningcss.linux-x64-gnu.node" ]; then
+          echo "✅ Platform-specific LightningCSS binary installed"
+          
+          # Create symlink if needed (some setups expect it in lightningcss directory)
+          mkdir -p node_modules/lightningcss/
+          ln -sf ../../../@lightningcss/linux-x64-gnu/lightningcss.linux-x64-gnu.node node_modules/lightningcss/lightningcss.linux-x64-gnu.node
+          echo "✅ Symlink created for compatibility"
         else
-          echo "❌ LightningCSS native binary missing, listing available binaries:"
-          find node_modules/lightningcss -name "*.node" -type f || echo "No .node files found"
+          echo "❌ Platform-specific binary installation failed"
+          echo "Available LightningCSS packages:"
+          find node_modules -name "*lightningcss*" -type d || echo "No LightningCSS packages found"
         fi
         
-        echo "✅ LightningCSS fix completed"
-    id: 'Fix-LightningCSS-Binary'
+        echo "✅ LightningCSS platform fix completed"
+    id: 'Install-LightningCSS-Platform-Binary'
 
   # Step 5: Quality checks (fast fail for staging)
   - name: 'node:20'
