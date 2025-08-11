@@ -290,8 +290,8 @@ export default function NoteDetailsPage() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tab Navigation using DaisyUI tabs-box */}
-        <div role="tablist" className="tabs tabs-box tabs-sm mb-6 gap-1">
+        {/* Tab Navigation using DaisyUI tabs-border */}
+        <div role="tablist" className="tabs tabs-border tabs-sm mb-6 gap-1">
           <input 
             type="radio" 
             name="note_tabs" 
