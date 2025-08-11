@@ -3,7 +3,59 @@
 # Purpose: Deploy to staging environment using buildpacks
 
 steps:
-  # Step 1: Install dependencies with caching
+  # Step 1: Sync secrets from .env.staging to Google Cloud Secrets Manager
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    dir: 'frontend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔐 Syncing secrets from .env.staging to Google Cloud Secrets Manager..."
+        
+        # Function to update or create secret
+        update_secret() {
+          local secret_name="$1"
+          local secret_value="$2"
+          
+          if gcloud secrets describe "$secret_name" >/dev/null 2>&1; then
+            echo "Updating existing secret: $secret_name"
+            echo -n "$secret_value" | gcloud secrets versions add "$secret_name" --data-file=-
+          else
+            echo "Creating new secret: $secret_name"
+            echo -n "$secret_value" | gcloud secrets create "$secret_name" --data-file=-
+          fi
+        }
+        
+        # Read .env.staging and sync secrets
+        if [ -f ".env.staging" ]; then
+          while IFS='=' read -r key value || [ -n "$key" ]; do
+            # Skip empty lines and comments
+            [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+            
+            # Remove quotes and whitespace
+            key=$(echo "$key" | xargs)
+            value=$(echo "$value" | sed 's/^"//;s/"$//' | xargs)
+            
+            # Map environment variables to secret names
+            case "$key" in
+              DATABASE_URL) update_secret "neemee-staging-database-url" "$value" ;;
+              AUTH_SECRET) update_secret "neemee-staging-auth-secret" "$value" ;;
+              AUTH_GOOGLE_ID) update_secret "neemee-staging-google-oauth-id" "$value" ;;
+              AUTH_GOOGLE_SECRET) update_secret "neemee-staging-google-oauth-secret" "$value" ;;
+              AUTH_GITHUB_ID) update_secret "neemee-staging-github-oauth-id" "$value" ;;
+              AUTH_GITHUB_SECRET) update_secret "neemee-staging-github-oauth-secret" "$value" ;;
+              BACKEND_API_URL) update_secret "neemee-staging-backend-api-url" "$value" ;;
+              BACKEND_API_KEY) update_secret "neemee-staging-backend-api-key" "$value" ;;
+            esac
+          done < .env.staging
+          
+          echo "✅ Secrets synchronized successfully"
+        else
+          echo "⚠️ .env.staging file not found, skipping secret sync"
+        fi
+    id: 'Sync-Secrets'
+    
+  # Step 2: Install dependencies with caching
   - name: 'node:20'
     dir: 'frontend'
     entrypoint: 'bash'
@@ -11,11 +63,11 @@ steps:
       - '-c'
       - |
         echo "📦 Installing dependencies for staging build..."
-        npm ci --prefer-offline --no-audit
+        npm ci --prefer-offline --no-audit --production=false
         echo "✅ Dependencies installed"
     id: 'Install-Dependencies'
     
-  # Step 2: Generate Prisma client
+  # Step 3: Generate Prisma client
   - name: 'node:20'
     dir: 'frontend'
     entrypoint: 'bash'
@@ -27,7 +79,7 @@ steps:
         echo "✅ Prisma client generated"
     id: 'Generate-Prisma-Client'
 
-  # Step 3: Quality checks (fast fail for staging)
+  # Step 4: Quality checks (fast fail for staging)
   - name: 'node:20'
     dir: 'frontend'
     entrypoint: 'bash'
@@ -40,7 +92,21 @@ steps:
         echo "✅ Quality checks passed"
     id: 'Quality-Checks'
 
-  # Step 4: Deploy to Cloud Run using buildpacks
+  # Step 5: Build validation (ensure Next.js builds successfully)
+  - name: 'node:20'
+    dir: 'frontend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🏗️ Validating Next.js staging build..."
+        npm run build
+        echo "✅ Staging build validation completed"
+    env:
+      - 'NODE_ENV=staging'
+    id: 'Build-Validation'
+
+  # Step 6: Deploy to Cloud Run using buildpacks
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     dir: 'frontend'
     entrypoint: 'gcloud'
@@ -76,7 +142,7 @@ steps:
       - '--quiet'
     id: 'Deploy-to-Staging'
 
-  # Step 5: Run staging smoke tests
+  # Step 7: Run staging smoke tests
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     entrypoint: 'bash'
     args:
