@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Globe, Copy, ExternalLink } from 'lucide-react';
 import { Note } from '@/types';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface NotesListViewProps {
   notes: Note[];
@@ -86,10 +88,35 @@ export function NotesListView({ notes, onToast }: NotesListViewProps) {
                       {note.noteTitle}
                     </div>
                   )}
-                  <div className="line-clamp-2">
-                    <span className="italic text-base-content/80 text-sm">
-                      &ldquo;{note.snippet || note.content || 'No content'}&rdquo;
-                    </span>
+                  <div className="line-clamp-2 prose prose-sm max-w-none prose-p:my-0 prose-blockquote:my-0 prose-blockquote:border-l-base-content/30 prose-blockquote:font-medium prose-blockquote:italic prose-blockquote:text-base-content/80 prose-a:text-primary prose-code:text-base-content">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        // Inline rendering for list view
+                        p: ({ children }) => <span className="inline">{children}</span>,
+                        blockquote: ({ children }) => <span className="italic text-base-content/80 border-l-2 border-base-content/30 pl-1">{children}</span>,
+                        a: ({ href, children }) => (
+                          <a 
+                            href={href} 
+                            className="text-primary hover:text-primary/80 underline"
+                            onClick={(e) => e.stopPropagation()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {children}
+                          </a>
+                        ),
+                        code: ({ children }) => <code className="bg-base-200 px-1 py-0.5 rounded text-xs">{children}</code>,
+                        h1: ({ children }) => <span className="font-semibold">{children}</span>,
+                        h2: ({ children }) => <span className="font-medium">{children}</span>,
+                        h3: ({ children }) => <span className="font-medium">{children}</span>,
+                        ul: ({ children }) => <span>{children}</span>,
+                        ol: ({ children }) => <span>{children}</span>,
+                        li: ({ children }) => <span>• {children} </span>
+                      }}
+                    >
+                      {note.content || 'No content'}
+                    </ReactMarkdown>
                   </div>
                 </div>
               </td>

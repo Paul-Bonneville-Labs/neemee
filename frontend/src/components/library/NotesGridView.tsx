@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Clock, Globe, Copy, ExternalLink } from 'lucide-react';
 import { Note } from '@/types';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface NotesGridViewProps {
   notes: Note[];
@@ -73,24 +75,51 @@ function NoteCard({ note, onToast }: { note: Note; onToast: (type: 'success' | '
           </div>
         )}
         
-        {/* Quote */}
-        <p className="text-base-content text-sm leading-normal font-bold italic">
-          &ldquo;{(() => {
-            const text = note.snippet || note.content || 'No content';
-            const maxLength = 200;
-            
-            if (text.length <= maxLength) return text;
-            
-            // Find the last space before the maxLength to avoid cutting words
-            const truncated = text.substring(0, maxLength);
-            const lastSpaceIndex = truncated.lastIndexOf(' ');
-            
-            // If no space found, use the original truncation (edge case)
-            const finalText = lastSpaceIndex > 0 ? truncated.substring(0, lastSpaceIndex) : truncated;
-            
-            return finalText + '...';
-          })()}
-        </p>
+        {/* Markdown Content */}
+        <div className="text-base-content text-sm leading-normal prose prose-sm max-w-none prose-p:my-1 prose-headings:text-base-content prose-headings:my-1 prose-blockquote:my-1 prose-blockquote:border-l-base-content/30 prose-blockquote:font-medium prose-blockquote:italic prose-blockquote:text-base-content/80 prose-a:text-primary prose-code:text-base-content">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              // Customize rendering for better card display
+              p: ({ children }) => <p className="my-1">{children}</p>,
+              blockquote: ({ children }) => <blockquote className="border-l-2 border-base-content/30 pl-2 my-1 italic font-medium text-base-content/80">{children}</blockquote>,
+              a: ({ href, children }) => (
+                <a 
+                  href={href} 
+                  className="text-primary hover:text-primary/80 underline"
+                  onClick={(e) => e.stopPropagation()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {children}
+                </a>
+              ),
+              code: ({ children }) => <code className="bg-base-200 px-1 py-0.5 rounded text-xs">{children}</code>,
+              h1: ({ children }) => <h1 className="text-base font-semibold my-1">{children}</h1>,
+              h2: ({ children }) => <h2 className="text-base font-medium my-1">{children}</h2>,
+              h3: ({ children }) => <h3 className="text-sm font-medium my-1">{children}</h3>,
+              ul: ({ children }) => <ul className="list-disc list-inside my-1">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal list-inside my-1">{children}</ol>,
+              li: ({ children }) => <li className="my-0">{children}</li>
+            }}
+          >
+            {(() => {
+              const text = note.content || 'No content';
+              const maxLength = 200;
+              
+              if (text.length <= maxLength) return text;
+              
+              // Find the last space before the maxLength to avoid cutting words
+              const truncated = text.substring(0, maxLength);
+              const lastSpaceIndex = truncated.lastIndexOf(' ');
+              
+              // If no space found, use the original truncation (edge case)
+              const finalText = lastSpaceIndex > 0 ? truncated.substring(0, lastSpaceIndex) : truncated;
+              
+              return finalText + '...';
+            })()}
+          </ReactMarkdown>
+        </div>
         
         <div className="text-left mt-1">
           <div className="tooltip tooltip-top tooltip-left tooltip-delayed z-50" data-tip={`${new Date(note.createdAt).toLocaleDateString('en-US', { 
