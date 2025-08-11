@@ -106,7 +106,28 @@ steps:
       - 'NODE_ENV=staging'
     id: 'Build-Validation'
 
-  # Step 6: Deploy to Cloud Run using buildpacks
+  # Step 6: Create .gcloudignore to exclude backend files from deployment
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    dir: 'frontend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "📋 Creating .gcloudignore to exclude backend files..."
+        cat > .gcloudignore << 'EOF'
+        ../backend/
+        ../.git/
+        ../scripts/
+        ../deployment/
+        **/*.py
+        **/__pycache__/
+        **/requirements.txt
+        **/requirements-dev.txt
+        EOF
+        echo "✅ .gcloudignore created"
+    id: 'Create-GCloudIgnore'
+
+  # Step 7: Deploy to Cloud Run using buildpacks
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     dir: 'frontend'
     entrypoint: 'gcloud'
@@ -144,7 +165,7 @@ steps:
       - '--quiet'
     id: 'Deploy-to-Staging'
 
-  # Step 7: Run staging smoke tests
+  # Step 8: Run staging smoke tests
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     entrypoint: 'bash'
     args:
