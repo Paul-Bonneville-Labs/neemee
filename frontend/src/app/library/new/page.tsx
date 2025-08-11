@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Copy } from 'lucide-react';
 import Link from 'next/link';
 import { useToasts, ToastContainer } from '@/components/Toast';
 import { SimpleMarkdownEditor } from '@/components/SimpleMarkdownEditor';
@@ -39,6 +39,18 @@ export default function NewNotePage() {
 
   const handleBack = () => {
     router.push('/library');
+  };
+
+  const handleCopyContent = async () => {
+    if (!content) return;
+    
+    try {
+      await navigator.clipboard.writeText(content);
+      showSuccess('Content copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy content:', err);
+      showError('Failed to copy content', 'Please try selecting and copying manually');
+    }
   };
 
   const handleSave = async () => {
@@ -132,7 +144,7 @@ export default function NewNotePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Title */}
           <div className="form-control">
@@ -148,11 +160,19 @@ export default function NewNotePage() {
             />
           </div>
 
-          {/* Content */}
+          {/* Markdown Content */}
           <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Content</span>
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-base-content">Markdown Content</span>
+              {/* Copy button - always visible */}
+              <button
+                onClick={handleCopyContent}
+                className="p-1.5 rounded-md bg-base-200/90 hover:bg-base-300/90 text-base-content/70 hover:text-base-content transition-all duration-200"
+                title="Copy content to clipboard"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            </div>
             <div className="bg-white rounded-lg border border-base-300">
               <SimpleMarkdownEditor
                 initialContent={content}

@@ -26,11 +26,11 @@ export default function NoteDetailsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'content' | 'frontmatter'>('content');
   
   // Form state for editing
   const [formData, setFormData] = useState({
     content: '',
-    snippet: '',
     note_title: '',
     page_url: '',
     markdown_content: ''
@@ -39,9 +39,6 @@ export default function NoteDetailsPage() {
   // Delete confirmation modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   
-  // Snippet height tracking
-  const snippetRef = useRef<HTMLDivElement>(null);
-  const [shouldShowFade, setShouldShowFade] = useState(false);
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -66,7 +63,6 @@ export default function NoteDetailsPage() {
         // Set form data
         setFormData({
           content: noteData.content || '',
-          snippet: noteData.snippet || '',
           note_title: noteData.noteTitle || '',
           page_url: noteData.pageUrl || '',
           markdown_content: noteData.markdownContent || ''
@@ -89,17 +85,6 @@ export default function NoteDetailsPage() {
       loadNote();
     }
   }, [user, mounted, noteId, loadNote]);
-
-  // Check snippet height to determine if fade should be shown
-  useEffect(() => {
-    if (formData.snippet && snippetRef.current) {
-      const element = snippetRef.current;
-      const lineHeight = 32; // text-xl with leading-relaxed is approximately 32px per line
-      const sixLinesHeight = lineHeight * 6; // ~192px
-      
-      setShouldShowFade(element.scrollHeight > sixLinesHeight);
-    }
-  }, [formData.snippet]);
 
   // Handle form changes
   const handleFormChange = (field: string, value: string) => {
@@ -176,16 +161,16 @@ export default function NoteDetailsPage() {
     }
   };
 
-  // Copy snippet to clipboard
-  const handleCopySnippet = async () => {
-    if (!formData.snippet) return;
+  // Copy content to clipboard
+  const handleCopyContent = async () => {
+    if (!formData.content) return;
     
     try {
-      await navigator.clipboard.writeText(formData.snippet);
-      showSuccess('Snippet copied to clipboard');
+      await navigator.clipboard.writeText(formData.content);
+      showSuccess('Content copied to clipboard');
     } catch (err) {
-      console.error('Failed to copy snippet:', err);
-      showError('Failed to copy snippet', 'Please try selecting and copying manually');
+      console.error('Failed to copy content:', err);
+      showError('Failed to copy content', 'Please try selecting and copying manually');
     }
   };
 
@@ -304,72 +289,66 @@ export default function NoteDetailsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
-          {/* Original Snippet Section */}
-          {formData.snippet && (
-            <div>
-              <label htmlFor="snippet" className="block text-sm font-medium mb-2 text-base-content">
-                Original Snippet
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tab Navigation using DaisyUI tabs-box */}
+        <div role="tablist" className="tabs tabs-box tabs-sm mb-6 gap-1">
+          <input 
+            type="radio" 
+            name="note_tabs" 
+            className="tab" 
+            aria-label="Content"
+            defaultChecked={activeTab === 'content'}
+          />
+          <div className="tab-content bg-base-100 border-base-300 rounded-lg p-6">
+            {/* Note Title */}
+            <div className="mb-6">
+              <label htmlFor="note_title" className="block text-sm font-medium mb-2 text-base-content">
+                Note Title
               </label>
-              <div className={`relative ${shouldShowFade ? 'overflow-hidden' : ''}`}>
-                {/* Copy button */}
+              <input
+                id="note_title"
+                type="text"
+                value={formData.note_title}
+                onChange={(e) => handleFormChange('note_title', e.target.value)}
+                className="input input-bordered w-full bg-base-200 focus:bg-base-100"
+                placeholder="Enter note title..."
+              />
+            </div>
+            
+            {/* Markdown Content */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-base-content">
+                  Markdown Content
+                </label>
+                {/* Copy button - always visible */}
                 <button
-                  onClick={handleCopySnippet}
-                  className="absolute top-2 right-2 p-2 rounded-md bg-base-200/80 hover:bg-base-300/80 text-base-content/70 hover:text-base-content transition-colors z-10"
-                  title="Copy snippet to clipboard"
+                  onClick={handleCopyContent}
+                  className="p-1.5 rounded-md bg-base-200/90 hover:bg-base-300/90 text-base-content/70 hover:text-base-content transition-all duration-200"
+                  title="Copy content to clipboard"
                 >
                   <Copy className="w-4 h-4" />
                 </button>
-                
-                <div 
-                  ref={snippetRef}
-                  className={`text-xl leading-relaxed text-base-content italic font-bold ${
-                    shouldShowFade ? 'max-h-72 overflow-hidden' : ''
-                  }`}
-                >
-                  &ldquo;{formData.snippet}&rdquo;
-                </div>
-                {/* Gradient fade-out overlay - only show when content is long */}
-                {shouldShowFade && (
-                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-base-100 via-base-100/80 to-transparent pointer-events-none"></div>
-                )}
               </div>
-            </div>
-          )}
-
-          {/* Main Content */}
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium mb-2 text-base-content">
-              Content
-            </label>
-            <div className="bg-white rounded-lg p-4 border border-base-300">
-              <SimpleMarkdownEditor
-                initialContent={formData.content}
-                onChange={(content) => handleFormChange('content', content)}
-              />
+              <div className="bg-white rounded-lg p-4 border border-base-300">
+                <SimpleMarkdownEditor
+                  initialContent={formData.content}
+                  onChange={(content) => handleFormChange('content', content)}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Frontmatter Section */}
-          <div className="pt-4 border-t border-base-200">
-            <h3 className="text-lg font-semibold mb-4 text-base-content">Frontmatter</h3>
-            <div className="space-y-4">
-              {/* Note Title */}
-              <div>
-                <label htmlFor="note_title" className="block text-sm font-medium mb-2 text-base-content">
-                  Note Title
-                </label>
-                <input
-                  id="note_title"
-                  type="text"
-                  value={formData.note_title}
-                  onChange={(e) => handleFormChange('note_title', e.target.value)}
-                  className="input input-bordered w-full bg-base-200 focus:bg-base-100"
-                  placeholder="Enter page title..."
-                />
-              </div>
 
+          <input 
+            type="radio" 
+            name="note_tabs" 
+            className="tab" 
+            aria-label="Frontmatter"
+            defaultChecked={activeTab === 'frontmatter'}
+          />
+          <div className="tab-content bg-base-100 border-base-300 rounded-lg p-6">
+            <div className="space-y-6">
               {/* Page URL */}
               <div>
                 <label htmlFor="page_url" className="block text-sm font-medium mb-2 text-base-content">

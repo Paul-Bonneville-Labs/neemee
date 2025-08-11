@@ -107,7 +107,6 @@ export interface Note {
   id: string;
   userId: string;
   content: string;
-  snippet?: string | null; // The original unmodified text as captured
   pageUrl: string;
   noteTitle?: string | null;
   markdownContent?: string | null;

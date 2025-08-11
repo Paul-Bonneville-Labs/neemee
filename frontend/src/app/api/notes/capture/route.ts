@@ -107,9 +107,9 @@ export async function POST(request: NextRequest) {
       ? snippet.trim()
       : null;
 
-    // Format content as markdown quote with URL if it's a snippet from a webpage
+    // Format content combining snippet with markdown link to URL
     const formattedContent = sanitizedSnippet && page_url
-      ? `> ${sanitizedSnippet}\n\n${page_url.trim()}`
+      ? `> ${sanitizedSnippet}\n\n[${page_url.trim()}](${page_url.trim()})`
       : content.trim();
 
     // Save note to database using Prisma
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       note = await prisma.note.create({
         data: {
           content: formattedContent,
-          snippet: sanitizedSnippet, // Store the original unmodified text if provided
+          snippet: null, // No longer storing separate snippet
           noteTitle: sanitizedTitle || 'Untitled Note',
           markdownContent: '', // Empty string - will be set by async extraction
           pageUrl: page_url ? page_url.trim() : null,

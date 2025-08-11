@@ -8,6 +8,8 @@
   logs: false;
 }
 
+@plugin "@tailwindcss/typography";
+
 /* Enable Tailwind variants to work with DaisyUI themes */
 @custom-variant nord (&:where([data-theme=nord], [data-theme=nord] *));
 @custom-variant business (&:where([data-theme=business], [data-theme=business] *));
