@@ -128,6 +128,8 @@ steps:
       - '--set-env-vars=NODE_ENV=staging'
       - '--set-env-vars=NEXT_PUBLIC_BASE_URL=https://neemee-frontend-staging-860937201650.us-central1.run.app'
       - '--set-env-vars=NEXTAUTH_URL=https://neemee-frontend-staging-860937201650.us-central1.run.app'
+      # Buildpack configuration to force Node.js detection
+      - '--set-env-vars=GOOGLE_NODEJS_VERSION=20'
       # Staging secrets (Auth.js v5 + Prisma)
       - '--set-secrets=DATABASE_URL=neemee-staging-database-url:latest'
       - '--set-secrets=AUTH_SECRET=neemee-staging-auth-secret:latest'
