@@ -42,12 +42,13 @@ steps:
 
   # Step 4: Deploy to Cloud Run using buildpacks
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    dir: 'frontend'
     entrypoint: 'gcloud'
     args:
       - 'run'
       - 'deploy'
       - 'neemee-frontend-staging'
-      - '--source=frontend'  # Deploy from frontend directory
+      - '--source=.'  # Deploy from current directory (frontend)
       - '--platform=managed'
       - '--region=us-central1'
       - '--memory=512Mi'
