@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/components/AuthProvider';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Note, NoteUpdateRequest, ApiResponse } from '@/types';
@@ -26,7 +26,7 @@ export default function NoteDetailsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'content' | 'frontmatter'>('content');
+  const [activeTab] = useState<'content' | 'frontmatter'>('content');
   
   // Form state for editing
   const [formData, setFormData] = useState({

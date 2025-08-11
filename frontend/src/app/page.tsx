@@ -35,7 +35,7 @@ function LandingPageContent() {
       console.log('Redirecting to library from home');
       router.push('/library');
     }
-  }, [user, mounted, isBookmarkletRequest, router]);
+  }, [user, mounted, isBookmarkletRequest, router, loading]);
 
   if (!mounted) {
     return (

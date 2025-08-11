@@ -35,7 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       else if (new URL(url).origin === baseUrl) return url
       return `${baseUrl}/library`
     },
-    async signIn({ user, account, profile, email }) {
+    async signIn({ account }) {
       // Allow sign in and enable automatic account linking for same email addresses
       if (account?.provider === "google") {
         return true // Always allow Google sign-in, adapter will handle linking

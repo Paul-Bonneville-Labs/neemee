@@ -107,8 +107,9 @@ export interface Note {
   id: string;
   userId: string;
   content: string;
-  pageUrl: string;
+  pageUrl: string | null;
   noteTitle?: string | null;
+  snippet?: string | null; // Legacy field for backward compatibility
   markdownContent?: string | null;
   domain: string;
   capturedAt?: string | null; // When the note was originally captured (ISO string)

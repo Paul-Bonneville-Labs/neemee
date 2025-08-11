@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
 
 export default function middleware(req: NextRequest) {
   // Skip auth checks for API routes and auth pages to prevent circular redirects
