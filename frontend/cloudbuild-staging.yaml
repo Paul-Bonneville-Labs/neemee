@@ -119,7 +119,7 @@ steps:
       - 'NODE_ENV=staging'
     id: 'Build-Validation'
 
-  # Step 7: Deploy to Cloud Run using buildpacks
+  # Step 7: Deploy to Cloud Run using buildpacks (simplified)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     dir: 'frontend'
     entrypoint: 'gcloud'
@@ -127,21 +127,14 @@ steps:
       - 'run'
       - 'deploy'
       - 'neemee-frontend-staging'
-      - '--source=.'  # Deploy from current directory (frontend)
-      - '--platform=managed'
+      - '--source=.'
       - '--region=us-central1'
-      - '--memory=512Mi'
-      - '--cpu=1'
-      - '--min-instances=0'
-      - '--max-instances=10'
-      - '--concurrency=80'
-      - '--timeout=300'
       - '--allow-unauthenticated'
-      # Environment variables
+      # Environment variables for runtime
       - '--set-env-vars=NODE_ENV=staging'
       - '--set-env-vars=NEXT_PUBLIC_BASE_URL=https://neemee-frontend-staging-860937201650.us-central1.run.app'
       - '--set-env-vars=NEXTAUTH_URL=https://neemee-frontend-staging-860937201650.us-central1.run.app'
-      # Staging secrets (Auth.js v5 + Prisma)
+      # Staging secrets
       - '--set-secrets=DATABASE_URL=neemee-staging-database-url:latest'
       - '--set-secrets=AUTH_SECRET=neemee-staging-auth-secret:latest'
       - '--set-secrets=AUTH_GOOGLE_ID=neemee-staging-google-oauth-id:latest'
@@ -150,8 +143,6 @@ steps:
       - '--set-secrets=AUTH_GITHUB_SECRET=neemee-staging-github-oauth-secret:latest'
       - '--set-secrets=BACKEND_API_URL=neemee-staging-backend-api-url:latest'
       - '--set-secrets=BACKEND_API_KEY=neemee-staging-backend-api-key:latest'
-      # Deployment metadata
-      - '--labels=environment=staging,managed-by=cloud-build,commit-sha=$COMMIT_SHA,build-id=$BUILD_ID'
       - '--quiet'
     id: 'Deploy-to-Staging'
 
