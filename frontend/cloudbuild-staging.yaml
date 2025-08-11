@@ -79,7 +79,20 @@ steps:
         echo "✅ Prisma client generated"
     id: 'Generate-Prisma-Client'
 
-  # Step 4: Quality checks (fast fail for staging)
+  # Step 4: Rebuild native dependencies for Linux x64
+  - name: 'node:20'
+    dir: 'frontend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔧 Rebuilding native dependencies for Linux x64..."
+        # Force rebuild of lightningcss native binaries
+        npm rebuild lightningcss --platform=linux --arch=x64
+        echo "✅ Native dependencies rebuilt"
+    id: 'Rebuild-Native-Dependencies'
+
+  # Step 5: Quality checks (fast fail for staging)
   - name: 'node:20'
     dir: 'frontend'
     entrypoint: 'bash'
@@ -92,7 +105,7 @@ steps:
         echo "✅ Quality checks passed"
     id: 'Quality-Checks'
 
-  # Step 5: Build validation (ensure Next.js builds successfully)
+  # Step 6: Build validation (ensure Next.js builds successfully)
   - name: 'node:20'
     dir: 'frontend'
     entrypoint: 'bash'
@@ -106,7 +119,7 @@ steps:
       - 'NODE_ENV=staging'
     id: 'Build-Validation'
 
-  # Step 6: Deploy to Cloud Run using buildpacks
+  # Step 7: Deploy to Cloud Run using buildpacks
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     dir: 'frontend'
     entrypoint: 'gcloud'
@@ -142,7 +155,7 @@ steps:
       - '--quiet'
     id: 'Deploy-to-Staging'
 
-  # Step 7: Run staging smoke tests
+  # Step 8: Run staging smoke tests
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     entrypoint: 'bash'
     args:
