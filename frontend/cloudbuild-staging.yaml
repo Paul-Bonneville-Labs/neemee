@@ -116,7 +116,8 @@ steps:
         npm run build
         echo "✅ Staging build validation completed"
     env:
-      - 'NODE_ENV=staging'
+      - 'NODE_ENV=production'
+      - 'APP_ENV=staging'
     id: 'Build-Validation'
 
   # Step 7: Deploy to Cloud Run using buildpacks (simplified)
@@ -131,7 +132,8 @@ steps:
       - '--region=us-central1'
       - '--allow-unauthenticated'
       # Environment variables for runtime
-      - '--set-env-vars=NODE_ENV=staging'
+      - '--set-env-vars=NODE_ENV=production'
+      - '--set-env-vars=APP_ENV=staging'
       - '--set-env-vars=NEXT_PUBLIC_BASE_URL=https://neemee-frontend-staging-860937201650.us-central1.run.app'
       - '--set-env-vars=NEXTAUTH_URL=https://neemee-frontend-staging-860937201650.us-central1.run.app'
       # Staging secrets
