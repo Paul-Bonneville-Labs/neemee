@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Note, NoteUpdateRequest, ApiResponse } from '@/types';
-import { ArrowLeft, Save, Trash2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, ExternalLink, Copy } from 'lucide-react';
 import { Sidebar, HamburgerButton } from '@/components/Sidebar';
 import appConfig from '../../../../config.json';
 import { SimpleMarkdownEditor } from '@/components/SimpleMarkdownEditor';
@@ -176,6 +176,19 @@ export default function NoteDetailsPage() {
     }
   };
 
+  // Copy snippet to clipboard
+  const handleCopySnippet = async () => {
+    if (!formData.snippet) return;
+    
+    try {
+      await navigator.clipboard.writeText(formData.snippet);
+      showSuccess('Snippet copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy snippet:', err);
+      showError('Failed to copy snippet', 'Please try selecting and copying manually');
+    }
+  };
+
   // Redirect unauthenticated users
   useEffect(() => {
     if (!loading && !user) {
@@ -300,6 +313,15 @@ export default function NoteDetailsPage() {
                 Original Snippet
               </label>
               <div className={`relative ${shouldShowFade ? 'overflow-hidden' : ''}`}>
+                {/* Copy button */}
+                <button
+                  onClick={handleCopySnippet}
+                  className="absolute top-2 right-2 p-2 rounded-md bg-base-200/80 hover:bg-base-300/80 text-base-content/70 hover:text-base-content transition-colors z-10"
+                  title="Copy snippet to clipboard"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+                
                 <div 
                   ref={snippetRef}
                   className={`text-xl leading-relaxed text-base-content italic font-bold ${
