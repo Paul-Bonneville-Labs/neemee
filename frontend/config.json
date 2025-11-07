@@ -1,8 +1,0 @@
-{
-  "app": {
-    "name": "Neemee",
-    "displayName": "Neemee",
-    "description": "Transform scattered insights into an intelligent, portable knowledge graph. Capture highlights from any website and let AI extract entities and relationships for smarter knowledge management.",
-    "keywords": "knowledge management, highlights, bookmarklet, AI, entity extraction, knowledge graph, personal notes, web capture"
-  }
-}

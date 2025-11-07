@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Discord Support
+    url: https://discord.gg/jZjjTY9H
+    about: Get real-time help and connect with the Neemee community
+  - name: 📧 Contact Form
+    url: https://neemee.app/contact
+    about: Send a message to the Neemee team
+  - name: 🗺️ Public Roadmap
+    url: https://github.com/Paul-Bonneville-Labs/neemee/blob/main/ROADMAP.md
+    about: See what we're working on next
+  - name: 🌐 Neemee Website
+    url: https://neemee.app
+    about: Visit the Neemee website
